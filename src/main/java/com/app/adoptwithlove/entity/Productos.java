@@ -1,5 +1,8 @@
 package com.app.adoptwithlove.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -13,12 +16,26 @@ public class Productos {
     private  Long id;
 
     @Column(name = "nombre", nullable = false)
-    private Boolean nombre;
+    private String nombre;
 
-    @Column(name="precio", nullable = false, length = 100)
-    private Integer precio;
+    @Column(name="precio", nullable = false)
+    private Double  precio;
+
+    @Column(name="cantidad", nullable = false, length = 100)
+    private String cantidad;
 
     @Column(name="tipoProducto", nullable = false)
     private String tipoProducto;
+
+    @Column(name = "descripcion", columnDefinition = "TEXT")
+    private String descripcion;
+
+    @Column(name = "imagen", columnDefinition = "TEXT")
+    private String imagen;
+
+    @ManyToOne
+    @JoinColumn(name = "personaId")
+    @JsonIgnoreProperties({"productos", "fundaciones", "adopciones", "rol"}) // evita recursión
+    private Persona persona;
 
 }

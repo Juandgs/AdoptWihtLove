@@ -1,0 +1,170 @@
+/* CSS Optimizado - Página compacta con tarjetas mejoradas y footer completo */
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 14px;
+    padding-bottom: 70px; /* Espacio para el footer fijo */
+  }
+  
+  /* Contenedor principal con márgenes adecuados */
+  #productContainer {
+    margin: 0 15px;
+    padding-top: 10px;
+    margin-bottom: 30px; /* Espacio antes del footer */
+  }
+  
+  /* Tarjetas mejor dimensionadas */
+  .card {
+    width: 100%;
+    max-width: 280px;
+    border-radius: 10px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    margin: 0 auto 15px;
+    border: none;
+    transition: all 0.3s ease;
+  }
+  
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 12px rgba(0,0,0,0.15);
+  }
+  
+  .card-img-top {
+    height: 140px;
+    object-fit: cover;
+    border-radius: 10px 10px 0 0;
+  }
+  
+  .card-body {
+    padding: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .card-title {
+    font-size: 0.95rem;
+    margin-bottom: 0.4rem;
+    line-height: 1.3;
+    font-weight: 600;
+  }
+  
+  .card-text {
+    font-size: 0.8rem;
+    margin-bottom: 0.6rem;
+    color: #555;
+    line-height: 1.3;
+  }
+  
+  /* Espaciado mejorado */
+  .row {
+    --bs-gutter-x: 1rem;
+    --bs-gutter-y: 1rem;
+  }
+  
+  [class*="col-"] {
+    padding-right: calc(var(--bs-gutter-x) * 0.5);
+    padding-left: calc(var(--bs-gutter-x) * 0.5);
+  }
+  
+  /* Elementos mejor dimensionados */
+  .badge-category {
+    font-size: 0.7rem;
+    padding: 0.3em 0.6em;
+    margin-bottom: 0.5rem;
+    align-self: flex-start;
+    background-color: #f06292;
+    color: white;
+  }
+  
+  .fw-bold.text-danger {
+    font-size: 0.95rem;
+    margin: 0.5rem 0;
+  }
+  
+  .btn-outline-danger {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.8rem;
+    border-width: 1px;
+    color: #dc3545;
+    border-color: #dc3545;
+  }
+  
+  .btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: white;
+  }
+  
+  /* Footer completo */
+  footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #343a40;
+    color: white;
+    padding: 1rem 0;
+    z-index: 1000;
+    width: 100%;
+  }
+  
+  footer .container-fluid {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  
+  /* Ajustes responsive */
+  @media (min-width: 576px) {
+    .card {
+      max-width: 200px;
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .card {
+      max-width: 180px;
+    }
+    .card-img-top {
+      height: 120px;
+    }
+    body {
+      padding-bottom: 80px;
+    }
+  }
+  
+  @media (min-width: 992px) {
+    .card {
+      max-width: 200px;
+    }
+  }
+  
+  @media (min-width: 1200px) {
+    .card {
+      max-width: 220px;
+    }
+    .card-img-top {
+      height: 150px;
+    }
+  }
+  
+  /* Barra de búsqueda y filtros */
+  .search-bar {
+    max-width: 500px;
+    margin: 10px auto;
+  }
+  
+  .form-select {
+    font-size: 0.85rem;
+    padding: 0.35rem 0.75rem;
+  }
+  
+  /* Modal del carrito */
+  .modal-content {
+    border-radius: 10px;
+  }
+  
+  .modal-header {
+    background-color: #343a40;
+    color: white;
+    border-bottom: none;
+  }

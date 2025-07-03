@@ -12,6 +12,7 @@ public class personaDTO {
     private String nombre;
     private String apellido;
     private String contacto;
-    private String fecha_nacimiento;
+    private String fechaNacimiento;
     private String contrasena;
+    private String email;
 }

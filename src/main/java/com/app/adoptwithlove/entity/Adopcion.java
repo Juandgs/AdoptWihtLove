@@ -16,4 +16,11 @@ public class Adopcion {
     @Column(name = "fecha", nullable = false)
     private String fecha;
 
+    @ManyToOne
+    @JoinColumn(name = "id_animal")
+    private Animal animal;
+
+    @ManyToOne
+    @JoinColumn(name = "persona_id_persona")
+    private Persona persona;
 }

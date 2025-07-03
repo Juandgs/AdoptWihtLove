@@ -1,6 +1,10 @@
 package com.app.adoptwithlove.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import com.app.adoptwithlove.entity.Rol;
 
-public interface RolRepository extends JpaRepository<RolRepository, Long> {
+@Repository
+public interface RolRepository extends JpaRepository<Rol, Long> {
+        Rol findByNombreRol(String nombreRol);
 }

@@ -5,12 +5,11 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
-public class animalDTO {
-    private  Long id;
+public class AnimalDTO {
+    private Long id;
     private String nombre;
     private Integer edad;
     private String raza;
     private String tipo_animal;
+    private String imagen;        // Imagen en base64
 }

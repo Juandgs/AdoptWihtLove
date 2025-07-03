@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fundaciones de Mascotas</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome para íconos -->
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+
+  <!-- Favicon -->
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/616/616408.png" type="image/png">
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    /* Estilos para el botón de donaciones */
+    .whatsapp-donation-container {
+      position: fixed;
+      bottom: 100px;
+      right: 30px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .donation-bubble {
+      background-color: #25D366;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 15px;
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      animation: pulse 1.5s infinite;
+    }
+
+    .whatsapp-donation-icon {
+      width: 60px;
+      height: 60px;
+      transition: transform 0.3s;
+      border-radius: 50%;
+    }
+
+    .whatsapp-donation-icon:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 15px rgba(37, 211, 102, 0.5);
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+  </style>
+
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+  <!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <a class="navbar-brand" href="./index.html" style="font-family: 'Poppins', sans-serif; font-weight: 400; font-size: 1.5rem;">Fundaciones</a>
+  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link px-3 py-2" href="./index.html" style="font-weight: 400;">Inicio</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link px-3 py-2" href="./fundaciones.html" style="font-weight: 400;">Fundaciones</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link px-3 py-2" href="./tiendas.html" style="font-weight: 400;">Tiendas</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link px-3 py-2" href="./login.html" style="font-weight: 400;">Inicio de sesión</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link px-3 py-2" href="./registro.html" style="font-weight: 400;">Registro</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+</body>
+
+<!-- Sección de animales -->
+<div class="container py-5">
+    <h2 class="text-center mb-4" style="font-family: 'Poppins', sans-serif;">Animales en Adopción - Amigos Peludos</h2>
+    <div class="row g-4">
+  
+      <!-- Animal 1 -->
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+          <img src="./img/imgAnimalPerro2.jpg" class="card-img-top" alt="Perro en adopción">
+          <div class="card-body">
+            <h5 class="card-title">Emi</h5>
+            <p class="card-text">Edad: 5 años</p>
+            <p class="card-text">Raza: Criollo</p>
+            <a href="https://wa.me/573213229529?text=Hola%2C%20quiero%20adoptar%20a%20Emi%20de%20la%20Fundación%20Amigos%20Peludos" target="_blank" class="btn btn-success w-100 mt-2">Adoptar un amigo</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Animal 2 -->
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+          <img src="./img/imgAnimalGato1.jpg" class="card-img-top" alt="Gato en adopción">
+          <div class="card-body">
+            <h5 class="card-title">Mani</h5>
+            <p class="card-text">Edad: 9 año</p>
+            <p class="card-text">Raza: Gato</p>
+            <a href="https://wa.me/573213229529?text=Hola%2C%20quiero%20adoptar%20a%20Mani%20de%20la%20Fundación%20Amigos%20Peludos" target="_blank" class="btn btn-success w-100 mt-2">Adoptar un amigo</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Animal 3 -->
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+          <img src="./img/imgAnimalPerro1.jpg" class="card-img-top" alt="Perro en adopción">
+          <div class="card-body">
+            <h5 class="card-title">Bruno</h5>
+            <p class="card-text">Edad: 1 años</p>
+            <p class="card-text">Raza: Criollo</p>
+            <a href="https://wa.me/573213229529?text=Hola%2C%20quiero%20adoptar%20a%20Bruno%20de%20la%20Fundación%20Amigos%20Peludos" target="_blank" class="btn btn-success w-100 mt-2">Adoptar un amigo</a>
+          </div>
+        </div>
+      </div>
+  
+    </div>
+  </div>
+  
+  <!-- Botón de WhatsApp para donaciones -->
+  <div class="whatsapp-donation-container" onclick="openWhatsAppDonation()">
+    <div class="donation-bubble">Donaciones aquí</div>
+    <img src="./img/whatsapp.webp" alt="Donar por WhatsApp" class="whatsapp-donation-icon" data-whatsapp="573213229529">
+  </div>
+
+
+<footer class="text-center py-4 mt-auto bg-dark text-white">
+    <div class="container">
+      <p class="mb-0">© 2025 Adopt with Love. Todos los derechos reservados.</p> 
+    </div>
+  </footer>
+
+  <!-- Script para WhatsApp -->
+  <script>
+    function openWhatsAppDonation() {
+      const phone = document.querySelector('.whatsapp-donation-icon').getAttribute('data-whatsapp');
+      const message = encodeURIComponent("Hola, quiero hacer una donación a la Fundación Amigos Peludos.");
+      window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+    }
+  </script>
+
+  <script src="./root/general.js"></script>
+  
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

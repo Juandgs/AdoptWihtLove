@@ -1,5 +1,10 @@
 package com.app.adoptwithlove.entity;
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -23,5 +28,14 @@ public class Fundacion {
 
     @Column(name = "telefono", nullable = false, length = 100)
     private String telefono;
+
+    @ManyToOne
+    @JsonBackReference
+    @JoinColumn(name = "persona_id_persona")
+    private Persona persona;
+
+    @OneToMany(mappedBy = "fundacion", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("fundacion")
+    private List<Animal> animales;
 
 }

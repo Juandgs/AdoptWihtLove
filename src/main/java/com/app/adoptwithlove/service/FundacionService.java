@@ -6,9 +6,11 @@ import com.app.adoptwithlove.service.Dao.Idao;
 import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class FundacionService implements Idao<Fundacion, Long>{
     @Autowired
     private FundacionRepository Fundacion;

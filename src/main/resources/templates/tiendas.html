@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tiendas - Adopt with Love</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Favicon -->
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/616/616408.png" type="image/png">
+
+  <link rel="stylesheet" href="/root/css/tiendas.css">
+
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+  <!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <a class="navbar-brand" href="./index.html" style="font-family: 'Poppins', sans-serif; font-weight: 400; font-size: 1.5rem;">Productos para Mascotas</a>
+  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link px-3 py-2" href="/" style="font-weight: 400;">Inicio</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link px-3 py-2" href="/fundaciones" style="font-weight: 400;">Fundaciones</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link px-3 py-2" href="/tiendas" style="font-weight: 400;">Tiendas</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link px-3 py-2" href="/login" style="font-weight: 400;">Inicio de sesión</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link px-3 py-2" href="/registro" style="font-weight: 400;">Registro</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+</body>
+
+<!-- Barra de búsqueda -->
+<div class="d-flex justify-content-center mb-4 mt-3"> <!-- AÑADIDO mt-3 -->
+  <div class="input-group search-bar shadow-sm rounded" style="max-width: 500px;">
+    <span class="input-group-text bg-white border-end-0">
+      🔍
+    </span>
+    <input type="text" class="form-control border-start-0" id="searchInput" placeholder="Buscar productos...">
+  </div>
+</div>
+
+<!-- Filtro por categoría y carrito -->
+<div class="container mb-4">
+  <div class="row justify-content-between align-items-center">
+    <div class="col-md-4">
+      <select class="form-select" id="categoryFilter">
+        <option value="todos">Todas las categorías</option>
+        <option value="juguetes">Juguetes</option>
+        <option value="comida">Comida</option>
+        <option value="aseo">Aseo</option>
+        <option value="otros">Otros</option>
+      </select>
+    </div>
+    <div class="col-md-4 text-end">
+      <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cartModal">
+        🛒 Ver Carrito (<span id="cartCount">0</span>)
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Productos -->
+
+  <div class="row gx-3" id="productContainer">
+    
+  </div>
+
+  <!-- Agrega más productos aquí -->
+
+
+<!-- Modal del Carrito -->
+<div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title" id="cartModalLabel">🛒 Carrito de Compras</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body" id="cartItems">
+        <p>No hay productos en el carrito.</p>
+      </div>
+      <div class="modal-footer">
+        <strong>Total: <span id="cartTotal">$0</span></strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<footer class="text-center py-3 bg-dark text-white">
+  <div class="container-fluid"> <!-- Cambiado a container-fluid para más anchura -->
+    <p class="mb-0">© 2025 Adopt with Love. Todos los derechos reservados.</p>
+  </div>
+</footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script src="/js/tiendas.js"></script>  
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+body {
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  display: flex;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+/* Menú lateral */
+#menuLateral {
+  width: 250px;
+  background-color: #343a40;
+  padding-top: 30px;
+  color: white;
+  min-height: 100vh;
+}
+
+#menuLateral .nav-link {
+  color: white;
+  padding: 10px 20px;
+}
+
+#menuLateral .nav-link:hover,
+#menuLateral .nav-link.active {
+  background-color: #495057;
+  font-weight: bold;
+}
+
+/* Contenido principal */
+main {
+  flex-grow: 1;
+  padding: 2rem;
+}
+
+section {
+  display: none;
+}
+
+section.active-section {
+  display: block;
+}
+
+/* Ajuste para gráficos y tablas */
+.card-body {
+  overflow-x: auto;
+}
+
+/* Navbar */
+.navbar-brand {
+  font-weight: bold;
+}
+
+/* Estilo para el botón de cerrar sesión */
+#logoutBtn {
+  color: white !important;
+  padding: 0.4rem 1rem !important;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+  margin-left: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#logoutBtn:hover {
+  background-color: #c82333 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+#logoutBtn i {
+  margin-right: 8px;
+  font-size: 0.9rem;
+}
+
+/* Mejora visual para el estado activo */
+#logoutBtn:active {
+  transform: translateY(1px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  #menuLateral {
+      position: relative;
+      width: 100%;
+      min-height: auto;
+  }
+
+  main {
+      margin-left: 0;
+      padding: 1rem;
+  }
+  
+  /* Ajustes para el botón en móviles */
+  #logoutBtn {
+      padding: 0.3rem 0.8rem !important;
+      font-size: 0.9rem;
+      margin: 5px 0;
+      width: 100%;
+  }
+  
+  #logoutBtn i {
+      margin-right: 5px;
+  }
+}
