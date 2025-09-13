@@ -166,3 +166,32 @@ document.addEventListener("DOMContentLoaded", async function () {
     descargarPDF("#seccion4 table", "animales");
   });
 });
+
+document.getElementById("uploadForm").addEventListener("submit", async function (e) {
+  e.preventDefault();
+
+  const formData = new FormData(this);
+
+  try {
+    const response = await fetch("/productos/upload-csv", {
+      method: "POST",
+      body: formData
+    });
+
+    const mensaje = await response.text();
+
+    // Mostrar mensaje en el div
+    const divMensaje = document.getElementById("mensajeRespuesta");
+    divMensaje.innerHTML = `<div class="alert alert-info">${mensaje}</div>`;
+
+    // Cerrar modal automáticamente
+    const modal = bootstrap.Modal.getInstance(document.getElementById('uploadModal'));
+    modal.hide();
+
+  } catch (error) {
+    console.error("Error:", error);
+    document.getElementById("mensajeRespuesta").innerHTML =
+      `<div class="alert alert-danger">Error al subir el archivo</div>`;
+  }
+});
+

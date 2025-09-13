@@ -7,7 +7,11 @@ import com.app.adoptwithlove.entity.Persona;
 import com.app.adoptwithlove.entity.Productos;
 import com.app.adoptwithlove.repository.PersonaRepository;
 import com.app.adoptwithlove.repository.ProductosRepository;
-
+import org.springframework.web.multipart.MultipartFile;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,6 +33,50 @@ public class ProductosController {
     public List<Productos> getAllProductos() {
         return productoRepository.findAll();
     }
+
+    @PostMapping("/upload-csv")
+public ResponseEntity<String> uploadCSV(@RequestParam("file") MultipartFile file) {
+    if (file.isEmpty()) {
+        return ResponseEntity.badRequest().body("El archivo está vacío");
+    }
+
+    try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+        String line;
+        boolean firstLine = true;
+        List<Productos> productosList = new ArrayList<>();
+
+        while ((line = br.readLine()) != null) {
+            if (firstLine) { // ignorar encabezado
+                firstLine = false;
+                continue;
+            }
+            String[] data = line.split(",");
+
+            Productos producto = new Productos();
+            producto.setNombre(data[0]);                     
+            producto.setTipoProducto(data[1]);              
+            producto.setPrecio(Double.parseDouble(data[2])); 
+            producto.setCantidad(data[3]);
+
+            // Buscar persona (vendedor) por ID de la columna 5
+            Long vendedorId = Long.parseLong(data[4]);
+            Persona vendedor = personaRepository.findById(vendedorId)
+                    .orElseThrow(() -> new RuntimeException("Vendedor con ID " + vendedorId + " no encontrado"));
+
+            producto.setPersona(vendedor);
+
+            productosList.add(producto);
+        }
+
+        productoRepository.saveAll(productosList);
+        return ResponseEntity.ok("Se guardaron " + productosList.size() + " productos en la DB");
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(500).body("Error al procesar el archivo: " + e.getMessage());
+    }
+}
+
 
     @GetMapping("/mis-productos")
     public List<Productos> getProductosDelVendedorAutenticado(@AuthenticationPrincipal UserDetails userDetails) {

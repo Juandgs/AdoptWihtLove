@@ -39,8 +39,12 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         )
         .csrf(csrf -> csrf
             .ignoringRequestMatchers(
-            "/productos/**",  // Incluye crear, editar, eliminar productos
-            "/animal/**"      // Incluye crear, editar, eliminar animales
+            "/productos/**",  
+            "/animal/**",
+            "/registro",
+            "/tienda",
+            "/fundaciones",
+            "/animales"
         )
         )
         .formLogin(form -> form
