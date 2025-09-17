@@ -18,9 +18,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-@RestController  // << CAMBIO: usar RestController evita usar @ResponseBody cada vez
+@RestController
 @RequestMapping("/productos")
-@CrossOrigin(origins = "*") // Opcional: para permitir peticiones desde el frontend
 public class ProductosController {
 
     @Autowired
@@ -43,7 +42,8 @@ public ResponseEntity<String> uploadCSV(@RequestParam("file") MultipartFile file
     try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
         String line;
         boolean firstLine = true;
-        List<Productos> productosList = new ArrayList<>();
+        int nuevos = 0;
+        int actualizados = 0;
 
         while ((line = br.readLine()) != null) {
             if (firstLine) { // ignorar encabezado
@@ -52,30 +52,46 @@ public ResponseEntity<String> uploadCSV(@RequestParam("file") MultipartFile file
             }
             String[] data = line.split(",");
 
-            Productos producto = new Productos();
-            producto.setNombre(data[0]);                     
-            producto.setTipoProducto(data[1]);              
-            producto.setPrecio(Double.parseDouble(data[2])); 
-            producto.setCantidad(data[3]);
+            String nombre = data[0].trim();
+            String tipoProducto = data[1].trim();
+            double precio = Double.parseDouble(data[2].trim());
+            String cantidad = data[3].trim();
+            Long vendedorId = Long.parseLong(data[4].trim());
 
-            // Buscar persona (vendedor) por ID de la columna 5
-            Long vendedorId = Long.parseLong(data[4]);
             Persona vendedor = personaRepository.findById(vendedorId)
                     .orElseThrow(() -> new RuntimeException("Vendedor con ID " + vendedorId + " no encontrado"));
 
-            producto.setPersona(vendedor);
+            // Buscar si ya existe un producto igual para este vendedor
+            Productos existente = productoRepository.findByNombreAndTipoProductoAndPersona(nombre, tipoProducto, vendedor);
 
-            productosList.add(producto);
+            if (existente != null) {
+                // Actualizar cantidad (sumar)
+                existente.setCantidad(existente.getCantidad() + cantidad);
+                // Opcional: también actualizar precio si cambió
+                existente.setPrecio(precio);
+                productoRepository.save(existente);
+                actualizados++;
+            } else {
+                // Crear nuevo producto
+                Productos nuevo = new Productos();
+                nuevo.setNombre(nombre);
+                nuevo.setTipoProducto(tipoProducto);
+                nuevo.setPrecio(precio);
+                nuevo.setCantidad(cantidad);
+                nuevo.setPersona(vendedor);
+                productoRepository.save(nuevo);
+                nuevos++;
+            }
         }
 
-        productoRepository.saveAll(productosList);
-        return ResponseEntity.ok("Se guardaron " + productosList.size() + " productos en la DB");
+        return ResponseEntity.ok("Se guardaron " + nuevos + " productos nuevos y se actualizaron " + actualizados + " existentes");
 
     } catch (Exception e) {
         e.printStackTrace();
         return ResponseEntity.status(500).body("Error al procesar el archivo: " + e.getMessage());
     }
 }
+
 
 
     @GetMapping("/mis-productos")
