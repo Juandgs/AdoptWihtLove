@@ -43,8 +43,10 @@
 
       <section id="animales" class="d-none">
   <div class="container py-4">
+        <div id="mensajeRespuesta" class="mt-3"></div>
     <h2 class="text-success text-center mb-4">Mis Animales en Adopción</h2>
     <div class="text-end mb-3">
+      <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#uploadModal">Registrar Animales</button>
       <button class="btn btn-outline-success" onclick="mostrarSeccion('nuevoAnimal')">Subir Animal</button>
     </div>
     <div class="table-responsive">
@@ -137,206 +139,32 @@
   </form>
 </section>
 
-
-    </main>
-  </div>
-
-  <script src="/js/dashboardFundacion.js"></script>
-  <script>
-document.addEventListener("DOMContentLoaded", () => {
-  fetch("/animal/mis-animales")
-    .then(res => res.json())
-    .then(animales => {
-      const tableBody = document.getElementById("animalTableBody");
-      tableBody.innerHTML = "";
-
-      if (animales.length === 0) {
-        tableBody.innerHTML = `
-          <tr>
-            <td colspan="7" class="text-center text-muted">No hay animales registrados.</td>
-          </tr>`;
-        return;
-      }
-
-      animales.forEach(animal => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${animal.nombre}</td>
-          <td>${animal.edad} años</td>
-          <td>${animal.raza}</td>
-          <td>${animal.tipo_animal}</td>
-          <td><img src="${animal.imagen || './img/animalDefault.jpg'}" alt="${animal.nombre}" style="width: 60px; height: 60px; object-fit: cover;"></td>
-          <td>
-            <button onclick="editarAnimal(${animal.id})" class="btn btn-primary btn-sm me-1">Editar</button>
-            <button onclick="eliminarAnimal(${animal.id})" class="btn btn-danger btn-sm">Eliminar</button>
-          </td>
-        `;
-        tableBody.appendChild(row);
-      });
-    })
-    .catch(err => {
-      console.error("Error al cargar animales:", err);
-    });
-});
-
-
-function eliminarAnimal(id) {
-  if (confirm("¿Estás seguro de eliminar este animal?")) {
-    fetch(`/animal/eliminar/${id}`, {
-      method: "DELETE"
-    })
-    .then(res => {
-      if (res.ok) {
-        location.reload();
-      } else {
-        alert("Error al eliminar el animal");
-      }
-    });
-  }
-}
-</script>
-
-<script>
-  // Reutiliza función global de cambiar sección
-  function mostrarSeccion(id) {
-    const sections = document.querySelectorAll("main section");
-    sections.forEach(section => section.classList.add("d-none"));
-    const target = document.getElementById(id);
-    if (target) target.classList.remove("d-none");
-  }
-
-  const imagenAnimalInput = document.getElementById('imagenAnimal');
-  const previewAnimal = document.getElementById('previewAnimal');
-
-  imagenAnimalInput?.addEventListener('change', function () {
-    const file = imagenAnimalInput.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        previewAnimal.src = e.target.result;
-        previewAnimal.style.display = 'block';
-      };
-      reader.readAsDataURL(file);
-    } else {
-      previewAnimal.src = '#';
-      previewAnimal.style.display = 'none';
-    }
-  });
-
-  document.getElementById('formCrearAnimal')?.addEventListener('submit', async function (e) {
-    e.preventDefault();
-
-    let base64;
-const file = imagenAnimalInput.files[0];
-
-if (file) {
-  base64 = await toBase64(file);
-} else {
-  base64 = document.getElementById('previewAnimal').src; // usa imagen ya cargada
-}
-
-    const data = {
-      nombre: document.getElementById('nombreAnimal').value,
-      edad: parseInt(document.getElementById('edadAnimal').value),
-      raza: document.getElementById('razaAnimal').value,
-      tipo_animal: document.getElementById('tipoAnimal').value,
-      imagen: base64
-    };
-
-    const idEditar = this.dataset.editando;
-const url = idEditar ? `/animal/editar/${idEditar}` : '/animal/crear';
-const metodo = idEditar ? 'PUT' : 'POST';
-
-fetch(url, {
-  method: metodo,
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(data),
-  credentials: 'include'
-})
-
-    .then(res => {
-      if (res.ok) {
-        alert('Animal registrado con éxito');
-        location.reload();
-      } else {
-        alert('Error al registrar el animal');
-      }
-    });
-  });
-
-  function toBase64(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = error => reject(error);
-    });
-  }
-
-  function editarAnimal(id) {
-  fetch(`/animal/editar/${id}`)
-    .then(res => res.json())
-    .then(animal => {
-      document.getElementById('nombreAnimal').value = animal.nombre;
-      document.getElementById('edadAnimal').value = animal.edad;
-      document.getElementById('razaAnimal').value = animal.raza;
-      document.getElementById('tipoAnimal').value = animal.tipo_animal;
-      document.getElementById('formCrearAnimal').dataset.editando = id; // guardar ID
-      mostrarSeccion('nuevoAnimal');
-
-      if (animal.imagen) {
-        document.getElementById('previewAnimal').src = animal.imagen;
-        document.getElementById('previewAnimal').style.display = 'block';
-      }
-    })
-    .catch(err => {
-      console.error("Error al obtener animal:", err);
-      alert("Error al obtener los datos del animal.");
-    });
-}
-
-</script>
-<!--<script>
-document.querySelector('a[data-target="catalogo"]')?.addEventListener('click', () => {
-  mostrarSeccion('catalogo');
-
-  const contenedor = document.getElementById('catalogoContainer');
-  contenedor.innerHTML = '<p class="text-center text-muted">Cargando animales...</p>';
-
-  fetch('/animal/catalogo')
-    .then(res => res.json())
-    .then(animales => {
-      contenedor.innerHTML = '';
-      if (animales.length === 0) {
-        contenedor.innerHTML = '<p class="text-center text-muted">No hay animales disponibles para adopción.</p>';
-        return;
-      }
-
-      animales.forEach(animal => {
-        const card = document.createElement('div');
-        card.className = 'col';
-        card.innerHTML = `
-          <div class="card h-100 shadow-sm">
-            <img src="${animal.imagen || './img/animalDefault.jpg'}" class="card-img-top" alt="${animal.nombre}" style="height: 200px; object-fit: cover;">
-            <div class="card-body">
-              <h5 class="card-title">${animal.nombre}</h5>
-              <p class="card-text">${animal.raza}, ${animal.edad} año(s)</p>
-              <span class="badge bg-${animal.tipo_animal === 'Perro' ? 'primary' : animal.tipo_animal === 'Gato' ? 'warning' : 'secondary'}">${animal.tipo_animal}</span>
-              <p class="mt-2 fw-bold text-success">Disponible</p>
-              <button class="btn btn-outline-primary w-100">Solicitar Adopción</button>
+      <!-- Modal: Subir CSV -->
+      <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="uploadModalLabel">Subir Productos desde CSV</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+              <form id="uploadForm" enctype="multipart/form-data">
+                <div class="mb-3">
+                  <label for="file" class="form-label">Archivo CSV</label>
+                  <input type="file" class="form-control" id="file" name="file" accept=".csv" required>
+                </div>
+                <button type="submit" class="btn btn-success">Subir</button>
+              </form>
+              <div id="mensajeRespuesta" class="mt-3"></div>
             </div>
           </div>
-        `;
-        contenedor.appendChild(card);
-      });
-    })
-    .catch(err => {
-      console.error("Error al cargar catálogo:", err);
-      contenedor.innerHTML = '<p class="text-danger text-center">No se pudo cargar el catálogo.</p>';
-    });
-});
-</script>-->
+        </div>
+      </div>
 
+  </main>
+  </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/dashboardFundacion.js"></script>
 </body>
 </html>

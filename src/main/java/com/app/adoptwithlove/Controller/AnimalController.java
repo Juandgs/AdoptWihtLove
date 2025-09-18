@@ -1,7 +1,12 @@
 package com.app.adoptwithlove.Controller;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,7 +24,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.app.adoptwithlove.Dto.AnimalDTO;
 import com.app.adoptwithlove.Dto.AnimalResponseDTO;
@@ -52,6 +59,82 @@ public class AnimalController {
     public List<Animal> listarAnimales() {
         return service.getAll();
     }
+
+   @PostMapping("/upload-csv")
+public ResponseEntity<String> uploadCSV(@RequestParam("file") MultipartFile file,
+                                        @AuthenticationPrincipal UserDetails userDetails) {
+    if (file.isEmpty()) {
+        return ResponseEntity.badRequest().body("El archivo está vacío");
+    }
+
+    try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+        String line;
+        boolean firstLine = true;
+        List<Animal> nuevosAnimales = new ArrayList<>();
+        int duplicados = 0;
+
+        Persona persona = personaRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado"));
+        Fundacion fundacion = fundacionRepository.findByPersona_Id(persona.getId())
+                .orElseThrow(() -> new RuntimeException("Fundación autenticada no encontrada"));
+
+        while ((line = br.readLine()) != null) {
+            if (firstLine) {
+                firstLine = false;
+                continue;
+            }
+
+            String[] data = line.split(",");
+            if (data.length < 4) {
+                return ResponseEntity.badRequest().body("El archivo debe tener al menos 4 columnas: Nombre, Edad, Raza, Tipo");
+            }
+
+            String nombre = data[0].trim();
+            int edad = Integer.parseInt(data[1].trim());
+            String raza = data[2].trim();
+            String tipo = data[3].trim();
+            String imagen = data.length > 4 && !data[4].trim().isEmpty() ? data[4].trim() : null;
+
+            boolean existe = animalesRepository.findByFundacion(fundacion).stream()
+                .anyMatch(a -> a.getNombre().equalsIgnoreCase(nombre)
+                            && a.getEdad() == edad
+                            && a.getRaza().equalsIgnoreCase(raza)
+                            && a.getTipo_animal().equalsIgnoreCase(tipo));
+
+            if (existe) {
+                duplicados++;
+                System.out.println("Animal duplicado ignorado: " + nombre);
+                continue;
+            }
+
+            Animal nuevo = new Animal();
+            nuevo.setNombre(nombre);
+            nuevo.setEdad(edad);
+            nuevo.setRaza(raza);
+            nuevo.setTipo_animal(tipo);
+            nuevo.setImagen(imagen);
+            nuevo.setFundacion(fundacion);
+            nuevosAnimales.add(nuevo);
+        }
+
+        if (!nuevosAnimales.isEmpty()) {
+            animalesRepository.saveAll(nuevosAnimales);
+        }
+
+        String mensaje = "Se guardaron " + nuevosAnimales.size() + " animales nuevos.";
+        if (duplicados > 0) {
+            mensaje += " Se ignoraron " + duplicados + " duplicados.";
+        }
+
+        return ResponseEntity.ok(mensaje);
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(500).body("Error al procesar el archivo: " + e.getMessage());
+    }
+}
+
+
 
     @GetMapping("/mis-animales")
     @ResponseBody

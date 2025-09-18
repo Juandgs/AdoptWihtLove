@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -10,6 +10,7 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
 
+  <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <a class="navbar-brand" href="#" style="font-family: 'Poppins', sans-serif; font-size: 1.5rem;">Panel del Vendedor</a>
     <div class="collapse navbar-collapse justify-content-end">
@@ -23,7 +24,9 @@
     </div>
   </nav>
 
+  <!-- Layout -->
   <div class="d-flex flex-grow-1">
+    <!-- Sidebar -->
     <aside class="bg-dark text-white p-3" style="width: 250px;">
       <h5 class="text-center">Menú</h5>
       <ul class="nav flex-column">
@@ -33,18 +36,18 @@
         <li class="nav-item">
           <a class="nav-link text-white" href="#" data-target="catalogo">Catálogo</a>
         </li>
-        <!--<li class="nav-item">
-          <a class="nav-link text-white" href="#" data-target="perfil">Perfil</a>
-        </li>-->
       </ul>
     </aside>
 
+    <!-- Main content -->
     <main class="flex-grow-1 p-4">
 
-      <!-- Mis productos -->
+      <!-- Sección: Mis productos -->
       <section id="productos" class="d-none">
+        <div id="mensajeRespuesta" class="mt-3"></div>
         <h2>Mis productos</h2>
         <button class="btn btn-success mb-3" onclick="mostrarSeccion('nuevoProducto')">Subir nuevo producto</button>
+        <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#uploadModal">Subir Productos</button>
 
         <table class="table table-bordered">
           <thead>
@@ -58,24 +61,13 @@
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody>
-            <tr th:each="producto : ${productos}">
-              <td th:text="${producto.nombre}"></td>
-              <td th:text="${producto.precio}"></td>
-              <td th:text="${producto.cantidad}"></td>
-              <td th:text="${producto.tipoProducto}"></td>
-              <td th:text="${producto.descripcion}"></td>
-              <td><img th:src="${producto.imagen}" style="max-width: 100px;" /></td>
-              <td>
-                <button class="btn btn-sm btn-primary" th:onclick="'editarProducto(' + ${producto.id} + ')'">Editar</button>
-                <button class="btn btn-sm btn-danger" th:onclick="'eliminarProducto(' + ${producto.id} + ')'">Eliminar</button>
-              </td>
-            </tr>
+          <tbody id="tablaProductos">
+            <!-- Se llenará dinámicamente con JS -->
           </tbody>
         </table>
       </section>
 
-      <!-- Formulario nuevo producto -->
+      <!-- Sección: Formulario nuevo producto -->
       <section id="nuevoProducto" class="d-none">
         <h2>Subir Nuevo Producto</h2>
         <form id="formCrearProducto">
@@ -117,214 +109,41 @@
         </form>
       </section>
 
-      <!-- Catálogo -->
+      <!-- Sección: Catálogo -->
       <section id="catalogo" class="d-none">
         <h2>Catálogo</h2>
-        <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
-          <div class="col" th:each="producto : ${productos}">
-            <div class="card h-100 shadow-sm">
-              <img th:src="${producto.imagen}" class="card-img-top" alt="Imagen producto" style="height: 250px; object-fit: cover;">
-              <div class="card-body">
-                <h5 class="card-title" th:text="${producto.nombre}">Nombre</h5>
-                <p class="card-text" th:text="${producto.descripcion}">Descripción</p>
-                <span class="badge bg-pink text-white" th:text="${producto.tipoProducto}">Tipo</span>
-                <p class="mt-2 fw-bold text-danger" th:text="'$' + ${producto.precio}">Precio</p>
-              </div>
-              <div class="card-footer bg-transparent">
-                <button class="btn btn-outline-danger w-100">Agregar al carrito</button>
-              </div>
-            </div>
-          </div>
+        <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4" id="catalogoProductos">
+          <!-- Puedes agregar render dinámico aquí también si lo deseas -->
         </div>
       </section>
 
-      <!-- Perfil -->
-<!-- Perfil -->
-<!--<section id="perfil" class="d-none">
-  <h2>Mi Perfil</h2>
-  <div class="card shadow-sm p-4" style="max-width: 600px;">
-    <div class="card-body">
-      <h5 class="card-title">Datos del Vendedor</h5>
-      <p><strong>Nombre:</strong>
-        <span th:text="${vendedor?.nombre != null ? vendedor.nombre : 'No registrado'}">Nombre</span>
-      </p>
-      <p><strong>Apellido:</strong>
-        <span th:text="${vendedor?.apellido != null ? vendedor.apellido : 'No registrado'}">Apellido</span>
-      </p>
-      <p><strong>Correo:</strong>
-        <span th:text="${vendedor?.email != null ? vendedor.email : 'No registrado'}">Correo</span>
-      </p>
-      <p><strong>Contacto:</strong>
-        <span th:text="${vendedor?.contacto != null ? vendedor.contacto : 'No registrado'}">Contacto</span>
-      </p>
-      <p><strong>Rol:</strong>
-        <span class="badge bg-dark text-white"
-            th:text="${vendedor?.rol?.nombreRol != null ? vendedor.rol.nombreRol : 'Desconocido'}">Rol</span>
-      </p>
-      <p><strong>Fecha de nacimiento:</strong>
-        <span th:if="${vendedor?.fechaNacimiento != null}"
-              th:text="${#dates.format(vendedor.fechaNacimiento, 'dd/MM/yyyy')}">Fecha</span>
-        <span th:unless="${vendedor?.fechaNacimiento != null}">No registrada</span>
-      </p>
-      <a th:if="${vendedor?.id != null}" th:href="@{'/persona/edit/' + ${vendedor.id}}" class="btn btn-outline-primary mt-3">Editar Perfil</a>
-    </div>
-  </div>
-</section>-->
-
+      <!-- Modal: Subir CSV -->
+      <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="uploadModalLabel">Subir Productos desde CSV</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+              <form id="uploadForm" enctype="multipart/form-data">
+                <div class="mb-3">
+                  <label for="file" class="form-label">Archivo CSV</label>
+                  <input type="file" class="form-control" id="file" name="file" accept=".csv" required>
+                </div>
+                <button type="submit" class="btn btn-success">Subir</button>
+              </form>
+              <div id="mensajeRespuesta" class="mt-3"></div>
+            </div>
+          </div>
+        </div>
+      </div>
 
     </main>
   </div>
 
   <!-- Scripts -->
-  <script>
-    // ESTA FUNCIÓN SE MUEVE FUERA DEL DOMContentLoaded PARA QUE SEA GLOBAL
-    function mostrarSeccion(id) {
-      const sections = document.querySelectorAll("main section");
-      sections.forEach(section => section.classList.add("d-none"));
-      const s = document.getElementById(id);
-      if (s) s.classList.remove("d-none");
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      const links = document.querySelectorAll("[data-target]");
-
-      links.forEach(link => {
-        link.addEventListener("click", e => {
-          e.preventDefault();
-          const target = link.getAttribute("data-target");
-          mostrarSeccion(target);
-        });
-      });
-
-      mostrarSeccion("productos");
-    });
-
-    const imagenInput = document.getElementById('imagen');
-    const preview = document.getElementById('previewImagen');
-
-    imagenInput?.addEventListener('change', function () {
-      const file = imagenInput.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          preview.src = e.target.result;
-          preview.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-      } else {
-        preview.src = '#';
-        preview.style.display = 'none';
-      }
-    });
-
-    document.getElementById('formCrearProducto')?.addEventListener('submit', async function (e) {
-      e.preventDefault();
-
-      const file = imagenInput.files[0];
-      const base64 = await toBase64(file);
-
-      const data = {
-        nombre: document.getElementById('nombre').value,
-        precio: parseFloat(document.getElementById('precio').value),
-        cantidad: document.getElementById('cantidad').value,
-        descripcion: document.getElementById('descripcion').value,
-        tipoProducto: document.getElementById('tipoProducto').value,
-        imagen: base64,
-      };
-
-      fetch('/productos/crear', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-        credentials: 'include'
-      })
-      .then(res => {
-        if (res.ok) {
-          alert('Producto guardado con éxito');
-          location.reload();
-        } else {
-          alert('Error al guardar el producto');
-        }
-      });
-    });
-
-    function toBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
-      });
-    }
-
-    function eliminarProducto(id) {
-      if (confirm('¿Estás seguro de eliminar este producto?')) {
-        fetch(`/productos/eliminar/${id}`, {
-          method: 'DELETE',
-          credentials: 'include'
-        })
-        .then(res => {
-          if (res.ok) {
-            alert('Producto eliminado');
-            location.reload();
-          } else {
-            alert('Error al eliminar el producto');
-          }
-        });
-      }
-    }
-
-    function editarProducto(id) {
-      fetch(`/productos/${id}`, {
-        method: 'GET',
-        credentials: 'include'
-      })
-      .then(res => res.json())
-      .then(producto => {
-        document.getElementById('nombre').value = producto.nombre;
-        document.getElementById('precio').value = producto.precio;
-        document.getElementById('cantidad').value = producto.cantidad;
-        document.getElementById('descripcion').value = producto.descripcion;
-        document.getElementById('tipoProducto').value = producto.tipoProducto;
-        preview.src = producto.imagen;
-        preview.style.display = 'block';
-        imagenInput.required = false;
-
-        mostrarSeccion('nuevoProducto');
-
-        const form = document.getElementById('formCrearProducto');
-        form.onsubmit = async function (e) {
-          e.preventDefault();
-          const file = imagenInput.files[0];
-          const base64 = file ? await toBase64(file) : producto.imagen;
-
-          const data = {
-            nombre: document.getElementById('nombre').value,
-            precio: parseFloat(document.getElementById('precio').value),
-            cantidad: document.getElementById('cantidad').value,
-            descripcion: document.getElementById('descripcion').value,
-            tipoProducto: document.getElementById('tipoProducto').value,
-            imagen: base64
-          };
-
-          fetch(`/productos/editar/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-            credentials: 'include'
-          })
-          .then(res => {
-            if (res.ok) {
-              alert('Producto actualizado');
-              location.reload();
-            } else {
-              alert('Error al actualizar el producto');
-            }
-          });
-        };
-      });
-    }
-  </script>
-
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/dashboardVendedor.js"></script>
 </body>
 </html>
