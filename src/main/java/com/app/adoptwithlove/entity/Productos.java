@@ -3,8 +3,11 @@ package com.app.adoptwithlove.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.util.List;
 
 @Entity
 @Table(name ="productos")
@@ -32,6 +35,10 @@ public class Productos {
 
     @Column(name = "imagen", columnDefinition = "TEXT")
     private String imagen;
+
+    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties("producto") // evita recursión infinita al serializar
+    private List<Reclamos> reclamos;
 
     @ManyToOne
     @JoinColumn(name = "personaId")

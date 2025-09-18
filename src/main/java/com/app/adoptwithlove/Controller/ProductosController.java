@@ -21,7 +21,9 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/productos")
+
 @CrossOrigin(origins = "*")
+
 public class ProductosController {
 
     @Autowired
@@ -36,6 +38,7 @@ public class ProductosController {
     }
 
     @PostMapping("/upload-csv")
+
     public ResponseEntity<String> uploadCSV(@RequestParam("file") MultipartFile file,
                                             @AuthenticationPrincipal UserDetails userDetails) {
         if (file.isEmpty()) {
@@ -96,7 +99,6 @@ public class ProductosController {
                     nuevosProductos.add(producto);
                 }
             }
-
             if (!nuevosProductos.isEmpty()) {
                 productoRepository.saveAll(nuevosProductos);
             }
@@ -108,6 +110,7 @@ public class ProductosController {
             return ResponseEntity.status(500).body("Error al procesar el archivo: " + e.getMessage());
         }
     }
+
 
     @GetMapping("/mis-productos")
     public List<Productos> getProductosDelVendedorAutenticado(@AuthenticationPrincipal UserDetails userDetails) {
