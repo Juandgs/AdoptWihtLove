@@ -41,7 +41,7 @@ public class Productos {
     private List<Reclamos> reclamos;
 
     @ManyToOne
-    @JoinColumn(name = "personaId")
+    @JoinColumn(name = "persona_id")
     @JsonIgnoreProperties({"productos", "fundaciones", "adopciones", "rol"}) // evita recursión
     private Persona persona;
 
