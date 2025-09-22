@@ -39,7 +39,7 @@ public class Persona {
     private String email;
 
     @Column(name = "estado", nullable = false)
-    private String estado;
+    private String estado = "Activo";
 
     @ManyToOne
     @JoinColumn(name = "rol_id_rol")
