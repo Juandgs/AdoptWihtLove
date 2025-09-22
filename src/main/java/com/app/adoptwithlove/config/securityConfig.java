@@ -4,72 +4,73 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-
-
-import java.util.List;
-
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.app.adoptwithlove.entity.Persona;
 import com.app.adoptwithlove.repository.PersonaRepository;
 
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
+import java.util.List;
+
 @Configuration
 @EnableWebSecurity
-public class securityConfig {
+public class SecurityConfig {
 
     @Bean
 public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(
-                "/tiendas", "/fundaciones", "/", "/login", "/registro",
+                "/", "/login", "/registro", "/fundaciones", "/tiendas",
                 "/css/**", "/js/**", "/img/**",
-                "/dashboardVendedor", "/dashboardFundacion",
-                "/productos/admin", "/animales/admin",
-                "/animal/editar/**", "/animal/crear",
-                "/productos/editar/**", "/productos/crear"
+                "/animales", "/postLogin", "/dashboard"
             ).permitAll()
+
+            // ✅ Permitir libre acceso a estas rutas sin rol
+            .requestMatchers("/habilitar/**", "/bloquear/**", "/reclamos/**", "/vendedores/bloqueados").permitAll()
+
             .anyRequest().authenticated()
         )
+        // ✅ CSRF activo pero ignorado solo en rutas específicas
         .csrf(csrf -> csrf
             .ignoringRequestMatchers(
-            "/productos/**",  
-            "/animal/**",
-            "/registro",
-            "/tienda",
-            "/fundaciones",
-            "/animales"
-        )
+                "/habilitar/**",
+                "/bloquear/**",
+                "/reclamos/**",
+                "/productos/crear",
+                "/productos/upload-csv"
+            )
         )
         .formLogin(form -> form
             .loginPage("/login")
             .failureUrl("/login?error=true")
-            .successHandler((request, response, authentication) -> {
-                response.sendRedirect("/postLogin");
-            })
+            .defaultSuccessUrl("/postLogin", true)
             .permitAll()
         )
-        .logout(logout -> logout.permitAll());
+        .logout(logout -> logout
+            .logoutUrl("/logout")
+            .logoutSuccessUrl("/")
+            .permitAll()
+        );
 
     return http.build();
 }
 
 
-
     @Bean
     public UserDetailsService userDetailsService(PersonaRepository personaRepository) {
         return email -> {
-            // Verificación especial para el administrador
             if (email.equalsIgnoreCase("admin@gmail.com")) {
                 return new User(
                     "admin@gmail.com",
-                    passwordEncoder().encode("123456"), // contraseña encriptada
+                    passwordEncoder().encode("123456"),
                     List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
                 );
             }
@@ -77,17 +78,18 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             Persona persona = personaRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 
-            String rolNombre = "ROLE_" + persona.getRol().getNombreRol().toUpperCase();
+            String rolNombre = persona.getRol().getNombreRol();
+            if (rolNombre == null || rolNombre.isBlank()) {
+                throw new UsernameNotFoundException("Rol no asignado");
+            }
 
             return new User(
                 persona.getEmail(),
                 persona.getContrasena(),
-                List.of(new SimpleGrantedAuthority(rolNombre))
+                List.of(new SimpleGrantedAuthority("ROLE_" + rolNombre.toUpperCase()))
             );
         };
     }
-
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {

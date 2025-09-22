@@ -3,6 +3,10 @@ package com.app.adoptwithlove.Controller;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,101 +45,101 @@ import com.app.adoptwithlove.service.AnimalService;
 @Controller
 @RequestMapping("/animal")
 public class AnimalController {
+
     @Autowired
     private AnimalService service;
 
     @Autowired
     private FundacionRepository fundacionRepository;
 
-    
     @Autowired
     private PersonaRepository personaRepository;
 
-     @Autowired
+    @Autowired
     private AnimalesRepository animalesRepository;
 
+    // 🔍 Listar todos los animales (API pública)
     @GetMapping("/api/animales")
     @ResponseBody
     public List<Animal> listarAnimales() {
         return service.getAll();
     }
 
-   @PostMapping("/upload-csv")
-public ResponseEntity<String> uploadCSV(@RequestParam("file") MultipartFile file,
-                                        @AuthenticationPrincipal UserDetails userDetails) {
-    if (file.isEmpty()) {
-        return ResponseEntity.badRequest().body("El archivo está vacío");
+    // 📥 Carga por CSV
+    @PostMapping("/upload-csv")
+    public ResponseEntity<String> uploadCSV(@RequestParam("file") MultipartFile file,
+                                            @AuthenticationPrincipal UserDetails userDetails) {
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body("El archivo está vacío");
+        }
+
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+            String line;
+            boolean firstLine = true;
+            List<Animal> nuevosAnimales = new ArrayList<>();
+            int duplicados = 0;
+
+            Persona persona = personaRepository.findByEmail(userDetails.getUsername())
+                    .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado"));
+            Fundacion fundacion = fundacionRepository.findByPersona_Id(persona.getId())
+                    .orElseThrow(() -> new RuntimeException("Fundación autenticada no encontrada"));
+
+            while ((line = br.readLine()) != null) {
+                if (firstLine) {
+                    firstLine = false;
+                    continue;
+                }
+
+                String[] data = line.split(",");
+                if (data.length < 4) {
+                    return ResponseEntity.badRequest().body("El archivo debe tener al menos 4 columnas: Nombre, Edad, Raza, Tipo");
+                }
+
+                String nombre = data[0].trim();
+                int edad = Integer.parseInt(data[1].trim());
+                String raza = data[2].trim();
+                String tipo = data[3].trim();
+                String imagen = data.length > 4 && !data[4].trim().isEmpty() ? data[4].trim() : null;
+
+                boolean existe = animalesRepository.findByFundacion(fundacion).stream()
+                    .anyMatch(a -> a.getNombre().equalsIgnoreCase(nombre)
+                                && a.getEdad() == edad
+                                && a.getRaza().equalsIgnoreCase(raza)
+                                && a.getTipo_animal().equalsIgnoreCase(tipo));
+
+                if (existe) {
+                    duplicados++;
+                    continue;
+                }
+
+                Animal nuevo = new Animal();
+                nuevo.setNombre(nombre);
+                nuevo.setEdad(edad);
+                nuevo.setRaza(raza);
+                nuevo.setTipo_animal(tipo);
+                nuevo.setImagen(imagen);
+                nuevo.setFundacion(fundacion);
+                nuevosAnimales.add(nuevo);
+            }
+
+            if (!nuevosAnimales.isEmpty()) {
+                animalesRepository.saveAll(nuevosAnimales);
+            }
+
+            String mensaje = "Se guardaron " + nuevosAnimales.size() + " animales nuevos.";
+            if (duplicados > 0) {
+                mensaje += " Se ignoraron " + duplicados + " duplicados.";
+            }
+
+            return ResponseEntity.ok(mensaje);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error al procesar el archivo: " + e.getMessage());
+        }
     }
 
-    try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
-        String line;
-        boolean firstLine = true;
-        List<Animal> nuevosAnimales = new ArrayList<>();
-        int duplicados = 0;
-
-        Persona persona = personaRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado"));
-        Fundacion fundacion = fundacionRepository.findByPersona_Id(persona.getId())
-                .orElseThrow(() -> new RuntimeException("Fundación autenticada no encontrada"));
-
-        while ((line = br.readLine()) != null) {
-            if (firstLine) {
-                firstLine = false;
-                continue;
-            }
-
-            String[] data = line.split(",");
-            if (data.length < 4) {
-                return ResponseEntity.badRequest().body("El archivo debe tener al menos 4 columnas: Nombre, Edad, Raza, Tipo");
-            }
-
-            String nombre = data[0].trim();
-            int edad = Integer.parseInt(data[1].trim());
-            String raza = data[2].trim();
-            String tipo = data[3].trim();
-            String imagen = data.length > 4 && !data[4].trim().isEmpty() ? data[4].trim() : null;
-
-            boolean existe = animalesRepository.findByFundacion(fundacion).stream()
-                .anyMatch(a -> a.getNombre().equalsIgnoreCase(nombre)
-                            && a.getEdad() == edad
-                            && a.getRaza().equalsIgnoreCase(raza)
-                            && a.getTipo_animal().equalsIgnoreCase(tipo));
-
-            if (existe) {
-                duplicados++;
-                System.out.println("Animal duplicado ignorado: " + nombre);
-                continue;
-            }
-
-            Animal nuevo = new Animal();
-            nuevo.setNombre(nombre);
-            nuevo.setEdad(edad);
-            nuevo.setRaza(raza);
-            nuevo.setTipo_animal(tipo);
-            nuevo.setImagen(imagen);
-            nuevo.setFundacion(fundacion);
-            nuevosAnimales.add(nuevo);
-        }
-
-        if (!nuevosAnimales.isEmpty()) {
-            animalesRepository.saveAll(nuevosAnimales);
-        }
-
-        String mensaje = "Se guardaron " + nuevosAnimales.size() + " animales nuevos.";
-        if (duplicados > 0) {
-            mensaje += " Se ignoraron " + duplicados + " duplicados.";
-        }
-
-        return ResponseEntity.ok(mensaje);
-
-    } catch (Exception e) {
-        e.printStackTrace();
-        return ResponseEntity.status(500).body("Error al procesar el archivo: " + e.getMessage());
-    }
-}
-
-
-
+    // 🐾 Animales de la fundación autenticada
     @GetMapping("/mis-animales")
     @ResponseBody
     public ResponseEntity<List<AnimalResponseDTO>> getAnimalesFundacionAutenticada() {
@@ -154,6 +158,7 @@ public ResponseEntity<String> uploadCSV(@RequestParam("file") MultipartFile file
         return ResponseEntity.ok(respuesta);
     }
 
+    // 🔍 Obtener animal por ID
     @GetMapping("/editar/{id}")
     @ResponseBody
     public ResponseEntity<AnimalResponseDTO> obtenerAnimalPorId(@PathVariable Long id) {
@@ -164,6 +169,7 @@ public ResponseEntity<String> uploadCSV(@RequestParam("file") MultipartFile file
         return ResponseEntity.ok(dto);
     }
 
+    // ✏️ Editar animal
     @PutMapping("/editar/{id}")
     @ResponseBody
     public ResponseEntity<?> editarAnimal(@PathVariable Long id, @RequestBody AnimalDTO dto) {
@@ -180,13 +186,14 @@ public ResponseEntity<String> uploadCSV(@RequestParam("file") MultipartFile file
         return ResponseEntity.ok("Animal actualizado correctamente");
     }
 
+    // 🧾 Vista Thymeleaf (si usas plantillas)
     @GetMapping("/animal")
     public String getAll(Model modelo){
         modelo.addAttribute("animales", service.getAll());
         return "animal";
     }
 
-    @GetMapping("animal/nuevo")
+    @GetMapping("/animal/nuevo")
     public String show(Model modelo){
         Animal animal = new Animal();
         modelo.addAttribute("animal", animal);
@@ -198,7 +205,6 @@ public ResponseEntity<String> uploadCSV(@RequestParam("file") MultipartFile file
         service.create(animal);
         return "redirect:/animal";
     }
-
 
     @PostMapping("/animal/{id}")
     public String update(@PathVariable Long id, @ModelAttribute("animal") Animal animal ){
@@ -214,60 +220,76 @@ public ResponseEntity<String> uploadCSV(@RequestParam("file") MultipartFile file
         return "redirect:/animal";
     }
 
+    // 🗑️ Eliminar animal
     @DeleteMapping("/eliminar/{id}")
-public ResponseEntity<?> eliminarAnimal(@PathVariable Long id) {
-    animalesRepository.deleteById(id);
-    return ResponseEntity.ok().build();
-}
-
-@GetMapping("/catalogo")
-public List<AnimalDTO> obtenerCatalogoFundacion(@AuthenticationPrincipal UserDetails userDetails) {
-    String email = userDetails.getUsername();
-
-    Persona fundacion = personaRepository.findByEmail(email)
-            .orElseThrow(() -> new RuntimeException("Fundación no encontrada con el email: " + email));
-
-    List<Animal> animales = service.getByFundacion(fundacion.getId());
-
-    return animales.stream()
-            .map(a -> new AnimalDTO(
-                    a.getId(),
-                    a.getNombre(),
-                    a.getEdad(),
-                    a.getRaza(),
-                    a.getTipo_animal(),
-                    a.getImagen()
-            ))
-            .collect(Collectors.toList());
-}
-
-
-    @PostMapping("/crear")
-    @ResponseBody
-    public ResponseEntity<?> crearAnimal(@RequestBody AnimalDTO dto) {
-        try {
-            String email = SecurityContextHolder.getContext().getAuthentication().getName();
-            Persona persona = personaRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + email));
-            Fundacion fundacion = fundacionRepository.findByPersona_Id(persona.getId())
-                    .orElseThrow(() -> new RuntimeException("Fundación no encontrada"));
-            Animal animal = new Animal();
-            animal.setNombre(dto.getNombre());
-            animal.setEdad(dto.getEdad());
-            animal.setRaza(dto.getRaza());
-            animal.setTipo_animal(dto.getTipo_animal());
-            animal.setImagen(dto.getImagen()); // solo si estás manejando imagen como base64 o URL
-            animal.setFundacion(fundacion);
-
-            Animal guardado = animalesRepository.save(animal);
-            return ResponseEntity.ok(guardado);
-
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+    public ResponseEntity<?> eliminarAnimal(@PathVariable Long id) {
+        animalesRepository.deleteById(id);
+        return ResponseEntity.ok().build();
     }
 
-    
+    // 📦 Catálogo de animales por fundación
+    @GetMapping("/catalogo")
+    public List<AnimalDTO> obtenerCatalogoFundacion(@AuthenticationPrincipal UserDetails userDetails) {
+        String email = userDetails.getUsername();
 
+        Persona fundacion = personaRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Fundación no encontrada con el email: " + email));
 
+        List<Animal> animales = service.getByFundacion(fundacion.getId());
+
+        return animales.stream()
+                .map(a -> new AnimalDTO(
+                        a.getId(),
+                        a.getNombre(),
+                        a.getEdad(),
+                        a.getRaza(),
+                        a.getTipo_animal(),
+                        a.getImagen()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    @PostMapping("/crear")
+@ResponseBody
+public ResponseEntity<?> crearAnimal(@RequestParam("nombre") String nombre,
+                                     @RequestParam("edad") int edad,
+                                     @RequestParam("raza") String raza,
+                                     @RequestParam("tipo_animal") String tipoAnimal,
+                                     @RequestParam("imagen") MultipartFile imagen,
+                                     @AuthenticationPrincipal UserDetails userDetails) {
+    try {
+        String email = userDetails.getUsername();
+        Persona persona = personaRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + email));
+        Fundacion fundacion = fundacionRepository.findByPersona_Id(persona.getId())
+            .orElseThrow(() -> new RuntimeException("Fundación no encontrada"));
+
+        // Nombre original del archivo
+        String nombreArchivo = imagen.getOriginalFilename();
+        Path rutaImagen = Paths.get("src/main/resources/static/img", nombreArchivo);
+
+        // Solo copiar si no existe
+        if (!Files.exists(rutaImagen)) {
+            Files.copy(imagen.getInputStream(), rutaImagen, StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        // Ruta web para mostrar en frontend
+        String rutaWeb = "/img/" + nombreArchivo;
+
+        Animal animal = new Animal();
+        animal.setNombre(nombre);
+        animal.setEdad(edad);
+        animal.setRaza(raza);
+        animal.setTipo_animal(tipoAnimal);
+        animal.setImagen(rutaWeb);
+        animal.setFundacion(fundacion);
+
+        animalesRepository.save(animal);
+        return ResponseEntity.ok("Animal registrado correctamente");
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al registrar el animal: " + e.getMessage());
+    }
+}
 }
