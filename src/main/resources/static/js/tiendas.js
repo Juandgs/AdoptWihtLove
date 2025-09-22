@@ -6,6 +6,7 @@ function asignarEventosAgregarAlCarrito() {
   document.querySelectorAll('.add-to-cart').forEach(button => {
     button.addEventListener('click', function () {
       const productCard = this.closest('.card');
+      const id = productCard.dataset.id; // <-- ID del producto (correcto ahora)
       const title = productCard.querySelector('.card-title').innerText;
       const priceText = productCard.querySelector('.text-danger').innerText;
       const price = parseInt(priceText.replace(/[^0-9]/g, ''));
@@ -13,12 +14,12 @@ function asignarEventosAgregarAlCarrito() {
       const storeName = productCard.closest('.producto').dataset.store || "Tienda Desconocida";
       const storeWhatsapp = productCard.closest('.producto').dataset.store || "573159143399";
 
-      // Verifica si ya existe el mismo producto con mismo nombre y precio
-      const item = cart.find(p => p.title === title && p.price === price);
+      // Verifica si ya existe el mismo producto con mismo id
+      const item = cart.find(p => p.id === id);
       if (item) {
         item.quantity += 1;
       } else {
-        cart.push({ title, price, quantity: 1, imgSrc, storeName, storeWhatsapp });
+        cart.push({ id, title, price, quantity: 1, imgSrc, storeName, storeWhatsapp });
       }
 
       updateCart();
@@ -56,6 +57,7 @@ function updateCart() {
         <div class="mt-2 d-flex gap-2">
           <button class="btn btn-sm btn-outline-danger" onclick="removeItem(${index})">Eliminar</button>
           <a href="${whatsappLink}" target="_blank" class="btn btn-sm btn-success">Comprar por WhatsApp</a>
+          <a href="/reclamo/${item.id}" class="btn btn-sm btn-warning">Reclamo</a>
         </div>
       </li>
     `;
@@ -97,7 +99,7 @@ document.addEventListener("DOMContentLoaded", function () {
   fetch("http://localhost:8085/productos")
     .then(response => response.json())
     .then(data => {
-      console.log("Productos obtenidos del backend:", data); // <-- LÍNEA AÑADIDA
+      console.log("Productos obtenidos del backend:", data);
 
       const container = document.getElementById("productContainer");
       container.innerHTML = "";
@@ -107,15 +109,19 @@ document.addEventListener("DOMContentLoaded", function () {
         card.className = "col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 producto";
         card.setAttribute("data-category", producto.tipoProducto.toLowerCase());
 
+        // ⚡ Asegurar que cada card tenga el ID del producto
         card.innerHTML = `
-          <div class="card h-100 shadow-sm">
+          <div class="card h-100 shadow-sm" data-id="${producto.id}">
             <img src="${producto.imagen || './img/default.jpg'}" class="card-img-top" alt="${producto.nombre}">
             <div class="card-body">
               <h5 class="card-title">${producto.nombre}</h5>
               <p class="card-text text-muted">${producto.descripcion}</p>
               <span class="badge badge-category">${producto.tipoProducto}</span>
-              <p class="mt-2 fw-bold text-danger">$${producto.precio.toLocaleString()}</p>
-              <button class="btn btn-outline-danger w-100 add-to-cart">Agregar al carrito</button>
+              <div class="d-flex justify-content-between align-items-center mt-2">
+                <p class="fw-bold text-danger mb-0">$${producto.precio.toLocaleString()}</p>
+                <a href="/reclamo/${producto.id}" class="btn btn-sm btn-warning">Reclamo</a>
+              </div>
+              <button class="btn btn-outline-danger w-100 mt-2 add-to-cart">Agregar al carrito</button>
             </div>
           </div>
         `;
