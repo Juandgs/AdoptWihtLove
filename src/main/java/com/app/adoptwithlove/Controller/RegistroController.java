@@ -14,6 +14,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
 import com.app.adoptwithlove.Dto.RegistroDTO;
 import com.app.adoptwithlove.entity.Fundacion;
 import com.app.adoptwithlove.entity.Persona;
@@ -21,6 +22,7 @@ import com.app.adoptwithlove.entity.Rol;
 import com.app.adoptwithlove.service.FundacionService;
 import com.app.adoptwithlove.service.PersonaService;
 import com.app.adoptwithlove.service.RolService;
+
 import org.springframework.ui.Model;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -34,21 +36,28 @@ public class RegistroController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-
     @Autowired
-    private FundacionService fundacionService;                                                                                                                  
+    private FundacionService fundacionService;
 
     @Autowired
     private RolService rolService;
 
     @GetMapping
     public String mostrarFormulario(Model model, HttpServletRequest request) {
-    CsrfToken token = (CsrfToken) request.getAttribute("_csrf");
-    model.addAttribute("_csrf", token);
-    return "registro";
-}
+        CsrfToken token = (CsrfToken) request.getAttribute("_csrf");
+        model.addAttribute("_csrf", token);
+        model.addAttribute("registroDTO", new RegistroDTO());
+        return "registro";
+    }
+
     @PostMapping
-    public String registrar(@ModelAttribute RegistroDTO dto) {
+    public String registrar(@ModelAttribute("registroDTO") RegistroDTO dto, Model model) {
+        // Validar si el correo ya existe
+        if (personaService.findByEmail(dto.getEmail()).isPresent()) {
+            model.addAttribute("errorCorreo", "Ya existe un usuario con ese correo.");
+            return "registro";
+        }
+
         Persona persona = new Persona();
         persona.setNombre(dto.getNombre());
         persona.setApellido(dto.getApellido());
@@ -57,28 +66,33 @@ public class RegistroController {
         String contrasenaCifrada = passwordEncoder.encode(dto.getContrasena());
         persona.setContrasena(contrasenaCifrada);
         persona.setEmail(dto.getEmail());
+
         Rol rol = rolService.findByNombreRol(dto.getNombreRol());
-        System.out.println("Registrando usuario: " + persona.getEmail());
         if (rol == null) {
-            throw new RuntimeException("Rol no encontrado: " + dto.getNombreRol());
+            model.addAttribute("errorRol", "Rol no encontrado: " + dto.getNombreRol());
+            return "registro";
         }
         persona.setRol(rol);
 
+        // Estado por defecto
+        persona.setEstado("ACTIVO");
+
         personaService.create(persona);
-try {
-    List<SimpleGrantedAuthority> authorities = List.of(
-        new SimpleGrantedAuthority("ROLE_" + dto.getNombreRol().toUpperCase())
-    );
 
-    User userDetails = new User(persona.getEmail(), persona.getContrasena(), authorities);
-    UsernamePasswordAuthenticationToken authToken =
-        new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+        try {
+            List<SimpleGrantedAuthority> authorities = List.of(
+                new SimpleGrantedAuthority("ROLE_" + dto.getNombreRol().toUpperCase())
+            );
 
-    SecurityContextHolder.getContext().setAuthentication(authToken);
-} catch (Exception e) {
-    System.out.println("Error autenticando manualmente: " + e.getMessage());
-}
+            User userDetails = new User(persona.getEmail(), persona.getContrasena(), authorities);
+            UsernamePasswordAuthenticationToken authToken =
+                new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
 
+            SecurityContextHolder.getContext().setAuthentication(authToken);
+        } catch (Exception e) {
+            model.addAttribute("errorAutenticacion", "Error autenticando: " + e.getMessage());
+            return "registro";
+        }
 
         if ("fundacion".equals(dto.getNombreRol())) {
             Fundacion fundacion = new Fundacion();
@@ -89,13 +103,8 @@ try {
             fundacion.setPersona(persona);
             fundacionService.create(fundacion);
             return "redirect:/dashboardFundacion";
-        }else{
+        } else {
             return "redirect:/dashboardVendedor";
         }
-
-        // Autenticación manual para iniciar sesión automáticamente
-
-
-
     }
 }

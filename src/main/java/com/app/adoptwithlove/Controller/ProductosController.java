@@ -1,29 +1,27 @@
 package com.app.adoptwithlove.Controller;
 
-import java.util.List;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
+import java.util.*;
 
-import com.app.adoptwithlove.Dto.ProductoDTO;
 import com.app.adoptwithlove.entity.Persona;
 import com.app.adoptwithlove.entity.Productos;
 import com.app.adoptwithlove.repository.PersonaRepository;
 import com.app.adoptwithlove.repository.ProductosRepository;
-import org.springframework.web.multipart.MultipartFile;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/productos")
-
 @CrossOrigin(origins = "*")
-
 public class ProductosController {
 
     @Autowired
@@ -37,8 +35,57 @@ public class ProductosController {
         return productoRepository.findAll();
     }
 
-    @PostMapping("/upload-csv")
 
+    @PostMapping("/crear")
+public ResponseEntity<String> createProducto(@RequestParam("nombre") String nombre,
+                                             @RequestParam("precio") Double precio,
+                                             @RequestParam("cantidad") String cantidad,
+                                             @RequestParam("tipoProducto") String tipoProducto,
+                                             @RequestParam("descripcion") String descripcion,
+                                             @RequestParam("imagen") MultipartFile imagen,
+                                             @AuthenticationPrincipal UserDetails userDetails) {
+    try {
+        Persona vendedor = personaRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("Vendedor no encontrado"));
+
+        // Nombre original del archivo
+        String nombreArchivo = imagen.getOriginalFilename();
+
+        // Ruta física en el proyecto
+        Path rutaImagen = Paths.get("src/main/resources/static/img", nombreArchivo);
+
+        // Solo copiar si no existe
+        if (!Files.exists(rutaImagen)) {
+            Files.copy(imagen.getInputStream(), rutaImagen, StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        // Ruta web para mostrar en frontend
+        String rutaWeb = "/img/" + nombreArchivo;
+
+        // Crear y guardar el producto
+        Productos producto = new Productos();
+        producto.setNombre(nombre);
+        producto.setPrecio(precio);
+        producto.setCantidad(cantidad);
+        producto.setTipoProducto(tipoProducto);
+        producto.setDescripcion(descripcion);
+        producto.setImagen(rutaWeb);
+        producto.setPersona(vendedor);
+
+        productoRepository.save(producto);
+
+        return ResponseEntity.ok("Producto guardado correctamente");
+    } catch (IOException e) {
+        e.printStackTrace();
+        return ResponseEntity.status(500).body("Error al guardar la imagen: " + e.getMessage());
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(500).body("Error al guardar el producto: " + e.getMessage());
+    }
+}
+
+
+    @PostMapping("/upload-csv")
     public ResponseEntity<String> uploadCSV(@RequestParam("file") MultipartFile file,
                                             @AuthenticationPrincipal UserDetails userDetails) {
         if (file.isEmpty()) {
@@ -79,7 +126,6 @@ public class ProductosController {
                             && p.getPersona().getId().equals(persona.getId()))
                     .findFirst();
 
-
                 if (productoExistente.isPresent()) {
                     Productos existente = productoExistente.get();
                     int cantidadActual = Integer.parseInt(existente.getCantidad());
@@ -94,11 +140,12 @@ public class ProductosController {
                     producto.setCantidad(cantidad);
                     producto.setTipoProducto(tipoProducto);
                     producto.setDescripcion(descripcion);
-                    producto.setImagen(imagen);
+                    producto.setImagen(imagen); // debe ser ruta relativa si viene en CSV
                     producto.setPersona(persona);
                     nuevosProductos.add(producto);
                 }
             }
+
             if (!nuevosProductos.isEmpty()) {
                 productoRepository.saveAll(nuevosProductos);
             }
@@ -111,37 +158,11 @@ public class ProductosController {
         }
     }
 
-
     @GetMapping("/mis-productos")
     public List<Productos> getProductosDelVendedorAutenticado(@AuthenticationPrincipal UserDetails userDetails) {
         Persona vendedor = personaRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("Vendedor no encontrado"));
         return productoRepository.findByPersona(vendedor);
-    }
-
-    @PostMapping("/crear")
-    public ResponseEntity<String> createProducto(@RequestBody ProductoDTO dto,
-                                                 @AuthenticationPrincipal UserDetails userDetails) {
-        try {
-            Persona vendedor = personaRepository.findByEmail(userDetails.getUsername())
-                    .orElseThrow(() -> new RuntimeException("Vendedor no encontrado"));
-
-            Productos producto = new Productos();
-            producto.setNombre(dto.getNombre());
-            producto.setPrecio(dto.getPrecio());
-            producto.setCantidad(dto.getCantidad());
-            producto.setTipoProducto(dto.getTipoProducto());
-            producto.setDescripcion(dto.getDescripcion());
-            producto.setImagen(dto.getImagen());
-            producto.setPersona(vendedor);
-
-            productoRepository.save(producto);
-
-            return ResponseEntity.ok("Producto guardado correctamente");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("Error al guardar el producto: " + e.getMessage());
-        }
     }
 
     @GetMapping("/{id}")
@@ -153,7 +174,7 @@ public class ProductosController {
 
     @PutMapping("/editar/{id}")
     public ResponseEntity<String> updateProducto(@PathVariable Long id,
-                                                 @RequestBody ProductoDTO dto,
+                                                 @RequestBody Productos dto,
                                                  @AuthenticationPrincipal UserDetails userDetails) {
         return productoRepository.findById(id).map(producto -> {
             producto.setNombre(dto.getNombre());

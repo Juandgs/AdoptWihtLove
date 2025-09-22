@@ -1,10 +1,10 @@
 package com.app.adoptwithlove.Controller;
 
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
 import org.springframework.ui.Model;
 
 @Controller
@@ -20,19 +20,23 @@ public class LoginController {
 
     @GetMapping("/postLogin")
     public String redireccionSegunRol() {
-    var auth = SecurityContextHolder.getContext().getAuthentication();
-    String email = auth.getName(); // obtiene el email del usuario autenticado
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getAuthorities().isEmpty()) {
+            SecurityContextHolder.clearContext();
+            return "redirect:/logout";
+        }
 
-    // Si el correo es el del admin, redirigir al dashboard general
-    if (email.equals("admin@gmail.com")) {
-        return "redirect:/dashboard";
-    } else if (auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_FUNDACION"))) {
-        return "redirect:/dashboardFundacion";
-    } else if (auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_TIENDA"))) {
-        return "redirect:/dashboardVendedor";
+        String email = auth.getName();
+
+        if (email.equals("admin@gmail.com")) {
+            return "redirect:/dashboard";
+        } else if (auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_FUNDACION"))) {
+            return "redirect:/dashboardFundacion";
+        } else if (auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_TIENDA"))) {
+            return "redirect:/dashboardVendedor";
+        }
+
+        SecurityContextHolder.clearContext();
+        return "redirect:/logout"; // rompe el ciclo si el rol no es válido
     }
-
-    return "redirect:/";
-}
-
 }
