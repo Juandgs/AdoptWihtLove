@@ -27,7 +27,7 @@ public class Productos {
     @Column(name="cantidad", nullable = false, length = 100)
     private String cantidad;
 
-    @Column(name="tipoProducto", nullable = false)
+    @Column(name="tipo_producto", nullable = false)
     private String tipoProducto;
 
     @Column(name = "descripcion", columnDefinition = "TEXT")
