@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PersonaService implements Idao<Persona, Long> {
@@ -18,6 +19,10 @@ public class PersonaService implements Idao<Persona, Long> {
     @Override
     public List<Persona> getAll() {
         return persona.findAll();
+    }
+
+    public Optional<Persona> findByEmail(String email) {
+        return persona.findByEmail(email);
     }
 
     @Override
