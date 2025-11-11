@@ -36,6 +36,10 @@ public class Productos {
     @Column(name = "imagen", columnDefinition = "TEXT")
     private String imagen;
 
+    @ManyToOne
+    @JoinColumn(name = "estado_id", referencedColumnName = "id_estado")
+    private Estado estado;
+
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnoreProperties("producto") // evita recursión infinita al serializar
     private List<Reclamos> reclamos;
