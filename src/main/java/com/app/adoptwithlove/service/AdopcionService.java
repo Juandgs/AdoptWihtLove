@@ -1,6 +1,9 @@
 package com.app.adoptwithlove.service;
+
 import com.app.adoptwithlove.entity.Adopcion;
+import com.app.adoptwithlove.entity.Estado;
 import com.app.adoptwithlove.repository.AdopcionRepository;
+import com.app.adoptwithlove.repository.EstadoRepository;
 import com.app.adoptwithlove.service.Dao.Idao;
 
 import jakarta.transaction.Transactional;
@@ -11,9 +14,14 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class AdopcionService implements Idao<Adopcion, Long>{
+public class AdopcionService implements Idao<Adopcion, Long> {
+
     @Autowired
     private AdopcionRepository Adopcion;
+
+    @Autowired
+    private EstadoRepository estadoRepository;
+
     @Override
     public List<Adopcion> getAll() {
         return Adopcion.findAll();
@@ -26,19 +34,32 @@ public class AdopcionService implements Idao<Adopcion, Long>{
 
     @Transactional
     @Override
-    public Adopcion create(Adopcion entity){
+    public Adopcion create(Adopcion entity) {
+        // Buscar estado ACTIVO
+        Estado activo = estadoRepository.findByNombreEstado("ACTIVO")
+                .orElseThrow(() -> new RuntimeException("Estado ACTIVO no encontrado"));
+
+        entity.setEstado(activo);
         return Adopcion.save(entity);
     }
 
     @Transactional
     @Override
-    public Adopcion update(Long id, Adopcion entity){
+    public Adopcion update(Long id, Adopcion entity) {
         return Adopcion.save(entity);
     }
 
     @Transactional
     @Override
-    public void delete(Long id){
-        Adopcion.deleteById(id);
+    public void delete(Long id) {
+        Adopcion adopcion = Adopcion.findById(id)
+                .orElseThrow(() -> new RuntimeException("Adopcion no encontrada con ID: " + id));
+
+        // Buscar estado BLOQUEADO
+        Estado bloqueado = estadoRepository.findByNombreEstado("BLOQUEADO")
+                .orElseThrow(() -> new RuntimeException("Estado BLOQUEADO no encontrado"));
+
+        adopcion.setEstado(bloqueado);
+        Adopcion.save(adopcion);
     }
 }

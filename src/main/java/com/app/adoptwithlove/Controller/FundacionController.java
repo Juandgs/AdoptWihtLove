@@ -19,10 +19,10 @@ import com.app.adoptwithlove.service.FundacionService;
 
 @Controller
 public class FundacionController {
-     @Autowired
+    @Autowired
     private FundacionService service;
 
-        @Autowired
+    @Autowired
     private FundacionRepository fundacionRepository;
 
     @Autowired

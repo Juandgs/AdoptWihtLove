@@ -11,6 +11,7 @@ import com.app.adoptwithlove.entity.Persona;
 import com.app.adoptwithlove.entity.Productos;
 import com.app.adoptwithlove.repository.PersonaRepository;
 import com.app.adoptwithlove.repository.ProductosRepository;
+import com.app.adoptwithlove.service.ProductoService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,9 @@ public class ProductosController {
     @Autowired
     private PersonaRepository personaRepository;
 
+    @Autowired
+    private ProductoService productoService;
+
     @GetMapping
     public List<Productos> getAllProductos() {
         return productoRepository.findAll();
@@ -37,52 +41,43 @@ public class ProductosController {
 
 
     @PostMapping("/crear")
-public ResponseEntity<String> createProducto(@RequestParam("nombre") String nombre,
-                                             @RequestParam("precio") Double precio,
-                                             @RequestParam("cantidad") String cantidad,
-                                             @RequestParam("tipoProducto") String tipoProducto,
-                                             @RequestParam("descripcion") String descripcion,
-                                             @RequestParam("imagen") MultipartFile imagen,
-                                             @AuthenticationPrincipal UserDetails userDetails) {
-    try {
-        Persona vendedor = personaRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("Vendedor no encontrado"));
+    public ResponseEntity<String> createProducto(@RequestParam("nombre") String nombre,
+                                                 @RequestParam("precio") Double precio,
+                                                 @RequestParam("cantidad") String cantidad,
+                                                 @RequestParam("tipoProducto") String tipoProducto,
+                                                 @RequestParam("descripcion") String descripcion,
+                                                 @RequestParam("imagen") MultipartFile imagen,
+                                                 @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            Persona vendedor = personaRepository.findByEmail(userDetails.getUsername())
+                    .orElseThrow(() -> new RuntimeException("Vendedor no encontrado"));
 
-        // Nombre original del archivo
-        String nombreArchivo = imagen.getOriginalFilename();
+            String nombreArchivo = imagen.getOriginalFilename();
+            Path rutaImagen = Paths.get("src/main/resources/static/img", nombreArchivo);
 
-        // Ruta física en el proyecto
-        Path rutaImagen = Paths.get("src/main/resources/static/img", nombreArchivo);
+            if (!Files.exists(rutaImagen)) {
+                Files.copy(imagen.getInputStream(), rutaImagen, StandardCopyOption.REPLACE_EXISTING);
+            }
 
-        // Solo copiar si no existe
-        if (!Files.exists(rutaImagen)) {
-            Files.copy(imagen.getInputStream(), rutaImagen, StandardCopyOption.REPLACE_EXISTING);
+            String rutaWeb = "/img/" + nombreArchivo;
+
+            Productos producto = new Productos();
+            producto.setNombre(nombre);
+            producto.setPrecio(precio);
+            producto.setCantidad(cantidad);
+            producto.setTipoProducto(tipoProducto);
+            producto.setDescripcion(descripcion);
+            producto.setImagen(rutaWeb);
+            producto.setPersona(vendedor);
+
+            // ✅ Usamos el servicio para que asigne el estado ACTIVO automáticamente
+            productoService.create(producto);
+
+            return ResponseEntity.ok("Producto guardado correctamente con estado ACTIVO");
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body("Error al guardar la imagen: " + e.getMessage());
         }
-
-        // Ruta web para mostrar en frontend
-        String rutaWeb = "/img/" + nombreArchivo;
-
-        // Crear y guardar el producto
-        Productos producto = new Productos();
-        producto.setNombre(nombre);
-        producto.setPrecio(precio);
-        producto.setCantidad(cantidad);
-        producto.setTipoProducto(tipoProducto);
-        producto.setDescripcion(descripcion);
-        producto.setImagen(rutaWeb);
-        producto.setPersona(vendedor);
-
-        productoRepository.save(producto);
-
-        return ResponseEntity.ok("Producto guardado correctamente");
-    } catch (IOException e) {
-        e.printStackTrace();
-        return ResponseEntity.status(500).body("Error al guardar la imagen: " + e.getMessage());
-    } catch (Exception e) {
-        e.printStackTrace();
-        return ResponseEntity.status(500).body("Error al guardar el producto: " + e.getMessage());
     }
-}
 
 
     @PostMapping("/upload-csv")
@@ -190,11 +185,12 @@ public ResponseEntity<String> createProducto(@RequestParam("nombre") String nomb
 
     @DeleteMapping("/eliminar/{id}")
     public ResponseEntity<String> deleteProducto(@PathVariable Long id) {
-        if (productoRepository.existsById(id)) {
-            productoRepository.deleteById(id);
-            return ResponseEntity.ok("Producto eliminado");
-        } else {
-            return ResponseEntity.status(404).body("Producto no encontrado");
+        try {
+            // ✅ Usamos el servicio, que cambiará el estado a INACTIVO
+            productoService.delete(id);
+            return ResponseEntity.ok("Producto marcado como INACTIVO");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error al eliminar: " + e.getMessage());
         }
     }
 
