@@ -30,6 +30,10 @@ public class Fundacion {
     private String telefono;
 
     @ManyToOne
+    @JoinColumn(name = "estado_id", referencedColumnName = "id_estado")
+    private Estado estado;
+
+    @ManyToOne
     @JsonBackReference
     @JoinColumn(name = "persona_id_persona")
     private Persona persona;

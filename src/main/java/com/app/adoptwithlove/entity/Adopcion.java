@@ -23,4 +23,9 @@ public class Adopcion {
     @ManyToOne
     @JoinColumn(name = "persona_id_persona")
     private Persona persona;
+
+    @ManyToOne
+    @JoinColumn(name = "estado_id", referencedColumnName = "id_estado")
+    private Estado estado;
+    
 }

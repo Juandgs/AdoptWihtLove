@@ -31,6 +31,10 @@ public class Animal {
     private String imagen;
 
     @ManyToOne
+    @JoinColumn(name = "estado_id", referencedColumnName = "id_estado")
+    private Estado estado;
+
+    @ManyToOne
     @JoinColumn(name = "fundacion_id_fundacion")
     @JsonIgnoreProperties("animales")
     private Fundacion fundacion;

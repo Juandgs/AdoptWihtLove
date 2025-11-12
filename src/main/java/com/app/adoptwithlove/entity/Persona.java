@@ -38,8 +38,9 @@ public class Persona {
     @Column(name="email", nullable = false, length = 100)
     private String email;
 
-    @Column(name = "estado", nullable = false)
-    private String estado = "Activo";
+    @ManyToOne
+    @JoinColumn(name = "estado_id", referencedColumnName = "id_estado")
+    private Estado estado;
 
     @ManyToOne
     @JoinColumn(name = "rol_id_rol")
