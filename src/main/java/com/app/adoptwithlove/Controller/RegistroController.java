@@ -16,9 +16,11 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import com.app.adoptwithlove.Dto.RegistroDTO;
+import com.app.adoptwithlove.entity.Estado;
 import com.app.adoptwithlove.entity.Fundacion;
 import com.app.adoptwithlove.entity.Persona;
 import com.app.adoptwithlove.entity.Rol;
+import com.app.adoptwithlove.repository.EstadoRepository;
 import com.app.adoptwithlove.service.FundacionService;
 import com.app.adoptwithlove.service.PersonaService;
 import com.app.adoptwithlove.service.RolService;
@@ -41,6 +43,9 @@ public class RegistroController {
 
     @Autowired
     private RolService rolService;
+
+    @Autowired
+    private EstadoRepository estadoRepository;
 
     @GetMapping
     public String mostrarFormulario(Model model, HttpServletRequest request) {
@@ -74,19 +79,20 @@ public class RegistroController {
         }
         persona.setRol(rol);
 
-        // Estado por defecto
-        persona.setEstado("ACTIVO");
+        // ✅ Estado por defecto "ACTIVO"
+        Estado estadoActivo = estadoRepository.findByNombreEstado("ACTIVO")
+                .orElseThrow(() -> new RuntimeException("El estado 'ACTIVO' no existe. Ejecuta el seeder primero."));
+        persona.setEstado(estadoActivo);
 
         personaService.create(persona);
 
         try {
             List<SimpleGrantedAuthority> authorities = List.of(
-                new SimpleGrantedAuthority("ROLE_" + dto.getNombreRol().toUpperCase())
-            );
+                    new SimpleGrantedAuthority("ROLE_" + dto.getNombreRol().toUpperCase()));
 
             User userDetails = new User(persona.getEmail(), persona.getContrasena(), authorities);
-            UsernamePasswordAuthenticationToken authToken =
-                new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null,
+                    authorities);
 
             SecurityContextHolder.getContext().setAuthentication(authToken);
         } catch (Exception e) {

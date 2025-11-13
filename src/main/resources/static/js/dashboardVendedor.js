@@ -92,6 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
       mostrarMensaje("Error al conectar con el servidor", "danger");
     }
   });
+
 });
 
 // Funciones auxiliares
@@ -114,15 +115,17 @@ function mostrarMensaje(texto, tipo) {
   `;
 }
 
-function cargarProductos() {
-  fetch("/productos/mis-productos", {
+// Cargar productos del vendedor
+function cargarProductos(estados = ["ACTIVO"]) {
+  fetch(`/productos/mis-productos-filtrados?${estados.map(e => 'estados=' + e).join('&')}`, {
     method: "GET",
     credentials: "include"
   })
-  .then(res => res.json())
-  .then(productos => renderProductos(productos));
+    .then(res => res.json())
+    .then(productos => renderProductos(productos));
 }
 
+// Renderizar tabla de productos
 function renderProductos(productos) {
   const tbody = document.getElementById("tablaProductos");
   tbody.innerHTML = "";
@@ -136,6 +139,7 @@ function renderProductos(productos) {
       <td>${p.tipoProducto}</td>
       <td>${p.descripcion}</td>
       <td>${p.imagen ? `<img src="${p.imagen}" style="max-width: 100px;" />` : ""}</td>
+      <td>${p.estado?.nombreEstado || ''}</td>
       <td>
         <button class="btn btn-sm btn-primary" onclick="editarProducto(${p.id})">Editar</button>
         <button class="btn btn-sm btn-danger" onclick="eliminarProducto(${p.id})">Eliminar</button>
@@ -145,12 +149,13 @@ function renderProductos(productos) {
   });
 }
 
+// Renderizar catálogo público
 function cargarCatalogo() {
   fetch("/productos", {
     method: "GET"
   })
-  .then(res => res.json())
-  .then(productos => renderCatalogo(productos));
+    .then(res => res.json())
+    .then(productos => renderCatalogo(productos));
 }
 
 function renderCatalogo(productos) {
@@ -177,84 +182,86 @@ function renderCatalogo(productos) {
   });
 }
 
+// Eliminar producto (cambia estado a INACTIVO)
 function eliminarProducto(id) {
   if (confirm('¿Estás seguro de eliminar este producto?')) {
     fetch(`/productos/eliminar/${id}`, {
       method: 'DELETE',
       credentials: 'include'
     })
-    .then(res => {
-      if (res.ok) {
-        mostrarMensaje("Producto eliminado", "success");
-        cargarProductos();
-      } else {
-        mostrarMensaje("Error al eliminar el producto", "danger");
-      }
-    });
+      .then(async res => {
+        const texto = await res.text(); // primero obtén el texto
+        if (res.ok) {
+          mostrarMensaje(texto, "success");
+          cargarProductos();
+        } else {
+          mostrarMensaje(texto, "danger");
+        }
+      })
+      .catch(err => {
+        console.error("Error al eliminar producto:", err);
+        mostrarMensaje("Error al conectar con el servidor", "danger");
+      });
   }
 }
 
+// Editar producto
 function editarProducto(id) {
-  fetch(`/productos/${id}`, {
-    method: 'GET',
-    credentials: 'include'
+  fetch(`/productos/${id}`, { method: 'GET', credentials: 'include' })
+  .then(async res => {
+    if (!res.ok) {
+      const texto = await res.text(); // obtenemos el mensaje de error
+      mostrarMensaje(`Error al obtener producto: ${texto}`, 'danger');
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    return res.json(); // solo parsea JSON si res.ok
   })
-  .then(res => res.json())
-  .then(producto => {
-    document.getElementById('nombre').value = producto.nombre;
-    document.getElementById('precio').value = producto.precio;
-    document.getElementById('cantidad').value = producto.cantidad;
-    document.getElementById('descripcion').value = producto.descripcion;
-    document.getElementById('tipoProducto').value = producto.tipoProducto;
-    document.getElementById('previewImagen').src = producto.imagen;
-    document.getElementById('previewImagen').style.display = 'block';
-    document.getElementById('imagen').required = false;
+    .then(producto => {
+      document.getElementById('nombre').value = producto.nombre;
+      document.getElementById('precio').value = producto.precio;
+      document.getElementById('cantidad').value = producto.cantidad;
+      document.getElementById('descripcion').value = producto.descripcion;
+      document.getElementById('tipoProducto').value = producto.tipoProducto;
+      document.getElementById('previewImagen').src = producto.imagen;
+      document.getElementById('previewImagen').style.display = 'block';
+      document.getElementById('imagen').required = false;
 
-    mostrarSeccion('nuevoProducto');
+      mostrarSeccion('nuevoProducto');
 
-    const form = document.getElementById('formCrearProducto');
-    form.onsubmit = async function (e) {
-      e.preventDefault();
+      const form = document.getElementById('formCrearProducto');
+      form.onsubmit = async function (e) {
+        e.preventDefault();
 
-      const formData = new FormData();
-      formData.append("nombre", document.getElementById('nombre').value.trim());
-      formData.append("precio", document.getElementById('precio').value);
-      formData.append("cantidad", document.getElementById('cantidad').value.trim());
-      formData.append("descripcion", document.getElementById('descripcion').value.trim());
-      formData.append("tipoProducto", document.getElementById('tipoProducto').value);
+        try {
+          const res = await fetch(`/productos/editar/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              nombre: document.getElementById('nombre').value.trim(),
+              precio: parseFloat(document.getElementById('precio').value),
+              cantidad: document.getElementById('cantidad').value.trim(),
+              descripcion: document.getElementById('descripcion').value.trim(),
+              tipoProducto: document.getElementById('tipoProducto').value,
+              imagen: producto.imagen // ruta actual
+            }),
+            credentials: 'include'
+          });
 
-      const file = imagenInput.files[0];
-      if (file) {
-        formData.append("imagen", file);
-      }
-
-      try {
-        const res = await fetch(`/productos/editar/${id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            nombre: formData.get("nombre"),
-            precio: parseFloat(formData.get("precio")),
-            cantidad: formData.get("cantidad"),
-            descripcion: formData.get("descripcion"),
-            tipoProducto: formData.get("tipoProducto"),
-            imagen: producto.imagen
-          }),
-          credentials: 'include'
-        });
-
-        const mensaje = await res.text();
-        if (res.ok) {
-          mostrarMensaje(mensaje, "success");
-          cargarProductos();
-          mostrarSeccion("productos");
-        } else {
-          mostrarMensaje(mensaje, "danger");
+          const mensaje = await res.text();
+          if (res.ok) {
+            mostrarMensaje(mensaje, "success");
+            form.reset();
+            document.getElementById('previewImagen').style.display = 'none';
+            cargarProductos();
+            mostrarSeccion("productos");
+          } else {
+            mostrarMensaje(mensaje, "danger");
+          }
+        } catch (err) {
+          console.error("Error al actualizar producto:", err);
+          mostrarMensaje("Error al conectar con el servidor", "danger");
         }
-      } catch (err) {
-        console.error("Error al actualizar producto:", err);
-        mostrarMensaje("Error al conectar con el servidor", "danger");
-      }
-    };
-  });
+      };
+    })
+    .catch(err => console.error("Error al editar producto:", err));
 }

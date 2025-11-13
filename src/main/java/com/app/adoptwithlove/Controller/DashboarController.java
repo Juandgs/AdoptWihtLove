@@ -23,25 +23,23 @@ public class DashboarController {
 
     // ✅ Solo productos de vendedores con estado ACTIVO
     @GetMapping("/productos/admin")
-    @ResponseBody
-    public List<Productos> obtenerProductosDeVendedoresActivos() {
-        List<Productos> productos = productoRepository.findAll();
+@ResponseBody
+public List<Productos> obtenerProductosDeVendedoresActivos() {
+    List<Productos> productos = productoRepository.findAll();
 
-        return productos.stream()
-            .filter(p -> {
-                if (p.getPersona() == null) return false;
+    return productos.stream()
+        .filter(p -> {
+            if (p.getPersona() == null) return false;
+            if (p.getPersona().getEstado() == null) return false;
 
-                String estado = p.getPersona().getEstado();
-                if (estado == null) return false;
+            String estadoNombre = p.getPersona().getEstado().getNombreEstado();
+            if (estadoNombre == null) return false;
 
-                // 🔍 Normaliza y depura el estado
-                estado = estado.trim().toUpperCase();
-
-                // 🧠 Solo incluir si está marcado como ACTIVO
-                return estado.equals("ACTIVO");
-            })
-            .toList();
-    }
+            estadoNombre = estadoNombre.trim().toUpperCase();
+            return estadoNombre.equals("ACTIVO");
+        })
+        .toList();
+}
 
 
     @GetMapping("/animales/admin")

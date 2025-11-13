@@ -36,7 +36,7 @@ public class ProductoService implements Idao<Productos, Long> {
     public Productos create(Productos entity) {
         // ✅ Asignar automáticamente el estado ACTIVO al crear
         Estado activo = estadoRepository.findByNombreEstado("ACTIVO")
-        .orElseThrow(() -> new RuntimeException("El estado 'ACTIVO' no existe. Ejecuta el seeder primero."));
+                .orElseThrow(() -> new RuntimeException("El estado 'ACTIVO' no existe. Ejecuta el seeder primero."));
         entity.setEstado(activo);
         return productoRepository.save(entity);
     }
@@ -50,14 +50,21 @@ public class ProductoService implements Idao<Productos, Long> {
     @Transactional
     @Override
     public void delete(Long id) {
-        // 🚫 En vez de borrar, marcamos el estado como INACTIVO
-        Productos producto = productoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+    Productos producto = productoRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+    // Cambiar estado a INACTIVO
+    Estado estadoInactivo = estadoRepository.findByNombreEstado("INACTIVO")
+        .orElseThrow(() -> new RuntimeException("Estado INACTIVO no existe"));
+    producto.setEstado(estadoInactivo);
+    productoRepository.save(producto);
+}
 
-        Estado inactivo = estadoRepository.findByNombreEstado("INACTIVO")
-        .orElseThrow(() -> new RuntimeException("El estado 'INACTIVO' no existe. Ejecuta el seeder primero."));
-
-        producto.setEstado(inactivo);
-        productoRepository.save(producto);
+    public List<Productos> filtrarPorEstado(List<String> estados) {
+        return productoRepository.findByEstado_NombreEstadoIn(estados);
     }
+
+    public List<Productos> filtrarPorVendedorYEstado(Long personaId, List<String> estados) {
+        return productoRepository.findByPersona_IdAndEstado_NombreEstadoIn(personaId, estados);
+    }
+
 }

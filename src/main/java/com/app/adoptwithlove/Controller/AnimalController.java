@@ -160,6 +160,33 @@ public class AnimalController {
         return ResponseEntity.ok(respuesta);
     }
 
+    @GetMapping("/mis-animales-estado")
+    @ResponseBody
+    public ResponseEntity<List<AnimalResponseDTO>> getAnimalesFundacionPorEstado(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(required = false) List<String> estados) {
+
+        String email = userDetails.getUsername();
+        Persona persona = personaRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        Fundacion fundacion = fundacionRepository.findByPersona_Id(persona.getId())
+                .orElseThrow(() -> new RuntimeException("Fundación no encontrada"));
+
+        // Por defecto, si no envías estados, se toman todos: ACTIVO, INACTIVO,
+        // BLOQUEADO
+        if (estados == null || estados.isEmpty()) {
+            estados = List.of("ACTIVO", "INACTIVO", "BLOQUEADO");
+        }
+
+        List<Animal> animales = service.getByFundacionYEstados(fundacion.getId(), estados);
+
+        List<AnimalResponseDTO> respuesta = animales.stream()
+                .map(AnimalResponseDTO::new)
+                .toList();
+
+        return ResponseEntity.ok(respuesta);
+    }
+
     // 🔍 Obtener animal por ID
     @GetMapping("/editar/{id}")
     @ResponseBody

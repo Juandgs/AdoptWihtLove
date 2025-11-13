@@ -34,9 +34,6 @@ public class FundacionController {
         return service.getAll();
     }
 
-
-
-
     @GetMapping("/api/fundaciones/{id}/animales")
     @ResponseBody
     public List<Animal> obtenerAnimalesPorFundacion(@PathVariable Long id) {
@@ -46,11 +43,10 @@ public class FundacionController {
     }
 
     @GetMapping("/fundacion/{id}/animales")
-public String verAnimalesPorFundacion(@PathVariable Long id, Model model) {
-    model.addAttribute("fundacionId", id);
-    return "animalesFundacion"; // sin .html
-}
-
+    public String verAnimalesPorFundacion(@PathVariable Long id, Model model) {
+        model.addAttribute("fundacionId", id);
+        return "animalesFundacion"; // sin .html
+    }
 
     @GetMapping("/fundaciones")
     public String mostrarFundaciones() {
@@ -63,33 +59,33 @@ public String verAnimalesPorFundacion(@PathVariable Long id, Model model) {
     }
 
     @GetMapping("/fundacion")
-    public String getAll(Model modelo){
+    public String getAll(Model modelo) {
         modelo.addAttribute("fundaciones", service.getAll());
         return "fundacion";
     }
 
     @GetMapping("fundacion/nuevo")
-    public String show(Model modelo){
+    public String show(Model modelo) {
         Fundacion fundacion = new Fundacion();
         modelo.addAttribute("fundacion", fundacion);
         return "fundacionCreate";
     }
 
     @PostMapping("/fundacion")
-    public String create(@ModelAttribute("fundacion") Fundacion fundacion, Model model){
+    public String create(@ModelAttribute("fundacion") Fundacion fundacion, Model model) {
         service.create(fundacion);
         return "redirect:/fundacion";
     }
 
     @GetMapping("/fundacion/edit/{id}")
-    public String getById(@PathVariable Long id, Model modelo){
+    public String getById(@PathVariable Long id, Model modelo) {
         Fundacion fundacion = service.getById(id);
-        modelo.addAttribute("fundacion", fundacion );
+        modelo.addAttribute("fundacion", fundacion);
         return "fundacionUpdate";
     }
 
     @PostMapping("/fundacion/{id}")
-    public String update(@PathVariable Long id, @ModelAttribute("fundacion") Fundacion fundacion ){
+    public String update(@PathVariable Long id, @ModelAttribute("fundacion") Fundacion fundacion) {
         Fundacion fundacionExistente = service.getById(id);
         fundacionExistente.setId(id);
         fundacionExistente.setNombre_fundacion(fundacion.getNombre_fundacion());
@@ -97,12 +93,12 @@ public String verAnimalesPorFundacion(@PathVariable Long id, Model model) {
         fundacionExistente.setCorreo(fundacion.getCorreo());
         fundacionExistente.setTelefono(fundacion.getTelefono());
         fundacionExistente.setAnimales(fundacion.getAnimales());
-        service.update(id,fundacionExistente);
+        service.update(id, fundacionExistente);
         return "redirect:/fundacion";
     }
 
     @GetMapping("/fundacion/{id}")
-    public String delete(@PathVariable Long id){
+    public String delete(@PathVariable Long id) {
         service.delete(id);
         return "redirect:/fundacion";
     }

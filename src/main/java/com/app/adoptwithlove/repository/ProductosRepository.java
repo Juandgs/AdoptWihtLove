@@ -14,4 +14,9 @@ public interface ProductosRepository extends JpaRepository<Productos, Long> {
     List<Productos> findByPersona(Persona persona);
     List<Productos> findByPersonaEmail(String email);
     List<Productos> findByPersona_Id(Long personaId);
+    // Filtrar por estado usando el nombre del estado
+    List<Productos> findByEstado_NombreEstadoIn(List<String> nombresEstado);
+
+    // Filtrar por vendedor y estado
+    List<Productos> findByPersona_IdAndEstado_NombreEstadoIn(Long personaId, List<String> nombresEstado);
 }

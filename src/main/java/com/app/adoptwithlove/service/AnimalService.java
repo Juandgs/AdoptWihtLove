@@ -41,12 +41,12 @@ public class AnimalService implements Idao<Animal, Long> {
     @Override
     public Animal create(Animal entity) {
         // Asignar estado ACTIVO automáticamente
-       Estado activo = estadoRepository.findByNombreEstado("ACTIVO")
-        .orElseThrow(() -> new RuntimeException("El estado 'ACTIVO' no existe. Ejecuta el seeder primero."));
+        Estado activo = estadoRepository.findByNombreEstado("ACTIVO")
+                .orElseThrow(() -> new RuntimeException("El estado 'ACTIVO' no existe. Ejecuta el seeder primero."));
         entity.setEstado(activo);
         return animalesRepository.save(entity);
     }
- 
+
     @Transactional
     @Override
     public Animal update(Long id, Animal entity) {
@@ -61,9 +61,20 @@ public class AnimalService implements Idao<Animal, Long> {
                 .orElseThrow(() -> new RuntimeException("Animal no encontrado"));
 
         Estado inactivo = estadoRepository.findByNombreEstado("INACTIVO")
-        .orElseThrow(() -> new RuntimeException("El estado 'INACTIVO' no existe. Ejecuta el seeder primero."));
+                .orElseThrow(() -> new RuntimeException("El estado 'INACTIVO' no existe. Ejecuta el seeder primero."));
 
         animal.setEstado(inactivo);
         animalesRepository.save(animal);
+    }
+
+    public List<Animal> getByFundacionYEstados(Long fundacionId, List<String> nombresEstados) {
+        Fundacion fundacion = new Fundacion();
+        fundacion.setId(fundacionId);
+
+        List<Estado> estados = estadoRepository.findAll().stream()
+                .filter(e -> nombresEstados.contains(e.getNombreEstado()))
+                .toList();
+
+        return animalesRepository.findByFundacionAndEstadoIn(fundacion, estados);
     }
 }

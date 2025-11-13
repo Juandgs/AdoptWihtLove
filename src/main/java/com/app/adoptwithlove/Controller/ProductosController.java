@@ -160,6 +160,28 @@ public class ProductosController {
         return productoRepository.findByPersona(vendedor);
     }
 
+    @GetMapping("/filtrar-estado")
+public List<Productos> filtrarProductosPorEstado(@RequestParam List<String> estados) {
+    // Si no se envían estados, filtramos por ACTIVO, INACTIVO y BLOQUEADO por defecto
+    if (estados == null || estados.isEmpty()) {
+        estados = List.of("ACTIVO", "INACTIVO", "BLOQUEADO");
+    }
+    return productoService.filtrarPorEstado(estados);
+}
+
+    @GetMapping("/mis-productos-filtrados")
+public List<Productos> misProductosFiltrados(@AuthenticationPrincipal UserDetails userDetails,
+                                             @RequestParam(required = false) List<String> estados) {
+    Persona vendedor = personaRepository.findByEmail(userDetails.getUsername())
+            .orElseThrow(() -> new RuntimeException("Vendedor no encontrado"));
+
+    if (estados == null || estados.isEmpty()) {
+        estados = List.of("ACTIVO", "INACTIVO", "BLOQUEADO");
+    }
+
+    return productoService.filtrarPorVendedorYEstado(vendedor.getId(), estados);
+}
+
     @GetMapping("/{id}")
     public ResponseEntity<Productos> getProducto(@PathVariable Long id) {
         return productoRepository.findById(id)
