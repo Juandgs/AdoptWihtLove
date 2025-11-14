@@ -35,9 +35,9 @@ public class ProductosController {
     private ProductoService productoService;
 
     @GetMapping
-    public List<Productos> getAllProductos() {
-        return productoRepository.findAll();
-    }
+public List<Productos> getAllProductosActivos() {
+    return productoService.filtrarPorEstado(List.of("ACTIVO"));
+}
 
 
     @PostMapping("/crear")
@@ -169,17 +169,20 @@ public List<Productos> filtrarProductosPorEstado(@RequestParam List<String> esta
     return productoService.filtrarPorEstado(estados);
 }
 
-    @GetMapping("/mis-productos-filtrados")
-public List<Productos> misProductosFiltrados(@AuthenticationPrincipal UserDetails userDetails,
-                                             @RequestParam(required = false) List<String> estados) {
+    @GetMapping("/filtrados")
+public List<Productos> misProductosFiltrados(
+        @AuthenticationPrincipal UserDetails userDetails,
+        @RequestParam(required = false) String[] estados) {
+
     Persona vendedor = personaRepository.findByEmail(userDetails.getUsername())
             .orElseThrow(() -> new RuntimeException("Vendedor no encontrado"));
 
-    if (estados == null || estados.isEmpty()) {
-        estados = List.of("ACTIVO", "INACTIVO", "BLOQUEADO");
-    }
+    // Si no vienen estados → por defecto ACTIVO
+    List<String> listaEstados = (estados == null || estados.length == 0)
+            ? List.of("ACTIVO")
+            : Arrays.asList(estados);
 
-    return productoService.filtrarPorVendedorYEstado(vendedor.getId(), estados);
+    return productoService.filtrarPorVendedorYEstado(vendedor.getId(), listaEstados);
 }
 
     @GetMapping("/{id}")
@@ -190,20 +193,40 @@ public List<Productos> misProductosFiltrados(@AuthenticationPrincipal UserDetail
     }
 
     @PutMapping("/editar/{id}")
-    public ResponseEntity<String> updateProducto(@PathVariable Long id,
-                                                 @RequestBody Productos dto,
-                                                 @AuthenticationPrincipal UserDetails userDetails) {
-        return productoRepository.findById(id).map(producto -> {
-            producto.setNombre(dto.getNombre());
-            producto.setPrecio(dto.getPrecio());
-            producto.setCantidad(dto.getCantidad());
-            producto.setTipoProducto(dto.getTipoProducto());
-            producto.setDescripcion(dto.getDescripcion());
-            producto.setImagen(dto.getImagen());
-            productoRepository.save(producto);
-            return ResponseEntity.ok("Producto actualizado");
-        }).orElse(ResponseEntity.status(404).body("Producto no encontrado"));
-    }
+public ResponseEntity<String> updateProducto(
+        @PathVariable Long id,
+        @RequestParam("nombre") String nombre,
+        @RequestParam("precio") Double precio,
+        @RequestParam("cantidad") String cantidad,
+        @RequestParam("tipoProducto") String tipoProducto,
+        @RequestParam("descripcion") String descripcion,
+        @RequestParam(value = "imagen", required = false) MultipartFile imagen) {
+
+    return productoRepository.findById(id).map(producto -> {
+
+        producto.setNombre(nombre);
+        producto.setPrecio(precio);
+        producto.setCantidad(cantidad);
+        producto.setTipoProducto(tipoProducto);
+        producto.setDescripcion(descripcion);
+
+        if (imagen != null && !imagen.isEmpty()) {
+            try {
+                String nombreArchivo = imagen.getOriginalFilename();
+                Path rutaImagen = Paths.get("src/main/resources/static/img", nombreArchivo);
+                Files.copy(imagen.getInputStream(), rutaImagen, StandardCopyOption.REPLACE_EXISTING);
+                producto.setImagen("/img/" + nombreArchivo);
+            } catch (Exception e) {
+                return ResponseEntity.status(500).body("Error al guardar la imagen: " + e.getMessage());
+            }
+        }
+
+        productoRepository.save(producto);
+        return ResponseEntity.ok("Producto actualizado correctamente");
+
+    }).orElse(ResponseEntity.status(404).body("Producto no encontrado"));
+}
+
 
     @DeleteMapping("/eliminar/{id}")
     public ResponseEntity<String> deleteProducto(@PathVariable Long id) {
