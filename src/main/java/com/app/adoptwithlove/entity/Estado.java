@@ -2,6 +2,7 @@ package com.app.adoptwithlove.entity;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.*;
@@ -28,16 +29,15 @@ public class Estado {
     @JsonManagedReference // productos que apuntan a este estado
     private List<Productos> productos;
 
-    // Lo mismo si quieres para fundaciones, animales, adopciones
     @OneToMany(mappedBy = "estado")
-    @JsonManagedReference
+    @JsonIgnoreProperties({"estado"})
     private List<Fundacion> fundaciones;
 
     @OneToMany(mappedBy = "estado")
-    @JsonManagedReference
+    @JsonIgnoreProperties({"estado"})
     private List<Animal> animales;
 
     @OneToMany(mappedBy = "estado")
-    @JsonManagedReference
+    @JsonIgnoreProperties({"estado"})
     private List<Adopcion> adopciones;
 }

@@ -1,6 +1,8 @@
 package com.app.adoptwithlove.entity;
 
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -30,15 +32,17 @@ public class Animal {
     @Column(name = "imagen", columnDefinition = "TEXT") // base64 puede ser largo
     private String imagen;
 
-    @ManyToOne
+     @ManyToOne
     @JoinColumn(name = "estado_id", referencedColumnName = "id_estado")
+    @JsonIgnoreProperties({"personas", "fundaciones", "animales", "adopciones"})
     private Estado estado;
 
     @ManyToOne
     @JoinColumn(name = "fundacion_id_fundacion")
-    @JsonIgnoreProperties("animales")
+    @JsonIgnoreProperties({"animales", "persona", "estado"})
     private Fundacion fundacion;
 
     @OneToMany(mappedBy = "animal")
+    @JsonIgnoreProperties("animal")
     private List<Adopcion> adopciones;
 }

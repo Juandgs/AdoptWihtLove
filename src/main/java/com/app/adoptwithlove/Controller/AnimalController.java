@@ -298,12 +298,11 @@ public class AnimalController {
             Fundacion fundacion = fundacionRepository.findByPersona_Id(persona.getId())
                     .orElseThrow(() -> new RuntimeException("Fundación no encontrada"));
 
-            String nombreArchivo = imagen.getOriginalFilename();
-            Path rutaImagen = Paths.get("src/main/resources/static/img", nombreArchivo);
-            if (!Files.exists(rutaImagen)) {
-                Files.copy(imagen.getInputStream(), rutaImagen, StandardCopyOption.REPLACE_EXISTING);
-            }
-            String rutaWeb = "/img/" + nombreArchivo;
+            String nombreArchivo = System.currentTimeMillis() + "_" + imagen.getOriginalFilename();
+Path rutaImagen = Paths.get("src/main/resources/static/img", nombreArchivo);
+Files.copy(imagen.getInputStream(), rutaImagen, StandardCopyOption.REPLACE_EXISTING);
+String rutaWeb = "/img/" + nombreArchivo;
+
 
             Animal animal = new Animal();
             animal.setNombre(nombre);

@@ -45,6 +45,7 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 "/bloquear/**",
                 "/reclamos/**",
                 "/animal/**",
+                "/api/**",
                 "/productos/**",
                 "/productos/upload-csv"
             )

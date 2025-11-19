@@ -13,4 +13,5 @@ import org.springframework.stereotype.Repository;
 public interface AnimalesRepository extends JpaRepository<Animal, Long> {
     List<Animal> findByFundacion(Fundacion fundacion);
     List<Animal> findByFundacionAndEstadoIn(Fundacion fundacion, List<Estado> estados);
+    List<Animal> findByFundacionAndEstadoNombreEstado(Fundacion fundacion, String nombreEstado);
 }

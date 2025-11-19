@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -31,15 +32,17 @@ public class Fundacion {
 
     @ManyToOne
     @JoinColumn(name = "estado_id", referencedColumnName = "id_estado")
+    @JsonIgnoreProperties({"personas", "fundaciones", "animales", "adopciones"})
     private Estado estado;
 
     @ManyToOne
-    @JsonBackReference
     @JoinColumn(name = "persona_id_persona")
+    @JsonIgnoreProperties({"fundaciones", "estado", "rol"})
     private Persona persona;
 
     @OneToMany(mappedBy = "fundacion", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnoreProperties("fundacion")
     private List<Animal> animales;
+
 
 }
