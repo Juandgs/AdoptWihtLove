@@ -33,7 +33,7 @@ public class PersonaService implements Idao<Persona, Long> {
     @Transactional
     @Override
     public Persona create(Persona entity) {
-            System.out.println(">>> Persona guardada: " + entity.getEmail());
+        System.out.println(">>> Persona guardada: " + entity.getEmail());
         return persona.save(entity);
     }
 
@@ -48,4 +48,10 @@ public class PersonaService implements Idao<Persona, Long> {
     public void delete(Long id) {
         persona.deleteById(id);
     }
+
+    public List<Persona> getByEstadosActivos() {
+        List<String> estadosPermitidos = List.of("ACTIVO", "INACTIVO", "BLOQUEADO");
+        return persona.findByEstado_NombreEstadoIn(estadosPermitidos);
+    }
+
 }

@@ -10,24 +10,24 @@ import lombok.Data;
 import java.util.List;
 
 @Entity
-@Table(name ="productos")
+@Table(name = "productos")
 @Data
 public class Productos {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_producto", nullable = false)
-    private  Long id;
+    private Long id;
 
     @Column(name = "nombre", nullable = false)
     private String nombre;
 
-    @Column(name="precio", nullable = false)
-    private Double  precio;
+    @Column(name = "precio", nullable = false)
+    private Double precio;
 
-    @Column(name="cantidad", nullable = false, length = 100)
+    @Column(name = "cantidad", nullable = false, length = 100)
     private String cantidad;
 
-    @Column(name="tipoProducto", nullable = false)
+    @Column(name = "tipo_producto", nullable = false)
     private String tipoProducto;
 
     @Column(name = "descripcion", columnDefinition = "TEXT")
@@ -36,13 +36,18 @@ public class Productos {
     @Column(name = "imagen", columnDefinition = "TEXT")
     private String imagen;
 
+    @ManyToOne
+    @JoinColumn(name = "estado_id", referencedColumnName = "id_estado")
+    @JsonBackReference // rompe ciclo con Estado
+    private Estado estado;
+
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnoreProperties("producto") // evita recursión infinita al serializar
     private List<Reclamos> reclamos;
 
     @ManyToOne
     @JoinColumn(name = "persona_id")
-    @JsonIgnoreProperties({"productos", "fundaciones", "adopciones", "rol"}) // evita recursión
+    @JsonIgnoreProperties({ "productos", "fundaciones", "adopciones", "rol" }) // evita recursión
     private Persona persona;
 
 }

@@ -20,9 +20,5 @@ public class VendedorController {
         model.addAttribute("productos", productosRepository.findAll());
         return "tiendas"; // Renderiza tiendas.html
     }
-
-   
-
-
     
 }

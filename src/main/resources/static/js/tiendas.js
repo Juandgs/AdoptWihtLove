@@ -57,7 +57,7 @@ function updateCart() {
         <div class="mt-2 d-flex gap-2">
           <button class="btn btn-sm btn-outline-danger" onclick="removeItem(${index})">Eliminar</button>
           <a href="${whatsappLink}" target="_blank" class="btn btn-sm btn-success">Comprar por WhatsApp</a>
-          <a href="/reclamo/${item.id}" class="btn btn-sm btn-warning">Reclamo</a>
+          <a href="/reclamos/reclamo/${item.id}" class="btn btn-sm btn-warning">Reclamo</a>
         </div>
       </li>
     `;
@@ -119,7 +119,7 @@ document.addEventListener("DOMContentLoaded", function () {
               <span class="badge badge-category">${producto.tipoProducto}</span>
               <div class="d-flex justify-content-between align-items-center mt-2">
                 <p class="fw-bold text-danger mb-0">$${producto.precio.toLocaleString()}</p>
-                <a href="/reclamo/${producto.id}" class="btn btn-sm btn-warning">Reclamo</a>
+                <a href="/reclamos/reclamo/${producto.id}" class="btn btn-sm btn-warning">Reclamo</a>
               </div>
               <button class="btn btn-outline-danger w-100 mt-2 add-to-cart">Agregar al carrito</button>
             </div>

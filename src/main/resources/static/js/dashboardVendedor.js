@@ -92,6 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
       mostrarMensaje("Error al conectar con el servidor", "danger");
     }
   });
+
 });
 
 // Funciones auxiliares
@@ -114,15 +115,18 @@ function mostrarMensaje(texto, tipo) {
   `;
 }
 
-function cargarProductos() {
-  fetch("/productos/mis-productos", {
+// Cargar productos del vendedor
+function cargarProductos(estados = ["ACTIVO"]) {
+  fetch(`/productos/filtrados?${estados.map(e => 'estados=' + e).join('&')}`, {
     method: "GET",
     credentials: "include"
   })
-  .then(res => res.json())
-  .then(productos => renderProductos(productos));
+    .then(res => res.json())
+    .then(productos => renderProductos(productos))
+    .catch(err => console.error("Error cargando productos:", err));
 }
 
+// Renderizar tabla de productos
 function renderProductos(productos) {
   const tbody = document.getElementById("tablaProductos");
   tbody.innerHTML = "";
@@ -145,12 +149,15 @@ function renderProductos(productos) {
   });
 }
 
+// Renderizar catálogo público
 function cargarCatalogo() {
-  fetch("/productos", {
-    method: "GET"
+  fetch("/productos/filtrados?estados=ACTIVO", {
+    method: "GET",
+    credentials: "include"
   })
-  .then(res => res.json())
-  .then(productos => renderCatalogo(productos));
+    .then(res => res.json())
+    .then(productos => renderCatalogo(productos))
+    .catch(err => console.error("Error cargando catálogo:", err));
 }
 
 function renderCatalogo(productos) {
@@ -177,84 +184,121 @@ function renderCatalogo(productos) {
   });
 }
 
+// Eliminar producto (cambia estado a INACTIVO)
 function eliminarProducto(id) {
   if (confirm('¿Estás seguro de eliminar este producto?')) {
     fetch(`/productos/eliminar/${id}`, {
       method: 'DELETE',
       credentials: 'include'
     })
-    .then(res => {
-      if (res.ok) {
-        mostrarMensaje("Producto eliminado", "success");
-        cargarProductos();
-      } else {
-        mostrarMensaje("Error al eliminar el producto", "danger");
-      }
-    });
+      .then(async res => {
+        const texto = await res.text(); // primero obtén el texto
+        if (res.ok) {
+          mostrarMensaje(texto, "success");
+          cargarProductos();
+        } else {
+          mostrarMensaje(texto, "danger");
+        }
+      })
+      .catch(err => {
+        console.error("Error al eliminar producto:", err);
+        mostrarMensaje("Error al conectar con el servidor", "danger");
+      });
   }
 }
 
+// Función para llenar el formulario con los datos del producto
+function llenarFormulario(producto) {
+  document.getElementById('nombre').value = producto.nombre;
+  document.getElementById('precio').value = producto.precio;
+  document.getElementById('cantidad').value = producto.cantidad;
+  document.getElementById('descripcion').value = producto.descripcion;
+  document.getElementById('tipoProducto').value = producto.tipoProducto;
+  
+  const preview = document.getElementById('previewImagen');
+  preview.src = producto.imagen;
+  preview.style.display = 'block';
+
+  const imagenInput = document.getElementById('imagen');
+  imagenInput.value = ""; // limpia el input, así al subir una nueva imagen reemplaza la anterior
+  imagenInput.required = false;
+}
+
+
+// Editar producto
 function editarProducto(id) {
-  fetch(`/productos/${id}`, {
-    method: 'GET',
-    credentials: 'include'
-  })
-  .then(res => res.json())
-  .then(producto => {
-    document.getElementById('nombre').value = producto.nombre;
-    document.getElementById('precio').value = producto.precio;
-    document.getElementById('cantidad').value = producto.cantidad;
-    document.getElementById('descripcion').value = producto.descripcion;
-    document.getElementById('tipoProducto').value = producto.tipoProducto;
-    document.getElementById('previewImagen').src = producto.imagen;
-    document.getElementById('previewImagen').style.display = 'block';
-    document.getElementById('imagen').required = false;
-
-    mostrarSeccion('nuevoProducto');
-
-    const form = document.getElementById('formCrearProducto');
-    form.onsubmit = async function (e) {
-      e.preventDefault();
-
-      const formData = new FormData();
-      formData.append("nombre", document.getElementById('nombre').value.trim());
-      formData.append("precio", document.getElementById('precio').value);
-      formData.append("cantidad", document.getElementById('cantidad').value.trim());
-      formData.append("descripcion", document.getElementById('descripcion').value.trim());
-      formData.append("tipoProducto", document.getElementById('tipoProducto').value);
-
-      const file = imagenInput.files[0];
-      if (file) {
-        formData.append("imagen", file);
+  fetch(`/productos/${id}`, { method: 'GET', credentials: 'include' })
+    .then(async res => {
+      if (!res.ok) {
+        const texto = await res.text();
+        mostrarMensaje(`Error al obtener producto: ${texto}`, 'danger');
+        throw new Error(`HTTP error! status: ${res.status}`);
       }
+      return res.json();
+    })
+    .then(producto => {
+      mostrarSeccion('nuevoProducto');
 
-      try {
-        const res = await fetch(`/productos/editar/${id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            nombre: formData.get("nombre"),
-            precio: parseFloat(formData.get("precio")),
-            cantidad: formData.get("cantidad"),
-            descripcion: formData.get("descripcion"),
-            tipoProducto: formData.get("tipoProducto"),
-            imagen: producto.imagen
-          }),
-          credentials: 'include'
-        });
+      const form = document.getElementById('formCrearProducto');
 
-        const mensaje = await res.text();
-        if (res.ok) {
-          mostrarMensaje(mensaje, "success");
-          cargarProductos();
-          mostrarSeccion("productos");
-        } else {
-          mostrarMensaje(mensaje, "danger");
-        }
-      } catch (err) {
-        console.error("Error al actualizar producto:", err);
-        mostrarMensaje("Error al conectar con el servidor", "danger");
-      }
+      // Eliminar listeners anteriores
+      const nuevoForm = form.cloneNode(true);
+      form.replaceWith(nuevoForm);
+
+      // Llenar formulario con los datos del producto
+      llenarFormulario(producto);
+
+      // Listener para la previsualización de la nueva imagen
+const imagenInput = document.getElementById('imagen');
+const preview = document.getElementById('previewImagen');
+
+imagenInput.addEventListener('change', function () {
+  const file = imagenInput.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      preview.src = e.target.result;
+      preview.style.display = 'block';
     };
-  });
+    reader.readAsDataURL(file);
+  } else {
+    preview.src = '#';
+    preview.style.display = 'none';
+  }
+});
+
+
+      // Listener para enviar los cambios
+      nuevoForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(nuevoForm);
+        if (document.getElementById('imagen').files[0]) {
+          formData.append("imagen", document.getElementById('imagen').files[0]);
+        }
+
+        try {
+          const res = await fetch(`/productos/editar/${id}`, {
+            method: 'PUT',
+            body: formData,
+            credentials: 'include'
+          });
+
+          const mensaje = await res.text();
+          if (res.ok) {
+            mostrarMensaje(mensaje, "success");
+            nuevoForm.reset();
+            document.getElementById('previewImagen').style.display = 'none';
+            cargarProductos();
+            mostrarSeccion("productos");
+          } else {
+            mostrarMensaje(mensaje, "danger");
+          }
+        } catch (err) {
+          console.error("Error al actualizar producto:", err);
+          mostrarMensaje("Error al conectar con el servidor", "danger");
+        }
+      });
+    })
+    .catch(err => console.error("Error al editar producto:", err));
 }

@@ -140,9 +140,10 @@
       animales.forEach(animal => {
   const card = document.createElement("div");
   card.className = "col-md-4 mb-4";
-  const nombre = encodeURIComponent(animal.nombre);
-  const fundacion = encodeURIComponent("la Fundación Huellitas");
-  const whatsappURL = `https://wa.me/573213229529?text=Hola%2C%20quiero%20adoptar%20a%20${nombre}%20de%20${fundacion}`;
+  const nombreAnimal = encodeURIComponent(animal.nombre);
+  const nombreFundacion = encodeURIComponent(animal.fundacion?.nombre_fundacion || "la fundación");
+  const whatsappURL = `https://wa.me/573213229529?text=Hola%2C%20quiero%20adoptar%20a%20${nombreAnimal}%20de%20${nombreFundacion}`;
+  
   card.innerHTML = `
     <div class="card h-100 shadow-sm">
       <img src="${animal.imagen ? animal.imagen : '/img/animalDefault.jpg'}" class="card-img-top" alt="${animal.nombre}">
@@ -150,7 +151,7 @@
         <h5 class="card-title">${animal.nombre}</h5>
         <p class="card-text">Edad: ${animal.edad} años</p>
         <p class="card-text">Raza: ${animal.raza}</p>
-        <a href="${whatsappURL}" target="_blank" class="btn btn-success w-100 mt-2">Adoptar un amigo</a>
+        <a href="/adopcion/nuevo/${animal.id}" class="btn btn-success w-100 mt-2">Adoptar un amigo</a>
       </div>
     </div>
   `;
