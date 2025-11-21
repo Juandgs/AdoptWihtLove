@@ -77,4 +77,5 @@ public class AnimalService implements Idao<Animal, Long> {
 
         return animalesRepository.findByFundacionAndEstadoIn(fundacion, estados);
     }
+
 }

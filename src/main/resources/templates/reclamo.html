@@ -70,7 +70,7 @@
         (<span th:text="${producto.nombre}"></span>)
     </h1>
 
-    <form th:action="@{/reclamoSend}" method="post">
+    <form th:action="@{/reclamos/reclamoSend}" method="post">
         <!-- Producto al que pertenece el reclamo -->
         <input type="hidden" name="producto.id" th:value="${producto.id}" />
 

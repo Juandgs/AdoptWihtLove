@@ -55,6 +55,6 @@ public class Persona {
     @JsonManagedReference // productos que pertenecen a esta persona
     private List<Productos> productos;
 
-    @OneToMany(mappedBy = "persona")
-    private List<Adopcion> adopciones;
+    /*@OneToMany(mappedBy = "persona")
+    private List<Adopcion> adopciones; */
 }

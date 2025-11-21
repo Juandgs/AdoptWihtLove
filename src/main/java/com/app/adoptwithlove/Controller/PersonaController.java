@@ -139,7 +139,6 @@ public class PersonaController {
         personaExistente.setFechaNacimiento(persona.getFechaNacimiento());
         personaExistente.setFundaciones(persona.getFundaciones());
         personaExistente.setProductos(persona.getProductos());
-        personaExistente.setAdopciones(persona.getAdopciones());
         service.update(id, personaExistente);
         return "redirect:/persona";
     }

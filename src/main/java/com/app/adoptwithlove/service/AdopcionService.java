@@ -62,4 +62,5 @@ public class AdopcionService implements Idao<Adopcion, Long> {
         adopcion.setEstado(bloqueado);
         Adopcion.save(adopcion);
     }
+    
 }
