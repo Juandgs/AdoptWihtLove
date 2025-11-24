@@ -45,25 +45,24 @@ public class PersonaController {
     @GetMapping("/vendedores/bloqueados")
     @ResponseBody
     public List<VendedorBloqueadoDTO> listarVendedoresBloqueados() {
-        List<Persona> vendedoresBloqueados = personaRepository.findByRol_NombreRolAndEstado_NombreEstado("TIENDA", "BLOQUEADO");
-
+        List<Persona> posibles = personaRepository.findAll();
         List<VendedorBloqueadoDTO> respuesta = new ArrayList<>();
 
-        for (Persona vendedor : vendedoresBloqueados) {
-            List<Productos> productos = productoRepository.findByPersona_Id(vendedor.getId());
-
-            List<String> reclamos = new ArrayList<>();
-            for (Productos producto : productos) {
-                List<Reclamos> reclamosProducto = reclamoRepository.findByProducto_Id(producto.getId());
-                for (Reclamos r : reclamosProducto) {
-                    reclamos.add("Producto: " + producto.getNombre() + " → " + r.getDescripcion());
+        for (Persona vendedor : posibles) {
+            String rol = vendedor.getRol() != null && vendedor.getRol().getNombreRol() != null ? vendedor.getRol().getNombreRol().trim().toLowerCase() : "";
+            String estado = vendedor.getEstado() != null && vendedor.getEstado().getNombreEstado() != null ? vendedor.getEstado().getNombreEstado().trim().toLowerCase() : "";
+            if (rol.equals("tienda") && estado.equals("bloqueado")) {
+                List<Productos> productos = productoRepository.findByPersona_Id(vendedor.getId());
+                List<String> reclamos = new ArrayList<>();
+                for (Productos producto : productos) {
+                    List<Reclamos> reclamosProducto = reclamoRepository.findByProducto_Id(producto.getId());
+                    for (Reclamos r : reclamosProducto) {
+                        reclamos.add("Producto: " + producto.getNombre() + " → " + r.getDescripcion());
+                    }
                 }
+                respuesta.add(new VendedorBloqueadoDTO(vendedor.getId(), vendedor.getNombre(), vendedor.getEmail(), reclamos));
             }
-
-            respuesta.add(
-                    new VendedorBloqueadoDTO(vendedor.getId(), vendedor.getNombre(), vendedor.getEmail(), reclamos));
         }
-
         return respuesta;
     }
 

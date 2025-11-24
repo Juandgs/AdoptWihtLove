@@ -6,6 +6,17 @@ function mostrarSeccion(id) {
   if (target) target.classList.remove("d-none");
 }
 
+// Función para mostrar mensajes
+function mostrarMensaje(texto, tipo) {
+  const contenedor = document.getElementById("mensajeRespuesta");
+  contenedor.innerHTML = `
+    <div class="alert alert-${tipo} alert-dismissible fade show" role="alert">
+      ${texto}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+  `;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const links = document.querySelectorAll("aside a");
   const sections = document.querySelectorAll("main section");
@@ -105,7 +116,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const texto = await res.text();
         if (res.ok) {
-          alert(texto || "Animal actualizado correctamente");
+          mostrarMensaje(texto || "Animal actualizado correctamente", "success");
+          
+          // Auto-cerrar el mensaje después de 8 segundos
+          setTimeout(() => {
+            const alert = document.querySelector('#mensajeRespuesta .alert');
+            if (alert) {
+              const bsAlert = new bootstrap.Alert(alert);
+              bsAlert.close();
+            }
+          }, 8000);
+          
           this.reset();
           delete this.dataset.editando;
           delete this.dataset.existingImagen;
@@ -113,7 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
           cargarAnimales();
           mostrarSeccion("animales");
         } else {
-          alert("Error al actualizar: " + texto);
+          mostrarMensaje("Error al actualizar: " + texto, "danger");
         }
       } catch (err) {
         console.error("Error al actualizar animal:", err);
@@ -140,13 +161,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const mensaje = await res.text();
         if (res.ok) {
-          alert(mensaje);
+          mostrarMensaje(mensaje, "success");
+          
+          // Auto-cerrar el mensaje después de 8 segundos
+          setTimeout(() => {
+            const alert = document.querySelector('#mensajeRespuesta .alert');
+            if (alert) {
+              const bsAlert = new bootstrap.Alert(alert);
+              bsAlert.close();
+            }
+          }, 8000);
+          
           this.reset();
           previewAnimal.style.display = 'none';
           cargarAnimales();
           mostrarSeccion("animales");
         } else {
-          alert("Error: " + mensaje);
+          mostrarMensaje("Error: " + mensaje, "danger");
         }
       } catch (err) {
         console.error("Error al guardar animal:", err);
@@ -225,19 +256,48 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Eliminar animal
   window.eliminarAnimal = function (id) {
-    if (confirm("¿Estás seguro de eliminar este animal?")) {
+    // Guardar el ID del animal a eliminar
+    const btnConfirmar = document.getElementById('btnConfirmarEliminarAnimal');
+    
+    // Mostrar el modal
+    const modalEliminar = new bootstrap.Modal(document.getElementById('modalEliminarAnimal'));
+    modalEliminar.show();
+    
+    // Remover listeners anteriores para evitar duplicados
+    const nuevoBtn = btnConfirmar.cloneNode(true);
+    btnConfirmar.replaceWith(nuevoBtn);
+    
+    // Agregar el evento de confirmación
+    nuevoBtn.addEventListener('click', function() {
       fetch(`/animal/eliminar/${id}`, {
-        method: "DELETE",
+        method: 'DELETE',
         credentials: 'include'
       })
-      .then(res => {
-        if (res.ok) {
-          cargarAnimales();
-        } else {
-          alert("Error al eliminar el animal");
-        }
-      });
-    }
+        .then(async res => {
+          if (res.ok) {
+            mostrarMensaje("Animal eliminado", "danger");
+            // Auto-cerrar el mensaje después de 6 segundos
+            setTimeout(() => {
+              const alert = document.querySelector('#mensajeRespuesta .alert');
+              if (alert) {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+              }
+            }, 6000);
+            cargarAnimales();
+          } else {
+            const texto = await res.text();
+            mostrarMensaje(texto, "danger");
+          }
+        })
+        .catch(err => {
+          console.error("Error al eliminar animal:", err);
+          mostrarMensaje("Error al conectar con el servidor", "danger");
+        });
+      
+      // Cerrar el modal
+      modalEliminar.hide();
+    });
   };
 
   // Editar animal
@@ -274,6 +334,22 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   };
 
+  // Previsualización del CSV al seleccionar archivo
+  const fileInput = document.getElementById("file");
+  if (fileInput) {
+    fileInput.addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const csvContent = event.target.result;
+          previewCSV(csvContent);
+        };
+        reader.readAsText(file);
+      }
+    });
+  }
+
   // Subida por CSV
   const uploadForm = document.getElementById("uploadForm");
   if (uploadForm) {
@@ -289,17 +365,30 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         const mensaje = await response.text();
-        document.getElementById("mensajeRespuesta").innerHTML =
-          `<div class="alert alert-info">${mensaje}</div>`;
+        mostrarMensaje(mensaje, "info");
+        
+        // Auto-cerrar el mensaje después de 8 segundos
+        setTimeout(() => {
+          const alert = document.querySelector('#mensajeRespuesta .alert');
+          if (alert) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+          }
+        }, 8000);
 
         bootstrap.Modal.getInstance(document.getElementById('uploadModal')).hide();
+        
+        // Limpiar la previsualización
+        document.getElementById('csvPreview').classList.add('d-none');
+        document.getElementById('file').value = '';
+        document.getElementById('btnSubirCsv').disabled = true;
+        
         cargarAnimales();
         mostrarSeccion("animales");
 
       } catch (error) {
         console.error("Error en fetch:", error);
-        document.getElementById("mensajeRespuesta").innerHTML =
-          `<div class="alert alert-danger">Error inesperado al subir el archivo</div>`;
+        mostrarMensaje("Error inesperado al subir el archivo", "danger");
       }
     });
   }
@@ -312,5 +401,51 @@ document.addEventListener("DOMContentLoaded", () => {
     delete form.dataset.existingImagen;
     previewAnimal.style.display = 'none';
     previewAnimal.src = '#';
+  }
+
+  // Función para previsualizar el contenido del CSV
+  function previewCSV(csvContent) {
+    const lines = csvContent.split('\n').filter(line => line.trim() !== '');
+    
+    if (lines.length === 0) {
+      return;
+    }
+
+    // Obtener encabezados (primera línea)
+    const headers = lines[0].split(',').map(h => h.trim());
+    
+    // Mostrar encabezados en la tabla
+    const headersRow = document.getElementById('csvHeaders');
+    headersRow.innerHTML = headers.map(h => `<th>${h}</th>`).join('');
+    
+    // Mostrar datos (resto de líneas)
+    const dataBody = document.getElementById('csvData');
+    dataBody.innerHTML = '';
+    
+    const dataLines = lines.slice(1); // Omitir la primera línea (encabezados)
+    
+    dataLines.forEach((line, index) => {
+      if (line.trim() === '') return;
+      
+      const values = line.split(',').map(v => v.trim());
+      const row = document.createElement('tr');
+      
+      values.forEach(value => {
+        const cell = document.createElement('td');
+        cell.textContent = value || '-';
+        row.appendChild(cell);
+      });
+      
+      dataBody.appendChild(row);
+    });
+    
+    // Mostrar el total de animales
+    document.getElementById('totalAnimales').textContent = dataLines.length;
+    
+    // Mostrar la sección de previsualización
+    document.getElementById('csvPreview').classList.remove('d-none');
+    
+    // Habilitar el botón de subir
+    document.getElementById('btnSubirCsv').disabled = false;
   }
 });

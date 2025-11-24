@@ -91,6 +91,8 @@ public List<Productos> getAllProductosActivos() {
             String line;
             boolean firstLine = true;
             List<Productos> nuevosProductos = new ArrayList<>();
+            int productosIgnorados = 0;
+            int productosSubidos = 0;
 
             Persona persona = personaRepository.findByEmail(userDetails.getUsername())
                     .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado"));
@@ -113,39 +115,52 @@ public List<Productos> getAllProductosActivos() {
                 String descripcion = data[4].trim();
                 String imagen = data.length > 5 && !data[5].trim().isEmpty() ? data[5].trim() : null;
 
+                // Buscar solo productos ACTIVOS del vendedor
                 Optional<Productos> productoExistente = productoRepository.findByPersona(persona).stream()
                     .filter(p -> p.getNombre().equalsIgnoreCase(nombre)
                             && p.getPrecio() == precio
                             && p.getTipoProducto().equalsIgnoreCase(tipoProducto)
                             && p.getDescripcion().equalsIgnoreCase(descripcion)
-                            && p.getPersona().getId().equals(persona.getId()))
+                            && p.getPersona().getId().equals(persona.getId())
+                            && p.getEstado() != null 
+                            && "ACTIVO".equalsIgnoreCase(p.getEstado().getNombreEstado()))
                     .findFirst();
 
                 if (productoExistente.isPresent()) {
+                    // Producto existe y está ACTIVO, actualizar cantidad
                     Productos existente = productoExistente.get();
                     int cantidadActual = Integer.parseInt(existente.getCantidad());
                     int cantidadNueva = Integer.parseInt(cantidad);
                     existente.setCantidad(String.valueOf(cantidadActual + cantidadNueva));
                     productoRepository.save(existente);
-                    System.out.println("Cantidad actualizada para producto existente: " + nombre);
+                    productosIgnorados++;
+                    System.out.println("Cantidad actualizada para producto existente ACTIVO: " + nombre);
                 } else {
+                    // Producto no existe o está INACTIVO, crear nuevo
                     Productos producto = new Productos();
                     producto.setNombre(nombre);
                     producto.setPrecio(precio);
                     producto.setCantidad(cantidad);
                     producto.setTipoProducto(tipoProducto);
                     producto.setDescripcion(descripcion);
-                    producto.setImagen(imagen); // debe ser ruta relativa si viene en CSV
+                    producto.setImagen(imagen);
                     producto.setPersona(persona);
                     nuevosProductos.add(producto);
                 }
             }
 
             if (!nuevosProductos.isEmpty()) {
-                productoRepository.saveAll(nuevosProductos);
+                // ✅ Usamos el servicio para que asigne el estado ACTIVO automáticamente
+                for (Productos producto : nuevosProductos) {
+                    productoService.create(producto);
+                    productosSubidos++;
+                }
             }
 
-            return ResponseEntity.ok("Se procesaron correctamente los productos del archivo");
+            // Construir mensaje de respuesta
+            String mensaje = String.format("%d producto(s) subidos correctamente, %d producto(s) ignorados", 
+                                          productosSubidos, productosIgnorados);
+            return ResponseEntity.ok(mensaje);
 
         } catch (Exception e) {
             e.printStackTrace();

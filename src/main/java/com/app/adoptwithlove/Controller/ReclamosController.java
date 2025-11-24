@@ -130,7 +130,7 @@ public class ReclamosController {
                     "Reclamo guardado pero el producto no tiene un vendedor con correo.");
         }
 
-        return "redirect:/tiendas";
+        return "reclamoSuccess";
     }
 
 }

@@ -14,40 +14,182 @@
     <!-- Favicon -->
     <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/616/616408.png" type="image/png">
 
+    <!-- FontAwesome -->
+    <script src="https://kit.fontawesome.com/a2d9d5a56b.js" crossorigin="anonymous"></script>
+
     <style>
         body {
           font-family: 'Poppins', sans-serif;
-          background-color: #f8f9fa;
+          background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        /* Navbar */
+        .navbar {
+          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+          font-weight: 600 !important;
+          transition: transform 0.3s;
+        }
+
+        .navbar-brand:hover {
+          transform: scale(1.05);
         }
 
         .form-container {
-          max-width: 700px;
+          max-width: 750px;
           margin: 40px auto;
           background: #fff;
-          padding: 2rem;
-          border-radius: 15px;
-          box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+          padding: 2.5rem;
+          border-radius: 20px;
+          box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+          animation: fadeIn 0.8s ease-in;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
         h1 {
-          font-size: 1.5rem;
-          font-weight: 700;
-          margin-bottom: 1.5rem;
-          color: #212529;
+          font-size: 1.2rem;
+          font-weight: 600;
+          margin-bottom: 2rem;
+          color: #2c3e50;
+          line-height: 1.6;
+          padding: 15px 20px;
+          background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
+          border-left: 4px solid #dc3545;
+          border-radius: 10px;
         }
 
-        .btn-danger {
-          background-color: #dc3545;
-          border: none;
+        h1 small {
+          font-size: 0.8em;
+          color: #6c757d;
+          font-weight: 400;
+        }
+
+        h1 small .producto-nombre {
+          color: #dc3545;
           font-weight: 600;
         }
 
+        .producto-info {
+          display: flex;
+          align-items: center;
+          gap: 15px;
+          margin-top: 10px;
+          padding-top: 10px;
+          border-top: 1px solid rgba(220, 53, 69, 0.2);
+        }
+
+        .producto-info img {
+          width: 60px;
+          height: 60px;
+          object-fit: cover;
+          border-radius: 8px;
+          border: 2px solid #dc3545;
+        }
+
+        h1 span {
+          color: #dc3545;
+          font-weight: 700;
+        }
+
+        .form-label {
+          font-weight: 600;
+          color: #2c3e50;
+          margin-bottom: 0.5rem;
+          font-size: 0.95rem;
+        }
+
+        .form-label i {
+          margin-right: 8px;
+          color: #dc3545;
+        }
+
+        .form-control {
+          border: 2px solid #e9ecef;
+          border-radius: 10px;
+          padding: 0.75rem;
+          transition: all 0.3s;
+          font-size: 0.95rem;
+        }
+
+        .form-control:focus {
+          border-color: #dc3545;
+          box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.15);
+        }
+
+        textarea.form-control {
+          resize: vertical;
+          min-height: 120px;
+        }
+
+        .btn {
+          padding: 0.75rem 2rem;
+          border-radius: 25px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          transition: all 0.3s;
+          font-size: 0.9rem;
+        }
+
+        .btn-danger {
+          background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+          border: none;
+          box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+        }
+
         .btn-danger:hover {
-          background-color: #b02a37;
+          background: linear-gradient(135deg, #c82333 0%, #dc3545 100%);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+        }
+
+        .btn-secondary {
+          background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+          border: none;
+          box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+        }
+
+        .btn-secondary:hover {
+          background: linear-gradient(135deg, #5a6268 0%, #6c757d 100%);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
         }
 
         footer {
           margin-top: auto;
+          box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+
+        footer p {
+          font-weight: 500;
+          margin: 0;
+        }
+
+        .mb-3 {
+          margin-bottom: 1.5rem !important;
+        }
+
+        @media (max-width: 768px) {
+          .form-container {
+            margin: 20px;
+            padding: 1.5rem;
+          }
+
+          h1 {
+            font-size: 1.1rem;
+            padding: 15px;
+          }
+
+          .btn {
+            padding: 0.65rem 1.5rem;
+            font-size: 0.85rem;
+          }
         }
     </style>
 </head>
@@ -55,19 +197,27 @@
 
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="/" style="font-family: 'Poppins', sans-serif; font-weight: 400; font-size: 1.5rem;">
-        Adopt with Love
+  <div class="container-fluid px-4">
+    <span class="navbar-brand mb-0 h1">
+      <i class="fas fa-exclamation-triangle me-2"></i>Formulario de Reclamo
+    </span>
+    <a href="/tiendas" class="btn btn-outline-light btn-sm">
+      <i class="fas fa-arrow-left me-1"></i>Volver a Tiendas
     </a>
+  </div>
 </nav>
 
 <!-- Contenido -->
 <div class="container form-container">
     <h1>
-        Reclamo para el vendedor con correo:
-        <span th:text="${correoVendedor}"></span>,
-        por el producto con ID:
-        <span th:text="${producto.id}"></span>
-        (<span th:text="${producto.nombre}"></span>)
+        <i class="fas fa-file-alt me-2"></i>
+        Reclamo para el vendedor: <span th:text="${correoVendedor}"></span>
+        <div class="producto-info">
+          <img th:src="${producto.imagen}" th:alt="${producto.nombre}" alt="Imagen del producto" th:title="${producto.nombre}" title="Producto" onerror="this.src='https://via.placeholder.com/60?text=Sin+Imagen'">
+          <small>
+            Producto: <span class="producto-nombre" th:text="${producto.nombre}"></span>
+          </small>
+        </div>
     </h1>
 
     <form th:action="@{/reclamos/reclamoSend}" method="post">
@@ -75,20 +225,29 @@
         <input type="hidden" name="producto.id" th:value="${producto.id}" />
 
         <div class="mb-3">
-            <label for="correo" class="form-label">Tu correo electrónico</label>
+            <label for="correo" class="form-label">
+              <i class="fas fa-envelope"></i>Tu correo electrónico
+            </label>
             <input type="email" class="form-control" id="correo" name="correo"
-                   placeholder="Escribe tu correo electrónico" required>
+                   placeholder="ejemplo@correo.com" required>
         </div>
 
         <div class="mb-3">
-            <label for="descripcion" class="form-label">Descripción</label>
-            <textarea class="form-control" placeholder="Escribe lo que ha sucedido con el producto"
-                      name="descripcion" id="descripcion" rows="4" required></textarea>
+            <label for="descripcion" class="form-label">
+              <i class="fas fa-comment-dots"></i>Descripción del problema
+            </label>
+            <textarea class="form-control" placeholder="Describe detalladamente qué sucedió con el producto..."
+                      name="descripcion" id="descripcion" rows="5" required></textarea>
+            <small class="text-muted">Mínimo 20 caracteres</small>
         </div>
 
-        <div class="d-flex justify-content-between">
-            <a class="btn btn-secondary" th:href="@{/tiendas}">Cancelar</a>
-            <button type="submit" class="btn btn-danger">Enviar Reclamo</button>
+        <div class="d-flex justify-content-between flex-wrap gap-2">
+            <a class="btn btn-secondary" th:href="@{/tiendas}">
+              <i class="fas fa-times me-1"></i>Cancelar
+            </a>
+            <button type="submit" class="btn btn-danger">
+              <i class="fas fa-paper-plane me-1"></i>Enviar Reclamo
+            </button>
         </div>
     </form>
 </div>

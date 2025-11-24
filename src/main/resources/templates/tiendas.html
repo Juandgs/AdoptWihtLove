@@ -14,14 +14,19 @@
   <!-- Favicon -->
   <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/616/616408.png" type="image/png">
 
+  <!-- FontAwesome para iconos -->
+  <script src="https://kit.fontawesome.com/a2d9d5a56b.js" crossorigin="anonymous"></script>
+
   <link rel="stylesheet" href="/root/css/tiendas.css">
 
 </head>
-<body class="d-flex flex-column min-vh-100">
+<body>
 
   <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <a class="navbar-brand" href="./index.html" style="font-family: 'Poppins', sans-serif; font-weight: 400; font-size: 1.5rem;">Productos para Mascotas</a>
+  <span class="navbar-brand mb-0 h1 ms-3" style="font-family: 'Poppins', sans-serif; font-size: 1.5rem; font-weight: 600; cursor: default;">
+    <i class="fas fa-shopping-bag me-2"></i>Productos para Mascotas
+  </span>
   <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
@@ -45,32 +50,33 @@
     </ul>
   </div>
 </nav>
-</body>
+
+<div class="container-fluid" style="background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%); min-height: calc(100vh - 120px); padding-bottom: 80px;">
 
 <!-- Barra de búsqueda -->
-<div class="d-flex justify-content-center mb-4 mt-3"> <!-- AÑADIDO mt-3 -->
-  <div class="input-group search-bar shadow-sm rounded" style="max-width: 500px;">
-    <span class="input-group-text bg-white border-end-0">
+<div class="d-flex justify-content-center mb-4 mt-4">
+  <div class="input-group search-bar shadow-sm" style="max-width: 600px; border-radius: 25px; overflow: hidden; background: white;">
+    <span class="input-group-text bg-white border-0" style="padding-left: 20px;">
       🔍
     </span>
-    <input type="text" class="form-control border-start-0" id="searchInput" placeholder="Buscar productos...">
+    <input type="text" class="form-control border-0" id="searchInput" placeholder="Buscar productos..." style="padding: 12px; font-size: 1rem; outline: none; box-shadow: none;">
   </div>
 </div>
 
 <!-- Filtro por categoría y carrito -->
 <div class="container mb-4">
   <div class="row justify-content-between align-items-center">
-    <div class="col-md-4">
-      <select class="form-select" id="categoryFilter">
-        <option value="todos">Todas las categorías</option>
-        <option value="juguetes">Juguetes</option>
-        <option value="comida">Comida</option>
-        <option value="aseo">Aseo</option>
-        <option value="otros">Otros</option>
+    <div class="col-md-5 col-lg-4 mb-3 mb-md-0">
+      <select class="form-select shadow-sm category-filter" id="categoryFilter" aria-label="Filtrar productos por categoría">
+        <option value="todos">📦 Todas las categorías</option>
+        <option value="juguetes">🎾 Juguetes</option>
+        <option value="comida">🍖 Comida</option>
+        <option value="aseo">🧼 Aseo</option>
+        <option value="otros">📌 Otros</option>
       </select>
     </div>
-    <div class="col-md-4 text-end">
-      <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cartModal">
+    <div class="col-md-5 col-lg-4 text-end">
+      <button class="btn shadow-sm" data-bs-toggle="modal" data-bs-target="#cartModal" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: white; border: none; border-radius: 12px; padding: 10px 25px; font-weight: 600; transition: all 0.3s;">
         🛒 Ver Carrito (<span id="cartCount">0</span>)
       </button>
     </div>
@@ -85,33 +91,36 @@
 
 
   </div>
-
-  <!-- Agrega más productos aquí -->
-
+</div>
 
 <!-- Modal del Carrito -->
 <div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
     <div class="modal-content">
-      <div class="modal-header bg-dark text-white">
-        <h5 class="modal-title" id="cartModalLabel">🛒 Carrito de Compras</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      <div class="modal-header">
+        <h5 class="modal-title" id="cartModalLabel">
+          <i class="fas fa-shopping-cart me-2"></i>Mi Carrito
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
       <div class="modal-body" id="cartItems">
-        <p>No hay productos en el carrito.</p>
+        <p class="text-muted text-center py-4">
+          <i class="fas fa-shopping-basket" style="font-size: 3rem; color: #dee2e6;"></i><br>
+          Tu carrito está vacío
+        </p>
       </div>
       <div class="modal-footer">
-        <strong>Total: <span id="cartTotal">$0</span></strong>
+        <div class="w-100 d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Total:</h5>
+          <h4 class="mb-0 text-danger fw-bold" id="cartTotal">$0</h4>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-
-<footer class="text-center py-3 bg-dark text-white">
-  <div class="container-fluid"> <!-- Cambiado a container-fluid para más anchura -->
-    <p class="mb-0">© 2025 Adopt with Love. Todos los derechos reservados.</p>
-  </div>
+<footer class="text-center text-white mt-auto" style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); box-shadow: 0 -2px 10px rgba(0,0,0,0.1); padding: 15px 0;">
+  <p class="mb-0" style="font-weight: 500; font-size: 0.9rem;">© 2025 Adopt with Love 🐾 Todos los derechos reservados.</p>
 </footer>
 
   <!-- Scripts -->

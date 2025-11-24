@@ -23,6 +23,131 @@
   <style>
     body {
       font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+
+    /* Navbar mejorado */
+    .navbar {
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .navbar-brand {
+      font-weight: 700 !important;
+      color: #fff !important;
+      transition: transform 0.3s;
+    }
+
+    .navbar-brand:hover {
+      transform: scale(1.05);
+    }
+
+    .nav-link {
+      transition: all 0.3s;
+      border-radius: 8px;
+      margin: 0 5px;
+    }
+
+    .nav-link:hover {
+      background-color: rgba(255,255,255,0.1);
+      transform: translateY(-2px);
+    }
+
+    /* Sección de animales */
+    .container.py-5 {
+      animation: fadeIn 0.8s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .text-primary {
+      color: #28a745 !important;
+      font-weight: 700;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+      position: relative;
+      display: inline-block;
+    }
+
+    .text-primary::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 4px;
+      background: linear-gradient(90deg, #28a745, #20c997);
+      border-radius: 2px;
+    }
+
+    /* Cards de animales mejoradas */
+    .card {
+      border: none;
+      border-radius: 15px;
+      overflow: hidden;
+      transition: all 0.4s ease;
+      background: white;
+    }
+
+    .card:hover {
+      transform: translateY(-10px) scale(1.02);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important;
+    }
+
+    .card-img-top {
+      height: 250px;
+      object-fit: cover;
+      transition: transform 0.4s;
+    }
+
+    .card:hover .card-img-top {
+      transform: scale(1.1);
+    }
+
+    .card-body {
+      padding: 1.5rem;
+      background: linear-gradient(to bottom, #ffffff 0%, #f8f9fa 100%);
+    }
+
+    .card-title {
+      color: #2c3e50;
+      font-weight: 700;
+      font-size: 1.3rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .card-text {
+      color: #555;
+      font-size: 0.95rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .card-text::before {
+      content: '🐾';
+      margin-right: 8px;
+      font-size: 1.1rem;
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      border: none;
+      border-radius: 25px;
+      padding: 10px 20px;
+      font-weight: 600;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+
+    .btn-success:hover {
+      background: linear-gradient(135deg, #20c997 0%, #28a745 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
     }
 
     /* Estilos para el botón de donaciones */
@@ -38,14 +163,14 @@
     }
 
     .donation-bubble {
-      background-color: #25D366;
+      background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
       color: white;
-      padding: 6px 12px;
-      border-radius: 15px;
+      padding: 8px 16px;
+      border-radius: 20px;
       font-size: 14px;
       font-weight: bold;
       margin-bottom: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
       animation: pulse 1.5s infinite;
     }
 
@@ -54,17 +179,75 @@
       height: 60px;
       transition: transform 0.3s;
       border-radius: 50%;
+      box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
     }
 
     .whatsapp-donation-icon:hover {
-      transform: scale(1.1);
-      box-shadow: 0 0 15px rgba(37, 211, 102, 0.5);
+      transform: scale(1.2) rotate(10deg);
+      box-shadow: 0 6px 25px rgba(37, 211, 102, 0.6);
     }
 
     @keyframes pulse {
       0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
+      50% { transform: scale(1.08); }
       100% { transform: scale(1); }
+    }
+
+    /* Footer mejorado */
+    footer {
+      background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+
+    footer p {
+      margin: 0;
+      font-weight: 300;
+      letter-spacing: 0.5px;
+    }
+
+    /* Estado vacío */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      animation: fadeIn 0.8s ease-in;
+    }
+
+    .empty-state i {
+      font-size: 80px;
+      color: #dee2e6;
+      margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+      color: #6c757d;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .empty-state p {
+      color: #adb5bd;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .card-img-top {
+        height: 200px;
+      }
+
+      .whatsapp-donation-container {
+        bottom: 80px;
+        right: 20px;
+      }
+
+      .whatsapp-donation-icon {
+        width: 50px;
+        height: 50px;
+      }
+
+      .donation-bubble {
+        font-size: 12px;
+        padding: 6px 12px;
+      }
     }
   </style>
 
@@ -73,7 +256,9 @@
 
   <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <a class="navbar-brand" href="./index.html" style="font-family: 'Poppins', sans-serif; font-weight: 400; font-size: 1.5rem;">Fundaciones</a>
+  <span class="navbar-brand mb-0 h1 ms-3" id="nombreFundacion" style="font-family: 'Poppins', sans-serif; font-size: 1.5rem; font-weight: 600; cursor: default;">
+    <i class="fas fa-paw me-2"></i>Cargando...
+  </span>
   <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
@@ -101,7 +286,9 @@
 
 <!-- Sección de animales -->
 <div class="container py-5">
-  <h2 class="text-center text-primary mb-4">Animales disponibles</h2>
+  <div class="text-center mb-5">
+    <h2 class="text-primary mb-4">Animales disponibles</h2>
+  </div>
   <div class="row" id="animalesContainer"></div>
 </div>
   
@@ -131,34 +318,72 @@
   // Obtener el ID desde la ruta /fundacion/{id}/animales
   const fundacionId = window.location.pathname.split("/")[2];
 
+  // Obtener nombre de la fundación
+  fetch(`/api/fundaciones/${fundacionId}`)
+    .then(r => r.json())
+    .then(fundacion => {
+      document.getElementById('nombreFundacion').innerHTML = `
+        <i class="fas fa-paw me-2"></i>${fundacion.nombre_fundacion || 'Fundación'}
+      `;
+    })
+    .catch(error => {
+      console.error("Error al cargar fundación:", error);
+      document.getElementById('nombreFundacion').innerHTML = `
+        <i class="fas fa-paw me-2"></i>Fundación
+      `;
+    });
+
   fetch(`/api/fundaciones/${fundacionId}/animales`)
     .then(r => r.json())
     .then(animales => {
       const container = document.getElementById("animalesContainer");
       container.innerHTML = "";
 
-      animales.forEach(animal => {
-  const card = document.createElement("div");
-  card.className = "col-md-4 mb-4";
-  const nombreAnimal = encodeURIComponent(animal.nombre);
-  const nombreFundacion = encodeURIComponent(animal.fundacion?.nombre_fundacion || "la fundación");
-  const whatsappURL = `https://wa.me/573213229529?text=Hola%2C%20quiero%20adoptar%20a%20${nombreAnimal}%20de%20${nombreFundacion}`;
-  
-  card.innerHTML = `
-    <div class="card h-100 shadow-sm">
-      <img src="${animal.imagen ? animal.imagen : '/img/animalDefault.jpg'}" class="card-img-top" alt="${animal.nombre}">
-      <div class="card-body">
-        <h5 class="card-title">${animal.nombre}</h5>
-        <p class="card-text">Edad: ${animal.edad} años</p>
-        <p class="card-text">Raza: ${animal.raza}</p>
-        <a href="/adopcion/nuevo/${animal.id}" class="btn btn-success w-100 mt-2">Adoptar un amigo</a>
-      </div>
-    </div>
-  `;
-  container.appendChild(card);
-});
-    })
+      if (!animales || animales.length === 0) {
+        container.innerHTML = `
+          <div class="col-12 empty-state">
+            <i class="fas fa-paw"></i>
+            <h3>No hay animales disponibles</h3>
+            <p>Por el momento esta fundación no tiene animales en adopción.</p>
+          </div>
+        `;
+        return;
+      }
 
+      animales.forEach(animal => {
+        const card = document.createElement("div");
+        card.className = "col-md-4 mb-4";
+        const nombreAnimal = encodeURIComponent(animal.nombre);
+        const nombreFundacion = encodeURIComponent(animal.fundacion?.nombre_fundacion || "la fundación");
+        const whatsappURL = `https://wa.me/573213229529?text=Hola%2C%20quiero%20adoptar%20a%20${nombreAnimal}%20de%20${nombreFundacion}`;
+        
+        card.innerHTML = `
+          <div class="card h-100 shadow-sm">
+            <img src="${animal.imagen ? animal.imagen : '/img/animalDefault.jpg'}" class="card-img-top" alt="${animal.nombre}">
+            <div class="card-body">
+              <h5 class="card-title">${animal.nombre}</h5>
+              <p class="card-text">Edad: ${animal.edad} años</p>
+              <p class="card-text">Raza: ${animal.raza}</p>
+              <a href="/adopcion/nuevo/${animal.id}" class="btn btn-success w-100 mt-2">
+                <i class="fas fa-heart me-2"></i>Adoptar un amigo
+              </a>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    })
+    .catch(error => {
+      console.error("Error al cargar animales:", error);
+      const container = document.getElementById("animalesContainer");
+      container.innerHTML = `
+        <div class="col-12 empty-state">
+          <i class="fas fa-exclamation-triangle text-warning"></i>
+          <h3>Error al cargar los animales</h3>
+          <p>Por favor, intenta recargar la página.</p>
+        </div>
+      `;
+    });
 </script>
   
 <!-- Bootstrap JS -->

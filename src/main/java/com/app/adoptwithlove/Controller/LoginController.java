@@ -29,11 +29,11 @@ public class LoginController {
         String email = auth.getName();
 
         if (email.equals("admin@gmail.com")) {
-            return "redirect:/dashboard";
+            return "redirect:/dashboard?loginExitoso=true";
         } else if (auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_FUNDACION"))) {
-            return "redirect:/dashboardFundacion";
+            return "redirect:/dashboardFundacion?loginExitoso=true";
         } else if (auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_TIENDA"))) {
-            return "redirect:/dashboardVendedor";
+            return "redirect:/dashboardVendedor?loginExitoso=true";
         }
 
         SecurityContextHolder.clearContext();

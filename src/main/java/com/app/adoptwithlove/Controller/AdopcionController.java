@@ -61,7 +61,7 @@ animalService.update(animalOriginal.getId(), animalOriginal);
 
 
         model.addAttribute("mensaje", "Solicitud de adopción enviada correctamente.");
-        return "redirect:/fundaciones";
+        return "adopcionSuccess";
     }
 
     public String getAll(Model modelo) {

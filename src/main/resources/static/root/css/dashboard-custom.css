@@ -1,0 +1,461 @@
+/* Botón reclamo difuminado */
+.btn-reclamo-difuminado {
+  background: #ff4d4d;
+  color: #fff;
+  border: none;
+  box-shadow: 0 2px 8px rgba(255,77,77,0.12);
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.btn-reclamo-difuminado:hover, .btn-reclamo-difuminado:focus {
+  background: #ff1a1a;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(255,77,77,0.18);
+}
+#seccion2 .row {
+  display: flex;
+  gap: 5px;
+}
+#seccion2 .col-md-6.grafica-col {
+  width: 18% !important;
+  max-width: 18% !important;
+  flex: 0 0 18%;
+  padding-right: 0 !important;
+}
+#seccion2 .col-md-6.tabla-col {
+  width: 82% !important;
+  max-width: 82% !important;
+  flex: 82%;
+  padding-left: 0 !important;
+}
+/* Estilos personalizados para dashboard */
+
+body {
+  font-family: 'Poppins', Arial, sans-serif;
+  background: #f8f9fa;
+}
+
+/* Barra superior */
+.navbar {
+  background: linear-gradient(90deg, #232526 0%, #4DB6AC 100%) !important;
+  box-shadow: 0 2px 12px rgba(77,182,172,0.08);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1050;
+}
+.dashboard-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #fff !important;
+}
+.navbar .btn-danger {
+  background: #ff5252;
+  border: none;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+.navbar .btn-danger:hover {
+  background: #d32f2f;
+}
+.navbar .fa-paw {
+  color: #fff;
+  filter: drop-shadow(0 2px 8px rgba(77,182,172,0.12));
+}
+
+/* Sidebar */
+#menuLateral {
+  background: linear-gradient(180deg, #232526 80%, #4DB6AC 100%);
+  min-height: 100vh;
+  width: 250px;
+  padding: 2rem 1rem 1rem 1rem;
+  border-right: 2px solid #e0f2f1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  overflow: hidden;
+  z-index: 1040;
+}
+
+#menuLateral h4 {
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: #fff;
+}
+
+.sidebar-header h4 {
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.3rem;
+  margin-bottom: 0.2rem;
+  margin-top: 2.2rem;
+}
+
+.sidebar-link {
+  color: #fff !important;
+  font-size: 1.08rem;
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  transition: background 0.18s, color 0.18s;
+  font-weight: 500;
+}
+.sidebar-link.active {
+  background: #4DB6AC;
+  color: #fff !important;
+  box-shadow: 0 2px 8px rgba(77,182,172,0.08);
+  width: calc(100% + 2rem);
+  border-radius: 0;
+  margin-left: -1rem;
+  margin-right: -1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  position: relative;
+  z-index: 1;
+}
+.sidebar-link:focus, .sidebar-link:hover {
+  background: #4DB6AC;
+  color: #fff !important;
+  box-shadow: 0 2px 8px rgba(77,182,172,0.08);
+  width: calc(100% + 2rem);
+  border-radius: 0;
+  margin-left: -1rem;
+  margin-right: -1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  position: relative;
+  z-index: 1;
+}
+.sidebar-link i {
+  color: #fff;
+  font-size: 1.1rem;
+}
+
+/* Card header: color y estilo que combine con el menú */
+.card-header {
+  background: linear-gradient(90deg, #4DB6AC 60%, #232526 100%);
+  color: #fff;
+  border-radius: 18px 18px 0 0;
+  font-weight: 600;
+  font-size: 1.2rem;
+  border: none;
+  box-shadow: 0 2px 8px rgba(77,182,172,0.10);
+}
+
+/* Card: fondo y sombra suave */
+.card {
+  background: #f8f9fa;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(77,182,172,0.07);
+  border: none;
+}
+
+.table {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.table thead {
+  background: #e0f2f1;
+}
+
+.table th, .table td {
+  vertical-align: middle;
+  text-align: center;
+  padding: 0.75rem;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background: #f6f6f6;
+}
+
+.btn-outline-primary, .btn-outline-success, .btn-outline-danger {
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+/* Sidebar ancho y altura */
+.dashboard-sidebar {
+  width: 250px;
+  min-height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  overflow: hidden;
+  z-index: 1040;
+  padding-top: 3.5rem;
+}
+
+body, html {
+  overflow-x: hidden;
+}
+
+.main {
+  margin-left: 250px;
+  width: calc(100% - 250px);
+}
+
+@media (max-width: 991px) {
+  .dashboard-sidebar {
+    min-width: 100px;
+    width: 100px;
+    padding: 1rem 0.5rem;
+  }
+  .main {
+    margin-left: 100px;
+    width: calc(100% - 100px);
+  }
+}
+@media (max-width: 767px) {
+  .dashboard-sidebar {
+    display: none;
+  }
+  .main {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+/* Ajuste para que el contenido principal no quede debajo de la navbar y sidebar fijos */
+body > .d-flex.flex-grow-1 {
+  margin-top: 64px; /* Altura navbar */
+  margin-left: 250px; /* Ancho sidebar */
+  height: calc(100vh - 64px);
+  overflow: auto;
+}
+
+@media (max-width: 991px) {
+  body > .d-flex.flex-grow-1 {
+    margin-left: 100px;
+  }
+}
+@media (max-width: 767px) {
+  body > .d-flex.flex-grow-1 {
+    margin-left: 0;
+    margin-top: 56px;
+  }
+}
+
+/* Asegura que el canvas y las tablas no se oculten ni se recorten */
+.dashboard-canvas-container {
+  width: 100%;
+  height: 420px;
+  max-width: 36%;
+  margin: 2rem auto 1rem auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(77,182,172,0.07);
+  padding: 1.5rem 1rem;
+}
+
+.card-body {
+  overflow-x: auto;
+}
+
+/* Scroll para tablas grandes */
+.table-responsive {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Botón cerrar sesión */
+.navbar .btn-danger {
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 0.4rem 1.2rem;
+}
+
+/* Gráficos responsivos */
+canvas {
+  max-width: 100% !important;
+  height: auto !important;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(77,182,172,0.07);
+  padding: 1rem;
+}
+
+body > .d-flex.flex-grow-1 {
+  margin-top: 56px; /* Altura navbar */
+}
+
+/* Modales: tamaño máximo y scroll interno */
+.modal-dialog {
+  max-width: 800px;
+  margin: 2rem auto;
+}
+.modal-content {
+  max-height: 80vh;
+  overflow: hidden;
+  border-radius: 16px;
+}
+.modal-body {
+  overflow-y: auto;
+  max-height: 60vh;
+  padding: 1.5rem;
+}
+
+@media (max-width: 991px) {
+  .modal-dialog {
+    max-width: 95vw;
+  }
+  .modal-content {
+    max-height: 90vh;
+  }
+  .modal-body {
+    max-height: 70vh;
+  }
+}
+
+/* Sección Productos: organización y estilos */
+#seccion2 .card-header {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(90deg, #4DB6AC 60%, #232526 100%);
+  color: #fff;
+  border-radius: 18px 18px 0 0;
+  font-weight: 600;
+  font-size: 1.2rem;
+  border: none;
+  box-shadow: 0 2px 8px rgba(77,182,172,0.10);
+  padding: 1.2rem 2rem;
+}
+#seccion2 .card-title {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+#seccion2 .filtros-productos {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  margin-top: 0.5rem;
+}
+#filtroTipoProducto {
+  min-width: 180px;
+  max-width: 220px;
+  border-radius: 8px;
+  border: 1.5px solid #4DB6AC;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  background: #f8f9fa;
+  color: #232526;
+  box-shadow: 0 1px 4px rgba(77,182,172,0.07);
+}
+#descargarProductos {
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 0.5rem 1.2rem;
+  background: #fff;
+  color: #4DB6AC;
+  border: 2px solid #4DB6AC;
+  transition: background 0.2s, color 0.2s;
+}
+#descargarProductos:hover {
+  background: #4DB6AC;
+  color: #fff;
+}
+#seccion2 .table,
+#seccion4 .table,
+#seccion5 .table {
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(77,182,172,0.06);
+}
+#seccion2 .table thead,
+#seccion4 .table thead,
+#seccion5 .table thead {
+  background: #e0f2f1;
+}
+#seccion2 .table th,
+#seccion4 .table th,
+#seccion5 .table th {
+  color: #232526;
+  font-weight: 700;
+  font-size: 1.08rem;
+  letter-spacing: 0.5px;
+  background: #e0f2f1;
+}
+#seccion2 .table td,
+#seccion4 .table td,
+#seccion5 .table td {
+  color: #232526;
+  font-size: 1.01rem;
+  vertical-align: middle;
+}
+#seccion2 .table-striped tbody tr:nth-of-type(odd),
+#seccion4 .table-striped tbody tr:nth-of-type(odd),
+#seccion5 .table-striped tbody tr:nth-of-type(odd) {
+  background: #f6f6f6;
+}
+#seccion2 .table-striped tbody tr:hover,
+#seccion4 .table-striped tbody tr:hover,
+#seccion5 .table-striped tbody tr:hover {
+  background: #b2dfdb33;
+}
+#seccion2 #descargarProductos,
+#seccion4 #descargarAnimales,
+#seccion5 #descargarVendedores {
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 0.5rem 1.2rem;
+  background: #fff;
+  color: #4DB6AC;
+  border: 2px solid #4DB6AC;
+  transition: background 0.2s, color 0.2s;
+}
+#seccion2 #descargarProductos:hover,
+#seccion4 #descargarAnimales:hover,
+#seccion5 #descargarVendedores:hover {
+  background: #4DB6AC;
+  color: #fff;
+}
+
+/* Sección productos: restaurar diseño original y limitar solo la gráfica */
+#seccion2 .row.mt-4 {
+  margin-top: 0 !important;
+}
+#seccion2 .row {
+  margin-right: 0 !important;
+  margin-left: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  gap: 0 !important;
+}
+#seccion2 .col-md-6 {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  display: flex;
+  align-items: stretch;
+}
+#seccion2 .dashboard-canvas-container {
+  width: 100%;
+  margin: 0 auto 0 0 !important;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 !important;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(77,182,172,0.07);
+}
+#seccion2 .table-responsive {
+  height: 100%;
+  display: flex;
+  align-items: center;
+}

@@ -11,6 +11,22 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // Previsualización del CSV al seleccionar archivo
+  const fileInput = document.getElementById("file");
+  if (fileInput) {
+    fileInput.addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const csvContent = event.target.result;
+          previewCSV(csvContent);
+        };
+        reader.readAsText(file);
+      }
+    });
+  }
+
   // Subida de CSV
   const uploadForm = document.getElementById("uploadForm");
   if (uploadForm) {
@@ -27,8 +43,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const mensaje = await response.text();
         mostrarMensaje(mensaje, "info");
+        
+        // Auto-cerrar el mensaje después de 8 segundos
+        setTimeout(() => {
+          const alert = document.querySelector('#mensajeRespuesta .alert');
+          if (alert) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+          }
+        }, 8000);
 
         bootstrap.Modal.getInstance(document.getElementById('uploadModal')).hide();
+        
+        // Limpiar la previsualización
+        document.getElementById('csvPreview').classList.add('d-none');
+        document.getElementById('file').value = '';
+        document.getElementById('btnSubirCsv').disabled = true;
+        
         cargarProductos();
         mostrarSeccion("productos");
 
@@ -79,7 +110,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const mensaje = await res.text();
       if (res.ok) {
-        mostrarMensaje(mensaje, "success");
+        // Modificar el mensaje para quitar "con estado ACTIVO"
+        const mensajeLimpio = mensaje.replace(/con estado ACTIVO/gi, '').trim();
+        mostrarMensaje(mensajeLimpio, "success");
+        
+        // Auto-cerrar el mensaje después de 8 segundos
+        setTimeout(() => {
+          const alert = document.querySelector('#mensajeRespuesta .alert');
+          if (alert) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+          }
+        }, 8000);
+        
         this.reset();
         preview.style.display = 'none';
         cargarProductos();
@@ -131,6 +174,14 @@ function renderProductos(productos) {
   const tbody = document.getElementById("tablaProductos");
   tbody.innerHTML = "";
 
+  if (!productos || productos.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" class="text-center text-muted">No hay productos registrados.</td>
+      </tr>`;
+    return;
+  }
+
   productos.forEach(p => {
     const fila = document.createElement("tr");
     fila.innerHTML = `
@@ -164,6 +215,18 @@ function renderCatalogo(productos) {
   const contenedor = document.getElementById("catalogoProductos");
   contenedor.innerHTML = "";
 
+  if (!productos || productos.length === 0) {
+    contenedor.innerHTML = `
+      <div class="col-12">
+        <div class="d-flex flex-column justify-content-center align-items-center text-center" style="min-height: 100vh; min-width: 45vh; margin-top: -15vh; margin-left: 65vh;">
+          <i class="fas fa-box-open fa-4x text-muted mb-3"></i>
+          <p class="h4 text-muted">No hay productos registrados en el catálogo</p>
+          <p class="text-muted">Agrega productos para que aparezcan aquí</p>
+        </div>
+      </div>`;
+    return;
+  }
+
   productos.forEach(p => {
     const tarjeta = document.createElement("div");
     tarjeta.className = "col";
@@ -186,17 +249,37 @@ function renderCatalogo(productos) {
 
 // Eliminar producto (cambia estado a INACTIVO)
 function eliminarProducto(id) {
-  if (confirm('¿Estás seguro de eliminar este producto?')) {
+  // Guardar el ID del producto a eliminar
+  const btnConfirmar = document.getElementById('btnConfirmarEliminar');
+  
+  // Mostrar el modal
+  const modalEliminar = new bootstrap.Modal(document.getElementById('modalEliminar'));
+  modalEliminar.show();
+  
+  // Remover listeners anteriores para evitar duplicados
+  const nuevoBtn = btnConfirmar.cloneNode(true);
+  btnConfirmar.replaceWith(nuevoBtn);
+  
+  // Agregar el evento de confirmación
+  nuevoBtn.addEventListener('click', function() {
     fetch(`/productos/eliminar/${id}`, {
       method: 'DELETE',
       credentials: 'include'
     })
       .then(async res => {
-        const texto = await res.text(); // primero obtén el texto
         if (res.ok) {
-          mostrarMensaje(texto, "success");
+          mostrarMensaje("Producto eliminado", "danger");
+          // Auto-cerrar el mensaje después de 6 segundos
+          setTimeout(() => {
+            const alert = document.querySelector('#mensajeRespuesta .alert');
+            if (alert) {
+              const bsAlert = new bootstrap.Alert(alert);
+              bsAlert.close();
+            }
+          }, 6000);
           cargarProductos();
         } else {
+          const texto = await res.text();
           mostrarMensaje(texto, "danger");
         }
       })
@@ -204,7 +287,10 @@ function eliminarProducto(id) {
         console.error("Error al eliminar producto:", err);
         mostrarMensaje("Error al conectar con el servidor", "danger");
       });
-  }
+    
+    // Cerrar el modal
+    modalEliminar.hide();
+  });
 }
 
 // Función para llenar el formulario con los datos del producto
@@ -287,6 +373,16 @@ imagenInput.addEventListener('change', function () {
           const mensaje = await res.text();
           if (res.ok) {
             mostrarMensaje(mensaje, "success");
+            
+            // Auto-cerrar el mensaje después de 8 segundos
+            setTimeout(() => {
+              const alert = document.querySelector('#mensajeRespuesta .alert');
+              if (alert) {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+              }
+            }, 8000);
+            
             nuevoForm.reset();
             document.getElementById('previewImagen').style.display = 'none';
             cargarProductos();
@@ -301,4 +397,50 @@ imagenInput.addEventListener('change', function () {
       });
     })
     .catch(err => console.error("Error al editar producto:", err));
+}
+
+// Función para previsualizar el contenido del CSV
+function previewCSV(csvContent) {
+  const lines = csvContent.split('\n').filter(line => line.trim() !== '');
+  
+  if (lines.length === 0) {
+    return;
+  }
+
+  // Obtener encabezados (primera línea)
+  const headers = lines[0].split(',').map(h => h.trim());
+  
+  // Mostrar encabezados en la tabla
+  const headersRow = document.getElementById('csvHeaders');
+  headersRow.innerHTML = headers.map(h => `<th>${h}</th>`).join('');
+  
+  // Mostrar datos (resto de líneas)
+  const dataBody = document.getElementById('csvData');
+  dataBody.innerHTML = '';
+  
+  const dataLines = lines.slice(1); // Omitir la primera línea (encabezados)
+  
+  dataLines.forEach((line, index) => {
+    if (line.trim() === '') return;
+    
+    const values = line.split(',').map(v => v.trim());
+    const row = document.createElement('tr');
+    
+    values.forEach(value => {
+      const cell = document.createElement('td');
+      cell.textContent = value || '-';
+      row.appendChild(cell);
+    });
+    
+    dataBody.appendChild(row);
+  });
+  
+  // Mostrar el total de productos
+  document.getElementById('totalProductos').textContent = dataLines.length;
+  
+  // Mostrar la sección de previsualización
+  document.getElementById('csvPreview').classList.remove('d-none');
+  
+  // Habilitar el botón de subir
+  document.getElementById('btnSubirCsv').disabled = false;
 }

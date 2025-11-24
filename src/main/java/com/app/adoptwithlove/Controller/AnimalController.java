@@ -78,7 +78,8 @@ public class AnimalController {
             String line;
             boolean firstLine = true;
             List<Animal> nuevosAnimales = new ArrayList<>();
-            int duplicados = 0;
+            int animalesIgnorados = 0;
+            int animalesSubidos = 0;
 
             Persona persona = personaRepository.findByEmail(userDetails.getUsername())
                     .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado"));
@@ -103,36 +104,44 @@ public class AnimalController {
                 String tipo = data[3].trim();
                 String imagen = data.length > 4 && !data[4].trim().isEmpty() ? data[4].trim() : null;
 
-                boolean existe = animalesRepository.findByFundacion(fundacion).stream()
-                        .anyMatch(a -> a.getNombre().equalsIgnoreCase(nombre)
+                // Buscar solo animales ACTIVOS de la fundación
+                Optional<Animal> animalExistente = animalesRepository.findByFundacion(fundacion).stream()
+                        .filter(a -> a.getNombre().equalsIgnoreCase(nombre)
                                 && a.getEdad() == edad
                                 && a.getRaza().equalsIgnoreCase(raza)
-                                && a.getTipo_animal().equalsIgnoreCase(tipo));
+                                && a.getTipo_animal().equalsIgnoreCase(tipo)
+                                && a.getEstado() != null
+                                && "ACTIVO".equalsIgnoreCase(a.getEstado().getNombreEstado()))
+                        .findFirst();
 
-                if (existe) {
-                    duplicados++;
-                    continue;
+                if (animalExistente.isPresent()) {
+                    // Animal existe y está ACTIVO, ignorar
+                    animalesIgnorados++;
+                    System.out.println("Animal ignorado (ya existe con estado ACTIVO): " + nombre);
+                } else {
+                    // Animal no existe o está INACTIVO, crear nuevo
+                    Animal nuevo = new Animal();
+                    nuevo.setNombre(nombre);
+                    nuevo.setEdad(edad);
+                    nuevo.setRaza(raza);
+                    nuevo.setTipo_animal(tipo);
+                    nuevo.setImagen(imagen);
+                    nuevo.setFundacion(fundacion);
+                    nuevosAnimales.add(nuevo);
                 }
-
-                Animal nuevo = new Animal();
-                nuevo.setNombre(nombre);
-                nuevo.setEdad(edad);
-                nuevo.setRaza(raza);
-                nuevo.setTipo_animal(tipo);
-                nuevo.setImagen(imagen);
-                nuevo.setFundacion(fundacion);
-                nuevosAnimales.add(nuevo);
             }
 
             if (!nuevosAnimales.isEmpty()) {
-                animalesRepository.saveAll(nuevosAnimales);
+                // Usar el servicio para asignar estado ACTIVO automáticamente
+                for (Animal animal : nuevosAnimales) {
+                    service.create(animal);
+                    animalesSubidos++;
+                }
             }
 
-            String mensaje = "Se guardaron " + nuevosAnimales.size() + " animales nuevos.";
-            if (duplicados > 0) {
-                mensaje += " Se ignoraron " + duplicados + " duplicados.";
-            }
-
+            // Construir mensaje de respuesta
+            String mensaje = String.format("%d animal(es) subidos correctamente, %d animal(es) ignorados", 
+                                          animalesSubidos, animalesIgnorados);
             return ResponseEntity.ok(mensaje);
 
         } catch (Exception e) {
@@ -315,7 +324,7 @@ String rutaWeb = "/img/" + nombreArchivo;
             // ✅ Usar el servicio para asignar automáticamente ACTIVO
             service.create(animal);
 
-            return ResponseEntity.ok("Animal registrado correctamente con estado ACTIVO");
+            return ResponseEntity.ok("Animal registrado correctamente");
 
         } catch (Exception e) {
             e.printStackTrace();
