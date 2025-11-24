@@ -11,6 +11,7 @@ import com.app.adoptwithlove.entity.Persona;
 import com.app.adoptwithlove.entity.Productos;
 import com.app.adoptwithlove.repository.PersonaRepository;
 import com.app.adoptwithlove.repository.ProductosRepository;
+import com.app.adoptwithlove.service.ProductoService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -30,59 +31,53 @@ public class ProductosController {
     @Autowired
     private PersonaRepository personaRepository;
 
+    @Autowired
+    private ProductoService productoService;
+
     @GetMapping
-    public List<Productos> getAllProductos() {
-        return productoRepository.findAll();
-    }
+public List<Productos> getAllProductosActivos() {
+    return productoService.filtrarPorEstado(List.of("ACTIVO"));
+}
 
 
     @PostMapping("/crear")
-public ResponseEntity<String> createProducto(@RequestParam("nombre") String nombre,
-                                             @RequestParam("precio") Double precio,
-                                             @RequestParam("cantidad") String cantidad,
-                                             @RequestParam("tipoProducto") String tipoProducto,
-                                             @RequestParam("descripcion") String descripcion,
-                                             @RequestParam("imagen") MultipartFile imagen,
-                                             @AuthenticationPrincipal UserDetails userDetails) {
-    try {
-        Persona vendedor = personaRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("Vendedor no encontrado"));
+    public ResponseEntity<String> createProducto(@RequestParam("nombre") String nombre,
+                                                 @RequestParam("precio") Double precio,
+                                                 @RequestParam("cantidad") String cantidad,
+                                                 @RequestParam("tipoProducto") String tipoProducto,
+                                                 @RequestParam("descripcion") String descripcion,
+                                                 @RequestParam("imagen") MultipartFile imagen,
+                                                 @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            Persona vendedor = personaRepository.findByEmail(userDetails.getUsername())
+                    .orElseThrow(() -> new RuntimeException("Vendedor no encontrado"));
 
-        // Nombre original del archivo
-        String nombreArchivo = imagen.getOriginalFilename();
+            String nombreArchivo = imagen.getOriginalFilename();
+            Path rutaImagen = Paths.get("src/main/resources/static/img", nombreArchivo);
 
-        // Ruta física en el proyecto
-        Path rutaImagen = Paths.get("src/main/resources/static/img", nombreArchivo);
+            if (!Files.exists(rutaImagen)) {
+                Files.copy(imagen.getInputStream(), rutaImagen, StandardCopyOption.REPLACE_EXISTING);
+            }
 
-        // Solo copiar si no existe
-        if (!Files.exists(rutaImagen)) {
-            Files.copy(imagen.getInputStream(), rutaImagen, StandardCopyOption.REPLACE_EXISTING);
+            String rutaWeb = "/img/" + nombreArchivo;
+
+            Productos producto = new Productos();
+            producto.setNombre(nombre);
+            producto.setPrecio(precio);
+            producto.setCantidad(cantidad);
+            producto.setTipoProducto(tipoProducto);
+            producto.setDescripcion(descripcion);
+            producto.setImagen(rutaWeb);
+            producto.setPersona(vendedor);
+
+            // ✅ Usamos el servicio para que asigne el estado ACTIVO automáticamente
+            productoService.create(producto);
+
+            return ResponseEntity.ok("Producto guardado correctamente con estado ACTIVO");
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body("Error al guardar la imagen: " + e.getMessage());
         }
-
-        // Ruta web para mostrar en frontend
-        String rutaWeb = "/img/" + nombreArchivo;
-
-        // Crear y guardar el producto
-        Productos producto = new Productos();
-        producto.setNombre(nombre);
-        producto.setPrecio(precio);
-        producto.setCantidad(cantidad);
-        producto.setTipoProducto(tipoProducto);
-        producto.setDescripcion(descripcion);
-        producto.setImagen(rutaWeb);
-        producto.setPersona(vendedor);
-
-        productoRepository.save(producto);
-
-        return ResponseEntity.ok("Producto guardado correctamente");
-    } catch (IOException e) {
-        e.printStackTrace();
-        return ResponseEntity.status(500).body("Error al guardar la imagen: " + e.getMessage());
-    } catch (Exception e) {
-        e.printStackTrace();
-        return ResponseEntity.status(500).body("Error al guardar el producto: " + e.getMessage());
     }
-}
 
 
     @PostMapping("/upload-csv")
@@ -96,6 +91,8 @@ public ResponseEntity<String> createProducto(@RequestParam("nombre") String nomb
             String line;
             boolean firstLine = true;
             List<Productos> nuevosProductos = new ArrayList<>();
+            int productosIgnorados = 0;
+            int productosSubidos = 0;
 
             Persona persona = personaRepository.findByEmail(userDetails.getUsername())
                     .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado"));
@@ -118,39 +115,52 @@ public ResponseEntity<String> createProducto(@RequestParam("nombre") String nomb
                 String descripcion = data[4].trim();
                 String imagen = data.length > 5 && !data[5].trim().isEmpty() ? data[5].trim() : null;
 
+                // Buscar solo productos ACTIVOS del vendedor
                 Optional<Productos> productoExistente = productoRepository.findByPersona(persona).stream()
                     .filter(p -> p.getNombre().equalsIgnoreCase(nombre)
                             && p.getPrecio() == precio
                             && p.getTipoProducto().equalsIgnoreCase(tipoProducto)
                             && p.getDescripcion().equalsIgnoreCase(descripcion)
-                            && p.getPersona().getId().equals(persona.getId()))
+                            && p.getPersona().getId().equals(persona.getId())
+                            && p.getEstado() != null 
+                            && "ACTIVO".equalsIgnoreCase(p.getEstado().getNombreEstado()))
                     .findFirst();
 
                 if (productoExistente.isPresent()) {
+                    // Producto existe y está ACTIVO, actualizar cantidad
                     Productos existente = productoExistente.get();
                     int cantidadActual = Integer.parseInt(existente.getCantidad());
                     int cantidadNueva = Integer.parseInt(cantidad);
                     existente.setCantidad(String.valueOf(cantidadActual + cantidadNueva));
                     productoRepository.save(existente);
-                    System.out.println("Cantidad actualizada para producto existente: " + nombre);
+                    productosIgnorados++;
+                    System.out.println("Cantidad actualizada para producto existente ACTIVO: " + nombre);
                 } else {
+                    // Producto no existe o está INACTIVO, crear nuevo
                     Productos producto = new Productos();
                     producto.setNombre(nombre);
                     producto.setPrecio(precio);
                     producto.setCantidad(cantidad);
                     producto.setTipoProducto(tipoProducto);
                     producto.setDescripcion(descripcion);
-                    producto.setImagen(imagen); // debe ser ruta relativa si viene en CSV
+                    producto.setImagen(imagen);
                     producto.setPersona(persona);
                     nuevosProductos.add(producto);
                 }
             }
 
             if (!nuevosProductos.isEmpty()) {
-                productoRepository.saveAll(nuevosProductos);
+                // ✅ Usamos el servicio para que asigne el estado ACTIVO automáticamente
+                for (Productos producto : nuevosProductos) {
+                    productoService.create(producto);
+                    productosSubidos++;
+                }
             }
 
-            return ResponseEntity.ok("Se procesaron correctamente los productos del archivo");
+            // Construir mensaje de respuesta
+            String mensaje = String.format("%d producto(s) subidos correctamente, %d producto(s) ignorados", 
+                                          productosSubidos, productosIgnorados);
+            return ResponseEntity.ok(mensaje);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -165,6 +175,31 @@ public ResponseEntity<String> createProducto(@RequestParam("nombre") String nomb
         return productoRepository.findByPersona(vendedor);
     }
 
+    @GetMapping("/filtrar-estado")
+public List<Productos> filtrarProductosPorEstado(@RequestParam List<String> estados) {
+    // Si no se envían estados, filtramos por ACTIVO, INACTIVO y BLOQUEADO por defecto
+    if (estados == null || estados.isEmpty()) {
+        estados = List.of("ACTIVO", "INACTIVO", "BLOQUEADO");
+    }
+    return productoService.filtrarPorEstado(estados);
+}
+
+    @GetMapping("/filtrados")
+public List<Productos> misProductosFiltrados(
+        @AuthenticationPrincipal UserDetails userDetails,
+        @RequestParam(required = false) String[] estados) {
+
+    Persona vendedor = personaRepository.findByEmail(userDetails.getUsername())
+            .orElseThrow(() -> new RuntimeException("Vendedor no encontrado"));
+
+    // Si no vienen estados → por defecto ACTIVO
+    List<String> listaEstados = (estados == null || estados.length == 0)
+            ? List.of("ACTIVO")
+            : Arrays.asList(estados);
+
+    return productoService.filtrarPorVendedorYEstado(vendedor.getId(), listaEstados);
+}
+
     @GetMapping("/{id}")
     public ResponseEntity<Productos> getProducto(@PathVariable Long id) {
         return productoRepository.findById(id)
@@ -173,28 +208,49 @@ public ResponseEntity<String> createProducto(@RequestParam("nombre") String nomb
     }
 
     @PutMapping("/editar/{id}")
-    public ResponseEntity<String> updateProducto(@PathVariable Long id,
-                                                 @RequestBody Productos dto,
-                                                 @AuthenticationPrincipal UserDetails userDetails) {
-        return productoRepository.findById(id).map(producto -> {
-            producto.setNombre(dto.getNombre());
-            producto.setPrecio(dto.getPrecio());
-            producto.setCantidad(dto.getCantidad());
-            producto.setTipoProducto(dto.getTipoProducto());
-            producto.setDescripcion(dto.getDescripcion());
-            producto.setImagen(dto.getImagen());
-            productoRepository.save(producto);
-            return ResponseEntity.ok("Producto actualizado");
-        }).orElse(ResponseEntity.status(404).body("Producto no encontrado"));
-    }
+public ResponseEntity<String> updateProducto(
+        @PathVariable Long id,
+        @RequestParam("nombre") String nombre,
+        @RequestParam("precio") Double precio,
+        @RequestParam("cantidad") String cantidad,
+        @RequestParam("tipoProducto") String tipoProducto,
+        @RequestParam("descripcion") String descripcion,
+        @RequestParam(value = "imagen", required = false) MultipartFile imagen) {
+
+    return productoRepository.findById(id).map(producto -> {
+
+        producto.setNombre(nombre);
+        producto.setPrecio(precio);
+        producto.setCantidad(cantidad);
+        producto.setTipoProducto(tipoProducto);
+        producto.setDescripcion(descripcion);
+
+        if (imagen != null && !imagen.isEmpty()) {
+            try {
+                String nombreArchivo = imagen.getOriginalFilename();
+                Path rutaImagen = Paths.get("src/main/resources/static/img", nombreArchivo);
+                Files.copy(imagen.getInputStream(), rutaImagen, StandardCopyOption.REPLACE_EXISTING);
+                producto.setImagen("/img/" + nombreArchivo);
+            } catch (Exception e) {
+                return ResponseEntity.status(500).body("Error al guardar la imagen: " + e.getMessage());
+            }
+        }
+
+        productoRepository.save(producto);
+        return ResponseEntity.ok("Producto actualizado correctamente");
+
+    }).orElse(ResponseEntity.status(404).body("Producto no encontrado"));
+}
+
 
     @DeleteMapping("/eliminar/{id}")
     public ResponseEntity<String> deleteProducto(@PathVariable Long id) {
-        if (productoRepository.existsById(id)) {
-            productoRepository.deleteById(id);
-            return ResponseEntity.ok("Producto eliminado");
-        } else {
-            return ResponseEntity.status(404).body("Producto no encontrado");
+        try {
+            // ✅ Usamos el servicio, que cambiará el estado a INACTIVO
+            productoService.delete(id);
+            return ResponseEntity.ok("Producto marcado como INACTIVO");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error al eliminar: " + e.getMessage());
         }
     }
 

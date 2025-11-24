@@ -1,6 +1,5 @@
 package com.app.adoptwithlove.Controller;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,8 +16,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import java.util.Optional;
 import com.app.adoptwithlove.Dto.VendedorBloqueadoDTO;
+import com.app.adoptwithlove.entity.Estado;
 import com.app.adoptwithlove.entity.Persona;
 import com.app.adoptwithlove.service.PersonaService;
+import com.app.adoptwithlove.repository.EstadoRepository;
 import com.app.adoptwithlove.repository.PersonaRepository;
 import com.app.adoptwithlove.repository.ProductosRepository;
 import com.app.adoptwithlove.entity.Productos;
@@ -36,30 +37,32 @@ public class PersonaController {
     private ReclamosRepository reclamoRepository;
 
     @Autowired
-    private PersonaService service;
+    private EstadoRepository estadoRepository;
 
+    @Autowired
+    private PersonaService service;
 
     @GetMapping("/vendedores/bloqueados")
     @ResponseBody
     public List<VendedorBloqueadoDTO> listarVendedoresBloqueados() {
-        List<Persona> vendedoresBloqueados = personaRepository.findByRol_NombreRolAndEstado("TIENDA", "BLOQUEADO");
-
+        List<Persona> posibles = personaRepository.findAll();
         List<VendedorBloqueadoDTO> respuesta = new ArrayList<>();
 
-        for (Persona vendedor : vendedoresBloqueados) {
-            List<Productos> productos = productoRepository.findByPersona_Id(vendedor.getId());
-
-            List<String> reclamos = new ArrayList<>();
-            for (Productos producto : productos) {
-                List<Reclamos> reclamosProducto = reclamoRepository.findByProducto_Id(producto.getId());
-                for (Reclamos r : reclamosProducto) {
-                    reclamos.add("Producto: " + producto.getNombre() + " → " + r.getDescripcion());
+        for (Persona vendedor : posibles) {
+            String rol = vendedor.getRol() != null && vendedor.getRol().getNombreRol() != null ? vendedor.getRol().getNombreRol().trim().toLowerCase() : "";
+            String estado = vendedor.getEstado() != null && vendedor.getEstado().getNombreEstado() != null ? vendedor.getEstado().getNombreEstado().trim().toLowerCase() : "";
+            if (rol.equals("tienda") && estado.equals("bloqueado")) {
+                List<Productos> productos = productoRepository.findByPersona_Id(vendedor.getId());
+                List<String> reclamos = new ArrayList<>();
+                for (Productos producto : productos) {
+                    List<Reclamos> reclamosProducto = reclamoRepository.findByProducto_Id(producto.getId());
+                    for (Reclamos r : reclamosProducto) {
+                        reclamos.add("Producto: " + producto.getNombre() + " → " + r.getDescripcion());
+                    }
                 }
+                respuesta.add(new VendedorBloqueadoDTO(vendedor.getId(), vendedor.getNombre(), vendedor.getEmail(), reclamos));
             }
-
-            respuesta.add(new VendedorBloqueadoDTO(vendedor.getId(), vendedor.getNombre(), vendedor.getEmail(), reclamos));
         }
-
         return respuesta;
     }
 
@@ -72,13 +75,15 @@ public class PersonaController {
         }
 
         Persona persona = personaOpt.get();
-        persona.setEstado("BLOQUEADO");
+        Estado estadoBloqueado = estadoRepository.findByNombreEstado("BLOQUEADO")
+                .orElseThrow(() -> new RuntimeException("El estado 'BLOQUEADO' no existe. Ejecuta el seeder primero."));
+        persona.setEstado(estadoBloqueado);
         personaRepository.save(persona);
 
         return ResponseEntity.ok("Persona bloqueada correctamente");
     }
 
-     @PutMapping("/habilitar/{id}")
+    @PutMapping("/habilitar/{id}")
     public ResponseEntity<?> habilitarPersona(@PathVariable Long id) {
         Optional<Persona> personaOpt = personaRepository.findById(id);
 
@@ -87,40 +92,42 @@ public class PersonaController {
         }
 
         Persona persona = personaOpt.get();
-        persona.setEstado("ACTIVO");
+        Estado estadoActivo = estadoRepository.findByNombreEstado("ACTIVO")
+                .orElseThrow(() -> new RuntimeException("El estado 'ACTIVO' no existe. Ejecuta el seeder primero."));
+        persona.setEstado(estadoActivo);
         personaRepository.save(persona);
 
         return ResponseEntity.ok("Persona activada correctamente");
     }
 
     @GetMapping("/persona")
-    public String getAll(Model modelo){
+    public String getAll(Model modelo) {
         modelo.addAttribute("personas", service.getAll());
         return "persona";
     }
 
     @GetMapping("persona/nuevo")
-    public String show(Model modelo){
+    public String show(Model modelo) {
         Persona persona = new Persona();
         modelo.addAttribute("persona", persona);
         return "personaCreate";
     }
 
     @PostMapping("/persona")
-    public String create(@ModelAttribute("persona") Persona persona, Model model){
+    public String create(@ModelAttribute("persona") Persona persona, Model model) {
         service.create(persona);
         return "redirect:/persona";
     }
 
     @GetMapping("/persona/edit/{id}")
-    public String getById(@PathVariable Long id, Model modelo){
+    public String getById(@PathVariable Long id, Model modelo) {
         Persona persona = service.getById(id);
-        modelo.addAttribute("persona", persona );
+        modelo.addAttribute("persona", persona);
         return "personaUpdate";
     }
 
     @PostMapping("/persona/{id}")
-    public String update(@PathVariable Long id, @ModelAttribute("persona") Persona persona ){
+    public String update(@PathVariable Long id, @ModelAttribute("persona") Persona persona) {
         Persona personaExistente = service.getById(id);
         personaExistente.setId(id);
         personaExistente.setNombre(persona.getNombre());
@@ -131,17 +138,14 @@ public class PersonaController {
         personaExistente.setFechaNacimiento(persona.getFechaNacimiento());
         personaExistente.setFundaciones(persona.getFundaciones());
         personaExistente.setProductos(persona.getProductos());
-        personaExistente.setAdopciones(persona.getAdopciones());
-        service.update(id,personaExistente);
+        service.update(id, personaExistente);
         return "redirect:/persona";
     }
 
     @GetMapping("/persona/{id}")
-    public String delete(@PathVariable Long id){
+    public String delete(@PathVariable Long id) {
         service.delete(id);
         return "redirect:/persona";
     }
 
-   
 }
-

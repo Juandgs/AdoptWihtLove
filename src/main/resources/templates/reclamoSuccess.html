@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reclamo Enviado</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/a2d9d5a56b.js" crossorigin="anonymous"></script>
+  <style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .success-container {
+        max-width: 600px;
+        background: #fff;
+        padding: 3rem 2rem;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        animation: fadeInScale 0.8s ease-in;
+        text-align: center;
+    }
+
+    @keyframes fadeInScale {
+      from { 
+        opacity: 0; 
+        transform: scale(0.9) translateY(20px); 
+      }
+      to { 
+        opacity: 1; 
+        transform: scale(1) translateY(0); 
+      }
+    }
+
+    .success-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1.5rem;
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { 
+        transform: scale(1); 
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
+      }
+      50% { 
+        transform: scale(1.05); 
+        box-shadow: 0 0 0 20px rgba(220, 53, 69, 0);
+      }
+    }
+
+    .success-icon i {
+        font-size: 45px;
+        color: white;
+    }
+
+    h1 {
+        font-weight: 700;
+        color: #dc3545;
+        margin-bottom: 1rem;
+        font-size: 2rem;
+    }
+
+    .success-message {
+        color: #6c757d;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .info-box {
+        background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
+        border-left: 4px solid #dc3545;
+        border-radius: 10px;
+        padding: 15px 20px;
+        margin-bottom: 2rem;
+        text-align: left;
+    }
+
+    .info-box i {
+        color: #dc3545;
+        margin-right: 10px;
+    }
+
+    .info-box p {
+        margin: 0;
+        color: #2c3e50;
+        font-size: 0.95rem;
+    }
+
+    .btn {
+        padding: 0.75rem 2.5rem;
+        border-radius: 25px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s;
+        font-size: 0.95rem;
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        border: none;
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+    }
+
+    .btn-danger:hover {
+        background: linear-gradient(135deg, #c82333 0%, #dc3545 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+    }
+
+    .btn-outline-secondary {
+        border: 2px solid #6c757d;
+        color: #6c757d;
+        background: transparent;
+    }
+
+    .btn-outline-secondary:hover {
+        background: #6c757d;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+    }
+
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    @media (max-width: 576px) {
+      .success-container {
+        padding: 2rem 1.5rem;
+        margin: 20px;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      .success-message {
+        font-size: 1rem;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="success-container">
+    <div class="success-icon">
+      <i class="fas fa-check"></i>
+    </div>
+    
+    <h1>¡Reclamo Enviado!</h1>
+    
+    <p class="success-message">
+      Tu reclamo ha sido enviado exitosamente. 
+    </p>
+
+    <div class="info-box">
+      <p>
+        <i class="fas fa-info-circle"></i>
+        <strong>Nuestro equipo revisará la calidad del producto</strong> y se pondrá en contacto contigo pronto para dar seguimiento a tu solicitud.
+      </p>
+    </div>
+
+    <div class="button-group">
+      <a href="/tiendas" class="btn btn-danger">Volver a Tiendas</a>
+      <a href="/" class="btn btn-outline-secondary">Ir al Inicio</a>
+    </div>
+  </div>
+</body>
+</html>

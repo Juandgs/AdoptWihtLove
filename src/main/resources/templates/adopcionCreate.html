@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Formulario de Adopción</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .form-container {
+        max-width: 700px;
+        margin: 40px auto;
+        background: #fff;
+        padding: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        animation: fadeIn 0.8s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: #198754;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        position: relative;
+        display: inline-block;
+        padding-bottom: 15px;
+    }
+
+    h2::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 4px;
+      background: linear-gradient(90deg, #198754, #20c997);
+      border-radius: 2px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+        display: flex;
+        align-items: center;
+        font-size: 0.95rem;
+    }
+
+    .form-label i {
+        margin-right: 8px;
+        color: #198754;
+    }
+
+    .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 0.5rem 0.75rem;
+        transition: all 0.3s;
+        font-size: 0.95rem;
+    }
+
+    .form-control:focus {
+        border-color: #198754;
+        box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.15);
+    }
+
+    .text-muted {
+        font-size: 0.85rem;
+        color: #6c757d !important;
+        margin-top: 0.25rem;
+        text-align: left;
+        display: block;
+    }
+
+    .btn {
+        padding: 0.6rem 1.8rem;
+        border-radius: 25px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s;
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+        border: none;
+        box-shadow: 0 4px 15px rgba(25, 135, 84, 0.3);
+    }
+
+    .btn-success:hover {
+        background: linear-gradient(135deg, #20c997 0%, #198754 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(25, 135, 84, 0.4);
+    }
+
+    .btn-secondary {
+        background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        border: none;
+        box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+    }
+
+    .btn-secondary:hover {
+        background: linear-gradient(135deg, #5a6268 0%, #6c757d 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+    }
+
+    .mb-3 {
+        position: relative;
+        margin-bottom: 1rem !important;
+    }
+
+    /* Iconos antes de los inputs */
+    input[type="text"]:not(#nIdentificacion):not(#telefono),
+    input[type="email"],
+    input[type="number"] {
+        background-repeat: no-repeat;
+        background-position: 10px center;
+        background-size: 20px;
+        padding-left: 2.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .form-container {
+        margin: 20px;
+        padding: 1.5rem;
+      }
+
+      .btn {
+        padding: 0.6rem 1.5rem;
+        font-size: 0.9rem;
+      }
+
+      .row > div {
+        width: 100%;
+      }
+    }
+</style>
+</head>
+<body>
+<div class="container form-container">
+  <h2 class="text-center text-success mb-4">Formulario de Adopción</h2>
+
+  <form th:object="${adopcion}" action="/adopcion/crear" method="post">
+    <input type="hidden" th:field="*{animal.id}"/>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label for="nombre" class="form-label">Nombre</label>
+        <input id="nombre" type="text" class="form-control" name="nombre" placeholder="Ingresa tu nombre" title="Nombre" required>
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <label for="apellido" class="form-label">Apellido</label>
+        <input id="apellido" type="text" class="form-control" name="apellido" placeholder="Ingresa tu apellido" title="Apellido" required>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label for="telefono" class="form-label">Telefono</label>
+        <input id="telefono" type="text" class="form-control" name="telefono" placeholder="Ingresa tu teléfono" title="Teléfono" pattern="[0-9]{10}" maxlength="10" required>
+        <small class="text-muted">Debe tener exactamente 10 dígitos</small>
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input id="email" type="email" class="form-control" name="email" placeholder="Ingresa tu correo electrónico" title="Email" required>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-4 mb-3">
+        <label for="edad" class="form-label">Edad</label>
+        <input id="edad" type="number" class="form-control" name="edad" placeholder="Ingresa tu edad" title="Edad" min="18" max="120" required>
+        <small class="text-muted">Debes ser mayor de edad</small>
+      </div>
+
+      <div class="col-md-8 mb-3">
+        <label for="nIdentificacion" class="form-label">Número de Identificación</label>
+        <input id="nIdentificacion" type="text" class="form-control" name="nIdentificacion" placeholder="Ingresa tu número de identificación" title="Número de Identificación" pattern="[0-9]{10}" maxlength="10" required>
+        <small class="text-muted">Debe tener exactamente 10 dígitos</small>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="direccion" class="form-label">Dirección</label>
+      <input id="direccion" type="text" class="form-control" name="direccion" placeholder="Ingresa tu dirección" title="Dirección" required>
+    </div>
+
+    <div class="d-flex justify-content-between">
+      <a href="javascript:history.back()" class="btn btn-secondary">Cancelar</a>
+      <button type="submit" class="btn btn-success">Enviar Solicitud</button>
+    </div>
+  </form>
+</div>
+</body>
+</html>

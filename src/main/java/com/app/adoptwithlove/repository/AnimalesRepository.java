@@ -1,6 +1,7 @@
 package com.app.adoptwithlove.repository;
 
 import com.app.adoptwithlove.entity.Animal;
+import com.app.adoptwithlove.entity.Estado;
 import com.app.adoptwithlove.entity.Fundacion;
 
 import java.util.List;
@@ -11,4 +12,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AnimalesRepository extends JpaRepository<Animal, Long> {
     List<Animal> findByFundacion(Fundacion fundacion);
+    List<Animal> findByFundacionAndEstadoIn(Fundacion fundacion, List<Estado> estados);
+    List<Animal> findByFundacionAndEstadoNombreEstado(Fundacion fundacion, String nombreEstado);
 }

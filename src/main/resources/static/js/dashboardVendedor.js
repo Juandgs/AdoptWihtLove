@@ -11,6 +11,22 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // Previsualización del CSV al seleccionar archivo
+  const fileInput = document.getElementById("file");
+  if (fileInput) {
+    fileInput.addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const csvContent = event.target.result;
+          previewCSV(csvContent);
+        };
+        reader.readAsText(file);
+      }
+    });
+  }
+
   // Subida de CSV
   const uploadForm = document.getElementById("uploadForm");
   if (uploadForm) {
@@ -27,8 +43,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const mensaje = await response.text();
         mostrarMensaje(mensaje, "info");
+        
+        // Auto-cerrar el mensaje después de 8 segundos
+        setTimeout(() => {
+          const alert = document.querySelector('#mensajeRespuesta .alert');
+          if (alert) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+          }
+        }, 8000);
 
         bootstrap.Modal.getInstance(document.getElementById('uploadModal')).hide();
+        
+        // Limpiar la previsualización
+        document.getElementById('csvPreview').classList.add('d-none');
+        document.getElementById('file').value = '';
+        document.getElementById('btnSubirCsv').disabled = true;
+        
         cargarProductos();
         mostrarSeccion("productos");
 
@@ -79,7 +110,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const mensaje = await res.text();
       if (res.ok) {
-        mostrarMensaje(mensaje, "success");
+        // Modificar el mensaje para quitar "con estado ACTIVO"
+        const mensajeLimpio = mensaje.replace(/con estado ACTIVO/gi, '').trim();
+        mostrarMensaje(mensajeLimpio, "success");
+        
+        // Auto-cerrar el mensaje después de 8 segundos
+        setTimeout(() => {
+          const alert = document.querySelector('#mensajeRespuesta .alert');
+          if (alert) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+          }
+        }, 8000);
+        
         this.reset();
         preview.style.display = 'none';
         cargarProductos();
@@ -92,6 +135,7 @@ document.addEventListener("DOMContentLoaded", () => {
       mostrarMensaje("Error al conectar con el servidor", "danger");
     }
   });
+
 });
 
 // Funciones auxiliares
@@ -114,18 +158,29 @@ function mostrarMensaje(texto, tipo) {
   `;
 }
 
-function cargarProductos() {
-  fetch("/productos/mis-productos", {
+// Cargar productos del vendedor
+function cargarProductos(estados = ["ACTIVO"]) {
+  fetch(`/productos/filtrados?${estados.map(e => 'estados=' + e).join('&')}`, {
     method: "GET",
     credentials: "include"
   })
-  .then(res => res.json())
-  .then(productos => renderProductos(productos));
+    .then(res => res.json())
+    .then(productos => renderProductos(productos))
+    .catch(err => console.error("Error cargando productos:", err));
 }
 
+// Renderizar tabla de productos
 function renderProductos(productos) {
   const tbody = document.getElementById("tablaProductos");
   tbody.innerHTML = "";
+
+  if (!productos || productos.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" class="text-center text-muted">No hay productos registrados.</td>
+      </tr>`;
+    return;
+  }
 
   productos.forEach(p => {
     const fila = document.createElement("tr");
@@ -145,17 +200,32 @@ function renderProductos(productos) {
   });
 }
 
+// Renderizar catálogo público
 function cargarCatalogo() {
-  fetch("/productos", {
-    method: "GET"
+  fetch("/productos/filtrados?estados=ACTIVO", {
+    method: "GET",
+    credentials: "include"
   })
-  .then(res => res.json())
-  .then(productos => renderCatalogo(productos));
+    .then(res => res.json())
+    .then(productos => renderCatalogo(productos))
+    .catch(err => console.error("Error cargando catálogo:", err));
 }
 
 function renderCatalogo(productos) {
   const contenedor = document.getElementById("catalogoProductos");
   contenedor.innerHTML = "";
+
+  if (!productos || productos.length === 0) {
+    contenedor.innerHTML = `
+      <div class="col-12">
+        <div class="d-flex flex-column justify-content-center align-items-center text-center" style="min-height: 100vh; min-width: 45vh; margin-top: -15vh; margin-left: 65vh;">
+          <i class="fas fa-box-open fa-4x text-muted mb-3"></i>
+          <p class="h4 text-muted">No hay productos registrados en el catálogo</p>
+          <p class="text-muted">Agrega productos para que aparezcan aquí</p>
+        </div>
+      </div>`;
+    return;
+  }
 
   productos.forEach(p => {
     const tarjeta = document.createElement("div");
@@ -177,84 +247,200 @@ function renderCatalogo(productos) {
   });
 }
 
+// Eliminar producto (cambia estado a INACTIVO)
 function eliminarProducto(id) {
-  if (confirm('¿Estás seguro de eliminar este producto?')) {
+  // Guardar el ID del producto a eliminar
+  const btnConfirmar = document.getElementById('btnConfirmarEliminar');
+  
+  // Mostrar el modal
+  const modalEliminar = new bootstrap.Modal(document.getElementById('modalEliminar'));
+  modalEliminar.show();
+  
+  // Remover listeners anteriores para evitar duplicados
+  const nuevoBtn = btnConfirmar.cloneNode(true);
+  btnConfirmar.replaceWith(nuevoBtn);
+  
+  // Agregar el evento de confirmación
+  nuevoBtn.addEventListener('click', function() {
     fetch(`/productos/eliminar/${id}`, {
       method: 'DELETE',
       credentials: 'include'
     })
-    .then(res => {
-      if (res.ok) {
-        mostrarMensaje("Producto eliminado", "success");
-        cargarProductos();
-      } else {
-        mostrarMensaje("Error al eliminar el producto", "danger");
-      }
-    });
-  }
+      .then(async res => {
+        if (res.ok) {
+          mostrarMensaje("Producto eliminado", "danger");
+          // Auto-cerrar el mensaje después de 6 segundos
+          setTimeout(() => {
+            const alert = document.querySelector('#mensajeRespuesta .alert');
+            if (alert) {
+              const bsAlert = new bootstrap.Alert(alert);
+              bsAlert.close();
+            }
+          }, 6000);
+          cargarProductos();
+        } else {
+          const texto = await res.text();
+          mostrarMensaje(texto, "danger");
+        }
+      })
+      .catch(err => {
+        console.error("Error al eliminar producto:", err);
+        mostrarMensaje("Error al conectar con el servidor", "danger");
+      });
+    
+    // Cerrar el modal
+    modalEliminar.hide();
+  });
 }
 
+// Función para llenar el formulario con los datos del producto
+function llenarFormulario(producto) {
+  document.getElementById('nombre').value = producto.nombre;
+  document.getElementById('precio').value = producto.precio;
+  document.getElementById('cantidad').value = producto.cantidad;
+  document.getElementById('descripcion').value = producto.descripcion;
+  document.getElementById('tipoProducto').value = producto.tipoProducto;
+  
+  const preview = document.getElementById('previewImagen');
+  preview.src = producto.imagen;
+  preview.style.display = 'block';
+
+  const imagenInput = document.getElementById('imagen');
+  imagenInput.value = ""; // limpia el input, así al subir una nueva imagen reemplaza la anterior
+  imagenInput.required = false;
+}
+
+
+// Editar producto
 function editarProducto(id) {
-  fetch(`/productos/${id}`, {
-    method: 'GET',
-    credentials: 'include'
-  })
-  .then(res => res.json())
-  .then(producto => {
-    document.getElementById('nombre').value = producto.nombre;
-    document.getElementById('precio').value = producto.precio;
-    document.getElementById('cantidad').value = producto.cantidad;
-    document.getElementById('descripcion').value = producto.descripcion;
-    document.getElementById('tipoProducto').value = producto.tipoProducto;
-    document.getElementById('previewImagen').src = producto.imagen;
-    document.getElementById('previewImagen').style.display = 'block';
-    document.getElementById('imagen').required = false;
-
-    mostrarSeccion('nuevoProducto');
-
-    const form = document.getElementById('formCrearProducto');
-    form.onsubmit = async function (e) {
-      e.preventDefault();
-
-      const formData = new FormData();
-      formData.append("nombre", document.getElementById('nombre').value.trim());
-      formData.append("precio", document.getElementById('precio').value);
-      formData.append("cantidad", document.getElementById('cantidad').value.trim());
-      formData.append("descripcion", document.getElementById('descripcion').value.trim());
-      formData.append("tipoProducto", document.getElementById('tipoProducto').value);
-
-      const file = imagenInput.files[0];
-      if (file) {
-        formData.append("imagen", file);
+  fetch(`/productos/${id}`, { method: 'GET', credentials: 'include' })
+    .then(async res => {
+      if (!res.ok) {
+        const texto = await res.text();
+        mostrarMensaje(`Error al obtener producto: ${texto}`, 'danger');
+        throw new Error(`HTTP error! status: ${res.status}`);
       }
+      return res.json();
+    })
+    .then(producto => {
+      mostrarSeccion('nuevoProducto');
 
-      try {
-        const res = await fetch(`/productos/editar/${id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            nombre: formData.get("nombre"),
-            precio: parseFloat(formData.get("precio")),
-            cantidad: formData.get("cantidad"),
-            descripcion: formData.get("descripcion"),
-            tipoProducto: formData.get("tipoProducto"),
-            imagen: producto.imagen
-          }),
-          credentials: 'include'
-        });
+      const form = document.getElementById('formCrearProducto');
 
-        const mensaje = await res.text();
-        if (res.ok) {
-          mostrarMensaje(mensaje, "success");
-          cargarProductos();
-          mostrarSeccion("productos");
-        } else {
-          mostrarMensaje(mensaje, "danger");
-        }
-      } catch (err) {
-        console.error("Error al actualizar producto:", err);
-        mostrarMensaje("Error al conectar con el servidor", "danger");
-      }
+      // Eliminar listeners anteriores
+      const nuevoForm = form.cloneNode(true);
+      form.replaceWith(nuevoForm);
+
+      // Llenar formulario con los datos del producto
+      llenarFormulario(producto);
+
+      // Listener para la previsualización de la nueva imagen
+const imagenInput = document.getElementById('imagen');
+const preview = document.getElementById('previewImagen');
+
+imagenInput.addEventListener('change', function () {
+  const file = imagenInput.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      preview.src = e.target.result;
+      preview.style.display = 'block';
     };
+    reader.readAsDataURL(file);
+  } else {
+    preview.src = '#';
+    preview.style.display = 'none';
+  }
+});
+
+
+      // Listener para enviar los cambios
+      nuevoForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(nuevoForm);
+        if (document.getElementById('imagen').files[0]) {
+          formData.append("imagen", document.getElementById('imagen').files[0]);
+        }
+
+        try {
+          const res = await fetch(`/productos/editar/${id}`, {
+            method: 'PUT',
+            body: formData,
+            credentials: 'include'
+          });
+
+          const mensaje = await res.text();
+          if (res.ok) {
+            mostrarMensaje(mensaje, "success");
+            
+            // Auto-cerrar el mensaje después de 8 segundos
+            setTimeout(() => {
+              const alert = document.querySelector('#mensajeRespuesta .alert');
+              if (alert) {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+              }
+            }, 8000);
+            
+            nuevoForm.reset();
+            document.getElementById('previewImagen').style.display = 'none';
+            cargarProductos();
+            mostrarSeccion("productos");
+          } else {
+            mostrarMensaje(mensaje, "danger");
+          }
+        } catch (err) {
+          console.error("Error al actualizar producto:", err);
+          mostrarMensaje("Error al conectar con el servidor", "danger");
+        }
+      });
+    })
+    .catch(err => console.error("Error al editar producto:", err));
+}
+
+// Función para previsualizar el contenido del CSV
+function previewCSV(csvContent) {
+  const lines = csvContent.split('\n').filter(line => line.trim() !== '');
+  
+  if (lines.length === 0) {
+    return;
+  }
+
+  // Obtener encabezados (primera línea)
+  const headers = lines[0].split(',').map(h => h.trim());
+  
+  // Mostrar encabezados en la tabla
+  const headersRow = document.getElementById('csvHeaders');
+  headersRow.innerHTML = headers.map(h => `<th>${h}</th>`).join('');
+  
+  // Mostrar datos (resto de líneas)
+  const dataBody = document.getElementById('csvData');
+  dataBody.innerHTML = '';
+  
+  const dataLines = lines.slice(1); // Omitir la primera línea (encabezados)
+  
+  dataLines.forEach((line, index) => {
+    if (line.trim() === '') return;
+    
+    const values = line.split(',').map(v => v.trim());
+    const row = document.createElement('tr');
+    
+    values.forEach(value => {
+      const cell = document.createElement('td');
+      cell.textContent = value || '-';
+      row.appendChild(cell);
+    });
+    
+    dataBody.appendChild(row);
   });
+  
+  // Mostrar el total de productos
+  document.getElementById('totalProductos').textContent = dataLines.length;
+  
+  // Mostrar la sección de previsualización
+  document.getElementById('csvPreview').classList.remove('d-none');
+  
+  // Habilitar el botón de subir
+  document.getElementById('btnSubirCsv').disabled = false;
 }

@@ -68,16 +68,18 @@ public class AnimalController {
     // 📥 Carga por CSV
     @PostMapping("/upload-csv")
     public ResponseEntity<String> uploadCSV(@RequestParam("file") MultipartFile file,
-                                            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserDetails userDetails) {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body("El archivo está vacío");
         }
 
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
             String line;
             boolean firstLine = true;
             List<Animal> nuevosAnimales = new ArrayList<>();
-            int duplicados = 0;
+            int animalesIgnorados = 0;
+            int animalesSubidos = 0;
 
             Persona persona = personaRepository.findByEmail(userDetails.getUsername())
                     .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado"));
@@ -92,7 +94,8 @@ public class AnimalController {
 
                 String[] data = line.split(",");
                 if (data.length < 4) {
-                    return ResponseEntity.badRequest().body("El archivo debe tener al menos 4 columnas: Nombre, Edad, Raza, Tipo");
+                    return ResponseEntity.badRequest()
+                            .body("El archivo debe tener al menos 4 columnas: Nombre, Edad, Raza, Tipo");
                 }
 
                 String nombre = data[0].trim();
@@ -101,36 +104,44 @@ public class AnimalController {
                 String tipo = data[3].trim();
                 String imagen = data.length > 4 && !data[4].trim().isEmpty() ? data[4].trim() : null;
 
-                boolean existe = animalesRepository.findByFundacion(fundacion).stream()
-                    .anyMatch(a -> a.getNombre().equalsIgnoreCase(nombre)
+                // Buscar solo animales ACTIVOS de la fundación
+                Optional<Animal> animalExistente = animalesRepository.findByFundacion(fundacion).stream()
+                        .filter(a -> a.getNombre().equalsIgnoreCase(nombre)
                                 && a.getEdad() == edad
                                 && a.getRaza().equalsIgnoreCase(raza)
-                                && a.getTipo_animal().equalsIgnoreCase(tipo));
+                                && a.getTipo_animal().equalsIgnoreCase(tipo)
+                                && a.getEstado() != null
+                                && "ACTIVO".equalsIgnoreCase(a.getEstado().getNombreEstado()))
+                        .findFirst();
 
-                if (existe) {
-                    duplicados++;
-                    continue;
+                if (animalExistente.isPresent()) {
+                    // Animal existe y está ACTIVO, ignorar
+                    animalesIgnorados++;
+                    System.out.println("Animal ignorado (ya existe con estado ACTIVO): " + nombre);
+                } else {
+                    // Animal no existe o está INACTIVO, crear nuevo
+                    Animal nuevo = new Animal();
+                    nuevo.setNombre(nombre);
+                    nuevo.setEdad(edad);
+                    nuevo.setRaza(raza);
+                    nuevo.setTipo_animal(tipo);
+                    nuevo.setImagen(imagen);
+                    nuevo.setFundacion(fundacion);
+                    nuevosAnimales.add(nuevo);
                 }
-
-                Animal nuevo = new Animal();
-                nuevo.setNombre(nombre);
-                nuevo.setEdad(edad);
-                nuevo.setRaza(raza);
-                nuevo.setTipo_animal(tipo);
-                nuevo.setImagen(imagen);
-                nuevo.setFundacion(fundacion);
-                nuevosAnimales.add(nuevo);
             }
 
             if (!nuevosAnimales.isEmpty()) {
-                animalesRepository.saveAll(nuevosAnimales);
+                // Usar el servicio para asignar estado ACTIVO automáticamente
+                for (Animal animal : nuevosAnimales) {
+                    service.create(animal);
+                    animalesSubidos++;
+                }
             }
 
-            String mensaje = "Se guardaron " + nuevosAnimales.size() + " animales nuevos.";
-            if (duplicados > 0) {
-                mensaje += " Se ignoraron " + duplicados + " duplicados.";
-            }
-
+            // Construir mensaje de respuesta
+            String mensaje = String.format("%d animal(es) subidos correctamente, %d animal(es) ignorados", 
+                                          animalesSubidos, animalesIgnorados);
             return ResponseEntity.ok(mensaje);
 
         } catch (Exception e) {
@@ -145,15 +156,42 @@ public class AnimalController {
     public ResponseEntity<List<AnimalResponseDTO>> getAnimalesFundacionAutenticada() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Persona persona = personaRepository.findByEmail(email)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado con email: " + email));
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con email: " + email));
         Fundacion fundacion = fundacionRepository.findByPersona_Id(persona.getId())
-            .orElseThrow(() -> new RuntimeException("Fundación no encontrada"));
+                .orElseThrow(() -> new RuntimeException("Fundación no encontrada"));
 
         List<Animal> animales = animalesRepository.findByFundacion(fundacion);
 
         List<AnimalResponseDTO> respuesta = animales.stream()
-            .map(AnimalResponseDTO::new)
-            .toList();
+                .map(AnimalResponseDTO::new)
+                .toList();
+
+        return ResponseEntity.ok(respuesta);
+    }
+
+    @GetMapping("/mis-animales-estado")
+    @ResponseBody
+    public ResponseEntity<List<AnimalResponseDTO>> getAnimalesFundacionPorEstado(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(required = false) List<String> estados) {
+
+        String email = userDetails.getUsername();
+        Persona persona = personaRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        Fundacion fundacion = fundacionRepository.findByPersona_Id(persona.getId())
+                .orElseThrow(() -> new RuntimeException("Fundación no encontrada"));
+
+        // Por defecto, si no envías estados, se toman todos: ACTIVO, INACTIVO,
+        // BLOQUEADO
+        if (estados == null || estados.isEmpty()) {
+            estados = List.of("ACTIVO", "INACTIVO", "BLOQUEADO");
+        }
+
+        List<Animal> animales = service.getByFundacionYEstados(fundacion.getId(), estados);
+
+        List<AnimalResponseDTO> respuesta = animales.stream()
+                .map(AnimalResponseDTO::new)
+                .toList();
 
         return ResponseEntity.ok(respuesta);
     }
@@ -163,7 +201,7 @@ public class AnimalController {
     @ResponseBody
     public ResponseEntity<AnimalResponseDTO> obtenerAnimalPorId(@PathVariable Long id) {
         Animal animal = animalesRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Animal no encontrado con ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Animal no encontrado con ID: " + id));
 
         AnimalResponseDTO dto = new AnimalResponseDTO(animal);
         return ResponseEntity.ok(dto);
@@ -174,7 +212,7 @@ public class AnimalController {
     @ResponseBody
     public ResponseEntity<?> editarAnimal(@PathVariable Long id, @RequestBody AnimalDTO dto) {
         Animal existente = animalesRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Animal no encontrado con ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Animal no encontrado con ID: " + id));
 
         existente.setNombre(dto.getNombre());
         existente.setEdad(dto.getEdad());
@@ -188,26 +226,26 @@ public class AnimalController {
 
     // 🧾 Vista Thymeleaf (si usas plantillas)
     @GetMapping("/animal")
-    public String getAll(Model modelo){
+    public String getAll(Model modelo) {
         modelo.addAttribute("animales", service.getAll());
         return "animal";
     }
 
     @GetMapping("/animal/nuevo")
-    public String show(Model modelo){
+    public String show(Model modelo) {
         Animal animal = new Animal();
         modelo.addAttribute("animal", animal);
         return "animalCreate";
     }
 
     @PostMapping("/animal")
-    public String create(@ModelAttribute("animal") Animal animal, Model model){
+    public String create(@ModelAttribute("animal") Animal animal, Model model) {
         service.create(animal);
         return "redirect:/animal";
     }
 
     @PostMapping("/animal/{id}")
-    public String update(@PathVariable Long id, @ModelAttribute("animal") Animal animal ){
+    public String update(@PathVariable Long id, @ModelAttribute("animal") Animal animal) {
         Animal animalExistente = service.getById(id);
         animalExistente.setId(id);
         animalExistente.setTipo_animal(animal.getTipo_animal());
@@ -216,15 +254,21 @@ public class AnimalController {
         animalExistente.setRaza(animal.getRaza());
         animalExistente.setAdopciones(animal.getAdopciones());
         animalExistente.setFundacion(animal.getFundacion());
-        service.update(id,animalExistente);
+        service.update(id, animalExistente);
         return "redirect:/animal";
     }
 
     // 🗑️ Eliminar animal
     @DeleteMapping("/eliminar/{id}")
     public ResponseEntity<?> eliminarAnimal(@PathVariable Long id) {
-        animalesRepository.deleteById(id);
-        return ResponseEntity.ok().build();
+        try {
+            // ✅ Usar servicio que cambia a INACTIVO
+            service.delete(id);
+            return ResponseEntity.ok("Animal marcado como INACTIVO");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al eliminar animal: " + e.getMessage());
+        }
     }
 
     // 📦 Catálogo de animales por fundación
@@ -244,52 +288,48 @@ public class AnimalController {
                         a.getEdad(),
                         a.getRaza(),
                         a.getTipo_animal(),
-                        a.getImagen()
-                ))
+                        a.getImagen()))
                 .collect(Collectors.toList());
     }
 
     @PostMapping("/crear")
-@ResponseBody
-public ResponseEntity<?> crearAnimal(@RequestParam("nombre") String nombre,
-                                     @RequestParam("edad") int edad,
-                                     @RequestParam("raza") String raza,
-                                     @RequestParam("tipo_animal") String tipoAnimal,
-                                     @RequestParam("imagen") MultipartFile imagen,
-                                     @AuthenticationPrincipal UserDetails userDetails) {
-    try {
-        String email = userDetails.getUsername();
-        Persona persona = personaRepository.findByEmail(email)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + email));
-        Fundacion fundacion = fundacionRepository.findByPersona_Id(persona.getId())
-            .orElseThrow(() -> new RuntimeException("Fundación no encontrada"));
+    @ResponseBody
+    public ResponseEntity<?> crearAnimal(@RequestParam("nombre") String nombre,
+            @RequestParam("edad") int edad,
+            @RequestParam("raza") String raza,
+            @RequestParam("tipo_animal") String tipoAnimal,
+            @RequestParam("imagen") MultipartFile imagen,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            String email = userDetails.getUsername();
+            Persona persona = personaRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + email));
+            Fundacion fundacion = fundacionRepository.findByPersona_Id(persona.getId())
+                    .orElseThrow(() -> new RuntimeException("Fundación no encontrada"));
 
-        // Nombre original del archivo
-        String nombreArchivo = imagen.getOriginalFilename();
-        Path rutaImagen = Paths.get("src/main/resources/static/img", nombreArchivo);
+            String nombreArchivo = System.currentTimeMillis() + "_" + imagen.getOriginalFilename();
+Path rutaImagen = Paths.get("src/main/resources/static/img", nombreArchivo);
+Files.copy(imagen.getInputStream(), rutaImagen, StandardCopyOption.REPLACE_EXISTING);
+String rutaWeb = "/img/" + nombreArchivo;
 
-        // Solo copiar si no existe
-        if (!Files.exists(rutaImagen)) {
-            Files.copy(imagen.getInputStream(), rutaImagen, StandardCopyOption.REPLACE_EXISTING);
+
+            Animal animal = new Animal();
+            animal.setNombre(nombre);
+            animal.setEdad(edad);
+            animal.setRaza(raza);
+            animal.setTipo_animal(tipoAnimal);
+            animal.setImagen(rutaWeb);
+            animal.setFundacion(fundacion);
+
+            // ✅ Usar el servicio para asignar automáticamente ACTIVO
+            service.create(animal);
+
+            return ResponseEntity.ok("Animal registrado correctamente");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Error al registrar el animal: " + e.getMessage());
         }
-
-        // Ruta web para mostrar en frontend
-        String rutaWeb = "/img/" + nombreArchivo;
-
-        Animal animal = new Animal();
-        animal.setNombre(nombre);
-        animal.setEdad(edad);
-        animal.setRaza(raza);
-        animal.setTipo_animal(tipoAnimal);
-        animal.setImagen(rutaWeb);
-        animal.setFundacion(fundacion);
-
-        animalesRepository.save(animal);
-        return ResponseEntity.ok("Animal registrado correctamente");
-
-    } catch (Exception e) {
-        e.printStackTrace();
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al registrar el animal: " + e.getMessage());
     }
-}
 }

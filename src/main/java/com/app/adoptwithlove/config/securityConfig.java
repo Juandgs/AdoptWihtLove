@@ -21,7 +21,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {
+public class securityConfig {
 
     @Bean
 public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -44,7 +44,11 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 "/habilitar/**",
                 "/bloquear/**",
                 "/reclamos/**",
-                "/productos/crear",
+                "/adopcion/**",
+                "/reclamo/**",
+                "/animal/**",
+                "/api/**",
+                "/productos/**",
                 "/productos/upload-csv"
             )
         )
