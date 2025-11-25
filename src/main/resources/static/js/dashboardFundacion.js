@@ -15,7 +15,7 @@ function mostrarMensaje(texto, tipo) {
       <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
     </div>
   `;
-}
+} 
 
 document.addEventListener("DOMContentLoaded", () => {
   const links = document.querySelectorAll("aside a");
@@ -35,6 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
       link.classList.add("active");
 
       if (target === "animales") cargarAnimales();
+      if (target === "adopciones") cargarAdopciones();
     });
   });
 
@@ -254,6 +255,57 @@ document.addEventListener("DOMContentLoaded", () => {
       .replaceAll("'", '&#039;');
   }
 
+  // Cargar adopciones (PENDIENTE | ADOPTADO) para la fundación autenticada
+  function cargarAdopciones() {
+    fetch("/animal/mis-animales-estado?estados=PENDIENTE&estados=ADOPTADO", { credentials: 'include' })
+      .then(res => {
+        if (!res.ok) throw new Error("Error al obtener adopciones: " + res.status);
+        return res.json();
+      })
+      .then(animales => {
+        const cont = document.getElementById("adopcionesContainer");
+        cont.innerHTML = "";
+
+        if (!animales || animales.length === 0) {
+          cont.innerHTML = `
+            <div class="col-12">
+              <div class="d-flex flex-column justify-content-center align-items-center text-center" style="min-height: 200px;">
+                <i class="fas fa-paw fa-3x text-muted mb-3"></i>
+                <p class="h5 text-muted">No hay adopciones pendientes o adoptadas.</p>
+              </div>
+            </div>`;
+          return;
+        }
+
+        animales.forEach(a => {
+          const col = document.createElement("div");
+          col.className = "col";
+          const imgSrc = a.imagen || '/img/animalDefault.jpg';
+
+          col.innerHTML = `
+            <div class="card h-100">
+              <img src="${imgSrc}" class="card-img-top" alt="${escapeHtml(a.nombre)}" style="height:200px;object-fit:cover;">
+              <div class="card-body">
+                <h5 class="card-title">${escapeHtml(a.nombre)}</h5>
+                <p class="card-text"><strong>Edad:</strong> ${a.edad ?? '-'} años</p>
+                <p class="card-text"><strong>Raza:</strong> ${escapeHtml(a.raza)}</p>
+                <p class="card-text"><strong>Tipo:</strong> ${escapeHtml(a.tipo_animal)}</p>
+                <p class="card-text"><strong>Estado:</strong> ${escapeHtml(a.estadoNombre || '')}</p>
+                ${a.descripcion ? `<p class="card-text"><strong>Descripción:</strong> ${escapeHtml(a.descripcion)}</p>` : ''}
+              </div>
+              <div class="card-footer text-center">
+                <button class="btn btn-primary ver-adopcion-btn" data-id="${a.id}">Ver adopción</button>
+              </div>
+            </div>`;
+
+          cont.appendChild(col);
+        });
+      })
+      .catch(err => {
+        console.error("Error al cargar adopciones:", err);
+      });
+  }
+  
   // Eliminar animal
   window.eliminarAnimal = function (id) {
     // Guardar el ID del animal a eliminar

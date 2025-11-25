@@ -1,4 +1,4 @@
-    package com.app.adoptwithlove.Controller;
+package com.app.adoptwithlove.Controller;
 
     import java.util.List;
 
@@ -44,6 +44,20 @@
                     .toList();
         }
 
+        @GetMapping("/api/fundaciones/{id}")
+        @ResponseBody
+        public fundacionDTO obtenerFundacionPorId(@PathVariable Long id) {
+            Fundacion fundacion = fundacionRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Fundación no encontrada"));
+            return new fundacionDTO(
+                    fundacion.getId(),
+                    fundacion.getNombre_fundacion(),
+                    fundacion.getDireccion(),
+                    fundacion.getCorreo(),
+                    fundacion.getTelefono()
+            );
+        }
+
         @GetMapping("/api/fundaciones/{id}/animales")
         @ResponseBody
         public List<Animal> obtenerAnimalesPorFundacion(@PathVariable Long id) {
@@ -61,7 +75,7 @@
 
         @GetMapping("/fundaciones")
         public String mostrarFundaciones() {
-            return "fundaciones"; // sin .html
+            return "fundaciones"; // sin .html 
         }
 
         @GetMapping("/dashboardFundacion")
