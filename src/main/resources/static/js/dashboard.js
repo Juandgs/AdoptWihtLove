@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   const tablaAnimales = document.querySelector("#tablaAnimales");
   const tablaVendedoresBloqueados = document.getElementById("tablaVendedoresBloqueados");
   const filtroTipoProducto = document.getElementById("filtroTipoProducto");
+  const filtroEstadoAnimal = document.getElementById("filtroEstadoAnimal");
 
   let productos = [];
   let animales = [];
@@ -71,16 +72,18 @@ document.addEventListener("DOMContentLoaded", async function () {
   };
 
   const renderAnimales = () => {
-    if (!Array.isArray(animales) || animales.length === 0) {
+    const estado = filtroEstadoAnimal.value;
+    const filtrados = estado ? animales.filter(a => a.nombreEstado === estado) : animales;
+    if (!Array.isArray(filtrados) || filtrados.length === 0) {
       tablaAnimales.innerHTML = `<tr><td colspan="5" class="text-muted">No hay animales disponibles</td></tr>`;
       return;
     }
-    tablaAnimales.innerHTML = animales.map(a => `
+    tablaAnimales.innerHTML = filtrados.map(a => `
       <tr>
         <td>${a.nombre}</td>
         <td>${a.edad}</td>
         <td>${a.raza}</td>
-        <td>${a.tipoAnimal}</td>
+        <td>${a.tipo_animal || a.tipoAnimal}</td>
         <td>${a.nombreEstado ?? 'Sin estado'}</td>
       </tr>
     `).join('');
@@ -392,6 +395,11 @@ window.addEventListener('DOMContentLoaded', () => {
   filtroTipoProducto.addEventListener("change", () => {
     renderProductos();
     renderGraficoProductos();
+  });
+
+  filtroEstadoAnimal.addEventListener("change", () => {
+    renderAnimales();
+    renderGraficoAnimales();
   });
 
   mostrarSeccion("seccion2");

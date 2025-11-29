@@ -29,7 +29,8 @@ public class Animal {
     @Column(name = "tipo_animal", nullable = false)
     private String tipo_animal;
 
-    @Column(name = "imagen", columnDefinition = "TEXT") // base64 puede ser largo
+    @Lob
+    @Column(name = "imagen", columnDefinition = "LONGTEXT")
     private String imagen;
 
      @ManyToOne

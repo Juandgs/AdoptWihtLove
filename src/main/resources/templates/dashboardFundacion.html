@@ -79,7 +79,7 @@
 
       <!-- Sección: Registro individual -->
       <section id="nuevoAnimal" class="d-none">
-        <h2>Registrar Nuevo Animal</h2>
+        <h2 id="tituloFormulario">Registrar Nuevo Animal</h2>
         <form id="formCrearAnimal" enctype="multipart/form-data">
           <div class="mb-3">
             <label for="nombreAnimal" class="form-label">Nombre</label>
@@ -102,6 +102,16 @@
               <option value="Otro">Otro</option>
             </select>
           </div>
+          <!-- Campo de estado SOLO en edición -->
+          <div class="mb-3 d-none" id="divEstadoAnimal">
+            <label for="estadoAnimal" class="form-label">Estado del Animal</label>
+            <select class="form-select" id="estadoAnimal" name="estadoNombre">
+              <option value="">Seleccione un estado</option>
+              <option value="ACTIVO">Activo</option>
+              <option value="PENDIENTE">Pendiente</option>
+              <option value="ADOPTADO">Adoptado</option>
+            </select>
+          </div>
           <div class="mb-3">
             <label for="imagenAnimal" class="form-label">Imagen del Animal</label>
             <input type="file" class="form-control" id="imagenAnimal" name="imagen" accept="image/*" />
@@ -117,6 +127,16 @@
       <!-- Sección: Adopciones -->
       <section id="adopciones" class="d-none">
         <h2>Adopciones</h2>
+        <div class="filtros-productos mb-3" style="display:flex; flex-direction:column; align-items:flex-start; gap:0.4rem; padding:18px;">
+            <label for="filtroEstadoAdopcion" class="form-label mb-0" style="font-weight:600;">Filtrar por estado:</label>
+            <div style="display:flex; align-items:center; gap:0.7rem;">
+              <select id="filtroEstadoAdopcion" class="form-select" style="width:auto;">
+                <option value="">Todos</option>
+                <option value="PENDIENTE">Pendiente</option>
+                <option value="ADOPTADO">Adoptado</option>
+              </select>
+            </div>
+          </div>
         <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4" id="adopcionesContainer">
           <!-- Puedes agregar render dinámico aquí también si lo deseas -->
         </div>
