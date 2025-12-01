@@ -76,11 +76,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const idEditar = this.dataset.editando;
 
     // Validar imagen solo si estamos CREANDO
-  const file = imagenAnimalInput.files[0];
-  if (!idEditar && !file) {
-    alert("Debes subir una imagen para el animal.");
-    return;
-  }
+    const file = imagenAnimalInput.files[0];
+    if (!idEditar && !file) {
+      alert("Debes subir una imagen para el animal.");
+      return;
+    }
 
     // Si estamos EDITANDO -> usar PUT con JSON
     if (idEditar) {
@@ -90,7 +90,8 @@ document.addEventListener("DOMContentLoaded", () => {
         edad: Number(document.getElementById('edadAnimal').value),
         raza: document.getElementById('razaAnimal').value,
         tipo_animal: document.getElementById('tipoAnimal').value,
-        imagen: this.dataset.existingImagen || null // valor por defecto
+        imagen: this.dataset.existingImagen || null, // valor por defecto
+        estadoNombre: document.getElementById('estadoAnimal').value || null
       };
 
       const file = imagenAnimalInput.files[0];
@@ -132,6 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
           delete this.dataset.editando;
           delete this.dataset.existingImagen;
           previewAnimal.style.display = 'none';
+          document.getElementById('divEstadoAnimal').classList.add('d-none');
           cargarAnimales();
           mostrarSeccion("animales");
         } else {
@@ -263,49 +265,66 @@ document.addEventListener("DOMContentLoaded", () => {
         return res.json();
       })
       .then(animales => {
-        const cont = document.getElementById("adopcionesContainer");
-        cont.innerHTML = "";
-
-        if (!animales || animales.length === 0) {
-          cont.innerHTML = `
-            <div class="col-12">
-              <div class="d-flex flex-column justify-content-center align-items-center text-center" style="min-height: 200px;">
-                <i class="fas fa-paw fa-3x text-muted mb-3"></i>
-                <p class="h5 text-muted">No hay adopciones pendientes o adoptadas.</p>
-              </div>
-            </div>`;
-          return;
-        }
-
-        animales.forEach(a => {
-          const col = document.createElement("div");
-          col.className = "col";
-          const imgSrc = a.imagen || '/img/animalDefault.jpg';
-
-          col.innerHTML = `
-            <div class="card h-100">
-              <img src="${imgSrc}" class="card-img-top" alt="${escapeHtml(a.nombre)}" style="height:200px;object-fit:cover;">
-              <div class="card-body">
-                <h5 class="card-title">${escapeHtml(a.nombre)}</h5>
-                <p class="card-text"><strong>Edad:</strong> ${a.edad ?? '-'} años</p>
-                <p class="card-text"><strong>Raza:</strong> ${escapeHtml(a.raza)}</p>
-                <p class="card-text"><strong>Tipo:</strong> ${escapeHtml(a.tipo_animal)}</p>
-                <p class="card-text"><strong>Estado:</strong> ${escapeHtml(a.estadoNombre || '')}</p>
-                ${a.descripcion ? `<p class="card-text"><strong>Descripción:</strong> ${escapeHtml(a.descripcion)}</p>` : ''}
-              </div>
-              <div class="card-footer text-center">
-                <button class="btn btn-primary ver-adopcion-btn" data-id="${a.id}">Ver adopción</button>
-              </div>
-            </div>`;
-
-          cont.appendChild(col);
-        });
+        // Guardar datos completos en variable global para filtrar
+        window.adopcionesCompletas = animales || [];
+        renderAdopciones(animales);
       })
       .catch(err => {
         console.error("Error al cargar adopciones:", err);
       });
   }
-  
+
+  // Renderizar adopciones con filtro
+  function renderAdopciones(animales) {
+    const filtro = document.getElementById('filtroEstadoAdopcion')?.value || '';
+    const animalesFiltrados = filtro 
+      ? animales.filter(a => a.estadoNombre === filtro)
+      : animales;
+
+    const cont = document.getElementById("adopcionesContainer");
+    cont.innerHTML = "";
+
+    if (!animalesFiltrados || animalesFiltrados.length === 0) {
+      cont.innerHTML = `
+        <div class="col-12">
+          <div class="d-flex flex-column justify-content-center align-items-center text-center" style="min-height: 200px;">
+            <i class="fas fa-paw fa-3x text-muted mb-3"></i>
+            <p class="h5 text-muted">No hay adopciones con este estado.</p>
+          </div>
+        </div>`;
+      return;
+    }
+
+    animalesFiltrados.forEach(a => {
+      const col = document.createElement("div");
+      col.className = "col";
+      const imgSrc = a.imagen || '/img/animalDefault.jpg';
+
+      col.innerHTML = `
+        <div class="card h-100">
+          <img src="${imgSrc}" class="card-img-top" alt="${escapeHtml(a.nombre)}" style="height:200px;object-fit:cover;">
+          <div class="card-body">
+            <h5 class="card-title">${escapeHtml(a.nombre)}</h5>
+            <p class="card-text"><strong>Edad:</strong> ${a.edad ?? '-'} años</p>
+            <p class="card-text"><strong>Raza:</strong> ${escapeHtml(a.raza)}</p>
+            <p class="card-text"><strong>Tipo:</strong> ${escapeHtml(a.tipo_animal)}</p>
+            <p class="card-text"><strong>Estado:</strong> ${escapeHtml(a.estadoNombre || '')}</p>
+            ${a.descripcion ? `<p class="card-text"><strong>Descripción:</strong> ${escapeHtml(a.descripcion)}</p>` : ''}
+          </div>
+          <div class="card-footer text-center">
+            <button class="btn btn-primary ver-adopcion-btn" data-id="${a.id}">Ver adopción</button>
+          </div>
+        </div>`;
+
+      cont.appendChild(col);
+    });
+  }
+
+  // Evento cambio filtro adopciones
+  document.getElementById('filtroEstadoAdopcion')?.addEventListener('change', () => {
+    renderAdopciones(window.adopcionesCompletas);
+  });
+
   // Eliminar animal
   window.eliminarAnimal = function (id) {
     // Guardar el ID del animal a eliminar
@@ -360,11 +379,16 @@ document.addEventListener("DOMContentLoaded", () => {
         return res.json();
       })
       .then(animal => {
+        // Cambiar título del formulario
+        document.getElementById('tituloFormulario').textContent = 'Editar Animal';
         // llenar formulario con todos los campos
         document.getElementById('nombreAnimal').value = animal.nombre || '';
         document.getElementById('edadAnimal').value = animal.edad || '';
         document.getElementById('razaAnimal').value = animal.raza || '';
         document.getElementById('tipoAnimal').value = animal.tipo_animal || '';
+        // Mostrar y llenar el campo de estado
+        document.getElementById('divEstadoAnimal').classList.remove('d-none');
+        document.getElementById('estadoAnimal').value = animal.estadoNombre || '';
         // guardar imagen existente en dataset para reusarla si no suben nueva
         const form = document.getElementById('formCrearAnimal');
         form.dataset.editando = id;
@@ -451,6 +475,8 @@ document.addEventListener("DOMContentLoaded", () => {
     form.reset();
     delete form.dataset.editando;
     delete form.dataset.existingImagen;
+    document.getElementById('tituloFormulario').textContent = 'Registrar Nuevo Animal';
+    document.getElementById('divEstadoAnimal').classList.add('d-none');
     previewAnimal.style.display = 'none';
     previewAnimal.src = '#';
   }

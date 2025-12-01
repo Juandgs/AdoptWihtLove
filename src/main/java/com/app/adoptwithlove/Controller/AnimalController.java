@@ -35,9 +35,11 @@ import org.springframework.web.multipart.MultipartFile;
 import com.app.adoptwithlove.Dto.AnimalDTO;
 import com.app.adoptwithlove.Dto.AnimalResponseDTO;
 import com.app.adoptwithlove.entity.Animal;
+import com.app.adoptwithlove.entity.Estado;
 import com.app.adoptwithlove.entity.Fundacion;
 import com.app.adoptwithlove.entity.Persona;
 import com.app.adoptwithlove.repository.AnimalesRepository;
+import com.app.adoptwithlove.repository.EstadoRepository;
 import com.app.adoptwithlove.repository.FundacionRepository;
 import com.app.adoptwithlove.repository.PersonaRepository;
 import com.app.adoptwithlove.service.AnimalService;
@@ -57,6 +59,9 @@ public class AnimalController {
 
     @Autowired
     private AnimalesRepository animalesRepository;
+
+    @Autowired
+    private EstadoRepository estadoRepository;
 
     // 🔍 Listar todos los animales (API pública)
     @GetMapping("/api/animales")
@@ -140,8 +145,8 @@ public class AnimalController {
             }
 
             // Construir mensaje de respuesta
-            String mensaje = String.format("%d animal(es) subidos correctamente, %d animal(es) ignorados", 
-                                          animalesSubidos, animalesIgnorados);
+            String mensaje = String.format("%d animal(es) subidos correctamente, %d animal(es) ignorados",
+                    animalesSubidos, animalesIgnorados);
             return ResponseEntity.ok(mensaje);
 
         } catch (Exception e) {
@@ -219,6 +224,13 @@ public class AnimalController {
         existente.setRaza(dto.getRaza());
         existente.setTipo_animal(dto.getTipo_animal());
         existente.setImagen(dto.getImagen());
+        
+        // Actualizar estado si se proporciona
+        if (dto.getEstadoNombre() != null && !dto.getEstadoNombre().isEmpty()) {
+            Estado nuevoEstado = estadoRepository.findByNombreEstado(dto.getEstadoNombre())
+                    .orElseThrow(() -> new RuntimeException("Estado no encontrado: " + dto.getEstadoNombre()));
+            existente.setEstado(nuevoEstado);
+        }
 
         animalesRepository.save(existente);
         return ResponseEntity.ok("Animal actualizado correctamente");
@@ -308,10 +320,9 @@ public class AnimalController {
                     .orElseThrow(() -> new RuntimeException("Fundación no encontrada"));
 
             String nombreArchivo = System.currentTimeMillis() + "_" + imagen.getOriginalFilename();
-Path rutaImagen = Paths.get("src/main/resources/static/img", nombreArchivo);
-Files.copy(imagen.getInputStream(), rutaImagen, StandardCopyOption.REPLACE_EXISTING);
-String rutaWeb = "/img/" + nombreArchivo;
-
+            Path rutaImagen = Paths.get("src/main/resources/static/img", nombreArchivo);
+            Files.copy(imagen.getInputStream(), rutaImagen, StandardCopyOption.REPLACE_EXISTING);
+            String rutaWeb = "/img/" + nombreArchivo;
 
             Animal animal = new Animal();
             animal.setNombre(nombre);
