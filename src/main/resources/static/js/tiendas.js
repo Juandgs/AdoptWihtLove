@@ -5,10 +5,10 @@ let cart = [];
 function asignarEventosAgregarAlCarrito() {
   document.querySelectorAll('.add-to-cart').forEach(button => {
     button.addEventListener('click', function () {
-      const productCard = this.closest('.card');
-      const id = productCard.dataset.id; // <-- ID del producto (correcto ahora)
-      const title = productCard.querySelector('.card-title').innerText;
-      const priceText = productCard.querySelector('.text-danger').innerText;
+      const productCard = this.closest('.product-card');
+      const id = productCard.dataset.id;
+      const title = productCard.querySelector('.product-title').innerText;
+      const priceText = productCard.querySelector('.product-price').innerText;
       const price = parseInt(priceText.replace(/[^0-9]/g, ''));
       const imgSrc = productCard.querySelector('img').src;
       const storeName = productCard.closest('.producto').dataset.store || "Tienda Desconocida";
@@ -23,6 +23,19 @@ function asignarEventosAgregarAlCarrito() {
       }
 
       updateCart();
+
+      // Animación carrito sobre el botón
+      if (!this.classList.contains('cart-animating')) {
+        this.classList.add('cart-animating');
+        const icon = document.createElement('span');
+        icon.className = 'cart-fly-anim';
+        icon.innerHTML = '<i class="fas fa-shopping-cart"></i>';
+        this.appendChild(icon);
+        setTimeout(() => {
+          icon.remove();
+          this.classList.remove('cart-animating');
+        }, 900);
+      }
     });
   });
 }
@@ -39,30 +52,27 @@ function updateCart() {
     return;
   }
 
-  let html = '<ul class="list-group">';
+  let html = '<ul class="cart-list-group">';
   let total = 0;
   cart.forEach((item, index) => {
     total += item.price * item.quantity;
     const encodedTitle = encodeURIComponent(item.title);
-
     const whatsappLink = `https://wa.me/${item.storeWhatsapp}?text=Hola,%20quiero%20comprar%20este%20producto%20"${encodedTitle}"%20por%20$${item.price.toLocaleString()}.%20Producto:%20${item.imgSrc}`;
-
     html += `
-      <li class="list-group-item d-flex justify-content-between align-items-start flex-column">
-        <div class="d-flex w-100 justify-content-between">
-          <img src="${item.imgSrc}" alt="${item.title}" style="width: 60px; height: auto; margin-right: 10px;">
-          <strong>${item.title}</strong>
-          <span class="badge bg-danger">${item.quantity} x $${item.price.toLocaleString()}</span>
+      <li class="cart-list-group-item">
+        <img src="${item.imgSrc}" alt="${item.title}" class="cart-list-img">
+        <div class="cart-list-info">
+          <div class="cart-product-title">${item.title}</div>
+          <div class="cart-product-price">$${item.price.toLocaleString()} <span class="cart-badge">x${item.quantity}</span></div>
         </div>
-        <div class="mt-2 d-flex gap-2">
-          <button class="btn btn-sm btn-outline-danger" onclick="removeItem(${index})">Eliminar</button>
-          <a href="${whatsappLink}" target="_blank" class="btn btn-sm btn-success">Comprar por WhatsApp</a>
-          <a href="/reclamos/reclamo/${item.id}" class="btn btn-sm btn-warning">Reclamo</a>
+        <div class="cart-list-actions">
+          <button class="cart-remove-btn" onclick="removeItem(${index})"><i class="fas fa-trash"></i></button>
+          <a href="${whatsappLink}" target="_blank" class="btn btn-success">WhatsApp</a>
+          <a href="/reclamos/reclamo/${item.id}" class="btn btn-warning">Reclamo</a>
         </div>
       </li>
     `;
   });
-
   html += '</ul>';
   cartItems.innerHTML = html;
   cartTotal.innerText = `$${total.toLocaleString()}`;
@@ -105,23 +115,23 @@ document.addEventListener("DOMContentLoaded", function () {
       container.innerHTML = "";
 
       data.forEach(producto => {
+        // Estructura visual avanzada para la card con badge sobre la imagen
         const card = document.createElement("div");
-        card.className = "col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 producto";
+        card.className = "producto";
         card.setAttribute("data-category", producto.tipoProducto.toLowerCase());
 
-        // ⚡ Asegurar que cada card tenga el ID del producto
         card.innerHTML = `
-          <div class="card h-100 shadow-sm" data-id="${producto.id}">
-            <img src="${producto.imagen || './img/default.jpg'}" class="card-img-top" alt="${producto.nombre}">
-            <div class="card-body">
-              <h5 class="card-title">${producto.nombre}</h5>
-              <p class="card-text text-muted">${producto.descripcion}</p>
-              <span class="badge badge-category">${producto.tipoProducto}</span>
-              <div class="d-flex justify-content-between align-items-center mt-2">
-                <p class="fw-bold text-danger mb-0">$${producto.precio.toLocaleString()}</p>
-                <a href="/reclamos/reclamo/${producto.id}" class="btn btn-sm btn-warning">Reclamo</a>
-              </div>
-              <button class="btn btn-outline-danger w-100 mt-2 add-to-cart">Agregar al carrito</button>
+          <div class="product-card" data-id="${producto.id}">
+            <div style="position:relative;">
+              <img src="${producto.imagen || './img/default.jpg'}" class="product-img" alt="${producto.nombre}">
+              <span class="product-badge">${producto.tipoProducto}</span>
+            </div>
+            <div class="product-body">
+              <div class="product-title">${producto.nombre}</div>
+              <div class="product-info">${producto.descripcion}</div>
+              <div class="product-price">$${producto.precio.toLocaleString()}</div>
+              <button class="btn-adopt add-to-cart">Agregar al carrito</button>
+              <a href="/reclamos/reclamo/${producto.id}" class="btn btn-sm btn-warning mt-2 w-100">Reclamo</a>
             </div>
           </div>
         `;

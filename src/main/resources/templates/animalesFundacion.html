@@ -21,35 +21,99 @@
 
 
   <style>
+    :root {
+      --primary-color: #2a9d8f;
+      --secondary-color: #264653;
+      --accent-color: #e9c46a;
+      --text-light: #f1faee;
+      --gradient-overlay: linear-gradient(to bottom, rgba(42, 157, 143, 0.4), rgba(38, 70, 83, 0.9));
+      --shadow-soft: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    .logo-marca {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+      transition: width 0.3s, height 0.3s;
+    }
+
     body {
       font-family: 'Poppins', sans-serif;
       background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      padding-top: 90px; /* Altura del navbar para que no tape el contenido */
     }
 
-    /* Navbar mejorado */
     .navbar {
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      z-index: 1050;
+      background: linear-gradient(180deg, #012a3e 0%, #4DB6AC 100%) !important;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
     }
 
     .navbar-brand {
+      font-family: 'Poppins', sans-serif;
       font-weight: 700 !important;
+      font-size: 1.7rem;
+      letter-spacing: 1px;
       color: #fff !important;
-      transition: transform 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      cursor: default;
+      transition: none;
     }
 
-    .navbar-brand:hover {
-      transform: scale(1.05);
+    .navbar-brand span {
+      font-weight: 800;
+      letter-spacing: 1px;
+      font-size: 1.5rem;
+    }
+
+    .logo-marca {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+      transition: width 0.3s, height 0.3s;
     }
 
     .nav-link {
+      font-weight: 600;
+      margin: 0 10px;
+      position: relative;
+      color: rgba(255,255,255,0.9) !important;
       transition: all 0.3s;
       border-radius: 8px;
-      margin: 0 5px;
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: 5px;
+      left: 0;
+      background-color: var(--accent-color);
+      transition: width 0.3s ease;
+    }
+    .nav-link:hover::after {
+      width: 100%;
     }
 
     .nav-link:hover {
       background-color: rgba(255,255,255,0.1);
       transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+      .navbar-brand span { font-size: 1.1rem; }
+      .logo-marca { width: 55px; height: 55px; }
     }
 
     /* Sección de animales */
@@ -210,6 +274,7 @@
       text-align: center;
       padding: 60px 20px;
       animation: fadeIn 0.8s ease-in;
+      margin-bottom: 20px;
     }
 
     .empty-state i {
@@ -254,32 +319,24 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
 
-  <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <span class="navbar-brand mb-0 h1 ms-3" id="nombreFundacion" style="font-family: 'Poppins', sans-serif; font-size: 1.5rem; font-weight: 600; cursor: default;">
-    <i class="fas fa-paw me-2"></i>Cargando...
-  </span>
-  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-    <ul class="navbar-nav">
-      <li class="nav-item">
-        <a class="nav-link px-3 py-2" href="/" style="font-weight: 400;">Inicio</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link px-3 py-2" href="/fundaciones" style="font-weight: 400;">Fundaciones</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link px-3 py-2" href="/tiendas" style="font-weight: 400;">Tiendas</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link px-3 py-2" href="/login" style="font-weight: 400;">Inicio de sesión</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link px-3 py-2" href="/registro" style="font-weight: 400;">Registro</a>
-      </li>
-    </ul>
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+  <div class="container-fluid">
+    <div class="navbar-brand d-flex align-items-center gap-2 no-link" id="nombreFundacion">
+      <img src="/img/logo.png" alt="Logo Adopt with Love" class="logo-marca">
+      <span>Cargando...</span>
+    </div>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item"><a class="nav-link" href="/">Inicio</a></li>
+        <li class="nav-item"><a class="nav-link" href="/fundaciones">Fundaciones</a></li>
+        <li class="nav-item"><a class="nav-link" href="/tiendas">Tiendas</a></li>
+        <li class="nav-item"><a class="nav-link" href="/login">Inicio de sesión</a></li>
+        <li class="nav-item"><a class="nav-link" style="background: var(--accent-color); color: var(--secondary-color) !important; border-radius: 20px; padding: 8px 20px; margin-left: 10px;" href="/registro">Registro</a></li>
+      </ul>
+    </div>
   </div>
 </nav>
 </body>
@@ -323,13 +380,15 @@
     .then(r => r.json())
     .then(fundacion => {
       document.getElementById('nombreFundacion').innerHTML = `
-        <i class="fas fa-paw me-2"></i>${fundacion.nombre_fundacion || 'Fundación'}
+        <img src="/img/logo.png" alt="Logo Adopt with Love" class="logo-marca">
+        <span>${fundacion.nombre_fundacion || 'Fundación'}</span>
       `;
     })
     .catch(error => {
       console.error("Error al cargar fundación:", error);
       document.getElementById('nombreFundacion').innerHTML = `
-        <i class="fas fa-paw me-2"></i>Fundación
+        <img src="/img/logo.png" alt="Logo Adopt with Love" class="logo-marca">
+        <span>Fundación</span>
       `;
     });
 

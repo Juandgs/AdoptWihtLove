@@ -1,53 +1,194 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Adopt with Love</title>
+  <title>Adopt with Love - Registro</title>
 
-  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
-  <!-- Favicon -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet" />
   <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/616/616408.png" type="image/png" />
+
+  <style>
+    /* --- VARIABLES DE DISEÑO (Consistente) --- */
+    :root {
+      --primary-color: #2a9d8f;
+      --secondary-color: #264653;
+      --accent-color: #e9c46a;
+      --text-light: #f1faee;
+      --bg-light: #f4f4f9;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--bg-light);
+    }
+
+    /* --- NAVBAR MODERNA (Consistente) --- */
+    .navbar {
+      background: rgba(38, 70, 83, 0.98) !important;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      position: sticky; /* Sticky para que no flote sobre el formulario */
+      top: 0;
+      z-index: 1050;
+    }
+    .navbar-brand {
+      font-weight: 800 !important;
+      letter-spacing: 1px;
+    }
+    .nav-link {
+        transition: color 0.3s;
+    }
+    .nav-link:hover {
+        color: var(--accent-color) !important;
+    }
+
+    /* --- FORMULARIO CARD CENTRAL --- */
+    .card.shadow {
+      border: none;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
+      max-width: 800px;
+      margin-bottom: 40px;
+      margin-top: 40px;
+      width: 100% !important; /* Ancho completo dentro del max-width */
+    }
+
+    .card-title {
+        color: var(--secondary-color);
+        font-weight: 800;
+        font-size: 1.6rem;
+    }
+
+    /* --- INPUTS ESTILIZADOS --- */
+    .form-control, .form-select {
+        padding: 12px 15px;
+        border-radius: 10px;
+        border: 1px solid #dee2e6;
+        background-color: #f8f9fa;
+        transition: all 0.3s;
+    }
+    .form-control:focus, .form-select:focus {
+        background-color: white;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px rgba(42, 157, 143, 0.1);
+    }
+    .form-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--secondary-color);
+        margin-bottom: 5px;
+    }
+
+    /* Input Group para Contraseña */
+    .input-group input[type="password"], .input-group input[type="text"] {
+      border-right: none;
+    }
+    .input-group .btn-outline-secondary {
+      border-radius: 0 10px 10px 0 !important;
+      border-left: none;
+      border-color: #dee2e6;
+    }
+    .input-group .btn-outline-secondary:hover {
+        background-color: var(--primary-color);
+        color: var(--text-light);
+        border-color: var(--primary-color);
+    }
+    
+    /* Pequeño texto de ayuda */
+    small.text-muted {
+        font-size: 0.75rem;
+        display: block;
+        margin-top: 5px;
+    }
+
+    /* --- BOTÓN PRINCIPAL CON GRADIENTE --- */
+    .btn-primary {
+        background: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
+        border: none;
+        padding: 12px;
+        font-weight: 600;
+        border-radius: 10px;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(42, 157, 143, 0.4);
+        background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    }
+    
+    /* --- FOOTER (Consistente) --- */
+    footer {
+        background-color: var(--secondary-color) !important;
+    }
+    .footer-social a {
+        color: var(--text-light) !important;
+        transition: color 0.3s, transform 0.3s;
+    }
+    .footer-social a:hover {
+        color: var(--accent-color) !important;
+        transform: translateY(-2px);
+    }
+
+    /* Mejorar la distribución de campos */
+    .row.g-3 > [class^="col"] {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+
+    /* Estilo para los alert de Thymeleaf */
+    .alert {
+        border-radius: 10px;
+        margin-bottom: 20px;
+        font-weight: 500;
+    }
+    .alert-danger { background-color: #f8d7da; color: #842029; }
+    .alert-warning { background-color: #fff3cd; color: #664d03; }
+
+    /* Estilo para los checkbox */
+    .form-check-input:checked {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+
+  </style>
 </head>
 <body class="d-flex flex-column min-vh-100">
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="/" style="font-family: 'Poppins', sans-serif; font-weight: 400; font-size: 1.5rem;">
-      Adopt with Love
-    </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-      <ul class="navbar-nav">
-        <li class="nav-item"><a class="nav-link px-3 py-2" href="/" style="font-weight: 400;">Inicio</a></li>
-        <li class="nav-item"><a class="nav-link px-3 py-2" href="/fundaciones" style="font-weight: 400;">Fundaciones</a></li>
-        <li class="nav-item"><a class="nav-link px-3 py-2" href="/tiendas" style="font-weight: 400;">Tiendas</a></li>
-        <li class="nav-item"><a class="nav-link px-3 py-2" href="/login" style="font-weight: 400;">Inicio de sesión</a></li>
-      </ul>
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid px-4">
+      <a class="navbar-brand" href="/">Adopt with Love</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link px-3" href="/">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link px-3" href="/fundaciones">Fundaciones</a></li>
+          <li class="nav-item"><a class="nav-link px-3" href="/tiendas">Tiendas</a></li>
+          <li class="nav-item"><a class="nav-link px-3" href="/login">Inicio de sesión</a></li>
+        </ul>
+      </div>
     </div>
   </nav>
 
-  <!-- Formulario -->
-  <div class="container d-flex justify-content-center align-items-center mt-3">
-    <div class="card shadow w-75">
-      <div th:if="${errorCorreo}" class="alert alert-danger" th:text="${errorCorreo}"></div>
-      <div th:if="${errorRol}" class="alert alert-warning" th:text="${errorRol}"></div>
-      <div th:if="${errorAutenticacion}" class="alert alert-danger" th:text="${errorAutenticacion}"></div>
+  <div class="container d-flex justify-content-center flex-grow-1">
+    <div class="card shadow w-100"> <div class="card-body p-5">
+        
+        <div th:if="${errorCorreo}" class="alert alert-danger" th:text="${errorCorreo}"></div>
+        <div th:if="${errorRol}" class="alert alert-warning" th:text="${errorRol}"></div>
+        <div th:if="${errorAutenticacion}" class="alert alert-danger" th:text="${errorAutenticacion}"></div>
 
-      <div class="card-body">
-        <h5 class="card-title text-center mb-2">Por favor digite la información para registrarse.</h5>
+        <h5 class="card-title text-center mb-4">Registro de Nuevo Usuario</h5>
+        <p class="text-center text-muted mb-4">Por favor, selecciona tu tipo de cuenta para continuar.</p>
 
         <form id="registroForm" th:action="@{/registro}" method="post">
           <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
-          <div class="mb-3">
+          <div class="mb-4">
             <label for="tipoUsuario" class="form-label">Tipo de usuario</label>
             <select id="tipoUsuario" class="form-select" name="nombreRol" required>
               <option value="">Seleccione una opción</option>
@@ -56,105 +197,151 @@
             </select>
           </div>
 
-          <!-- CAMPOS VENDEDOR -->
           <div id="camposTienda" style="display: none;">
+            <h6 class="text-secondary fw-bold mb-3">Datos Personales del Vendedor</h6>
             <input type="hidden" name="rol" value="vendedor" />
-            <div class="mb-3"><label for="emailTienda" class="form-label">Correo Electrónico</label>
-              <input type="email" class="form-control" id="emailTienda" name="email" required />
-            </div>
-            <div class="mb-3"><label for="nombreTienda" class="form-label">Nombre</label>
-              <input type="text" class="form-control" id="nombreTienda" name="nombre" required />
-            </div>
-            <div class="mb-3"><label for="apellidoTienda" class="form-label">Apellido</label>
-              <input type="text" class="form-control" id="apellidoTienda" name="apellido" required />
-            </div>
-            <div class="mb-3">
-              <label for="telefonoTienda" class="form-label">Número de contacto</label>
-              <input type="tel" class="form-control" id="telefonoTienda" name="contacto" 
-                     pattern="[0-9]{10}" maxlength="10" 
-                     title="Debe ingresar exactamente 10 dígitos" required />
-              <small class="text-muted">Ingrese 10 dígitos</small>
-            </div>
-            <div class="mb-3">
-              <label for="fechaNacimientoTienda" class="form-label">Fecha de nacimiento (debe ser mayor de 18 años)</label>
-              <input type="date" class="form-control" id="fechaNacimientoTienda" name="fechaNacimiento" required />
-            </div>
-            <div class="mb-3">
-              <label for="contrasenaTienda" class="form-label">Contraseña</label>
-              <div class="input-group">
-                <input type="password" class="form-control" id="contrasenaTienda" name="contrasena" required />
-                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('contrasenaTienda')">
-                  <i class="bi bi-eye" id="iconTienda"></i>
-                </button>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="emailTienda" class="form-label">Correo Electrónico</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white" style="border-radius: 10px 0 0 10px; border-color: #dee2e6;"><i class="bi bi-envelope text-muted"></i></span>
+                    <input type="email" class="form-control" id="emailTienda" name="email" required />
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label for="telefonoTienda" class="form-label">Número de contacto</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white" style="border-radius: 10px 0 0 10px; border-color: #dee2e6;"><i class="bi bi-phone text-muted"></i></span>
+                    <input type="tel" class="form-control" id="telefonoTienda" name="contacto" 
+                          pattern="[0-9]{10}" maxlength="10" 
+                          title="Debe ingresar exactamente 10 dígitos" required />
+                </div>
+                <small class="text-muted">Ingrese 10 dígitos</small>
+              </div>
+              <div class="col-md-6">
+                <label for="nombreTienda" class="form-label">Nombre</label>
+                <input type="text" class="form-control" id="nombreTienda" name="nombre" required />
+              </div>
+              <div class="col-md-6">
+                <label for="apellidoTienda" class="form-label">Apellido</label>
+                <input type="text" class="form-control" id="apellidoTienda" name="apellido" required />
+              </div>
+              <div class="col-md-6">
+                <label for="fechaNacimientoTienda" class="form-label">Fecha de nacimiento (mayor de 18 años)</label>
+                <input type="date" class="form-control" id="fechaNacimientoTienda" name="fechaNacimiento" required />
+              </div>
+              <div class="col-md-6">
+                <label for="contrasenaTienda" class="form-label">Contraseña</label>
+                <div class="input-group">
+                  <input type="password" class="form-control" id="contrasenaTienda" name="contrasena" required />
+                  <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('contrasenaTienda')">
+                    <i class="bi bi-eye" id="iconTienda"></i>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- CAMPOS FUNDACIÓN -->
           <div id="camposFundacion" style="display: none;">
+            <h6 class="text-secondary fw-bold mb-3">Datos Personales del Representante</h6>
             <input type="hidden" name="rol" value="fundacion" />
-            <div class="mb-3"><label for="emailFundacion" class="form-label">Correo Electrónico</label>
-              <input type="email" class="form-control" id="emailFundacion" name="email" required />
-            </div>
-            <div class="mb-3"><label for="nombreFundacion" class="form-label">Nombre</label>
-              <input type="text" class="form-control" id="nombreFundacion" name="nombre" required />
-            </div>
-            <div class="mb-3"><label for="apellidoFundacion" class="form-label">Apellido</label>
-              <input type="text" class="form-control" id="apellidoFundacion" name="apellido" required />
-            </div>
-            <div class="mb-3">
-              <label for="telefonoFundacion" class="form-label">Número de contacto</label>
-              <input type="tel" class="form-control" id="telefonoFundacion" name="contacto" 
-                     pattern="[0-9]{10}" maxlength="10" 
-                     title="Debe ingresar exactamente 10 dígitos" required />
-              <small class="text-muted">Ingrese 10 dígitos</small>
-            </div>
-            <div class="mb-3">
-              <label for="fechaNacimientoFundacion" class="form-label">Fecha de nacimiento (debe ser mayor de 18 años)</label>
-              <input type="date" class="form-control" id="fechaNacimientoFundacion" name="fechaNacimiento" required />
-            </div>
-            <div class="mb-3">
-              <label for="contrasenaFundacion" class="form-label">Contraseña</label>
-              <div class="input-group">
-                <input type="password" class="form-control" id="contrasenaFundacion" name="contrasena" required />
-                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('contrasenaFundacion')">
-                  <i class="bi bi-eye" id="iconFundacion"></i>
-                </button>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="emailFundacion" class="form-label">Correo Electrónico (Personal)</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white" style="border-radius: 10px 0 0 10px; border-color: #dee2e6;"><i class="bi bi-person-circle text-muted"></i></span>
+                    <input type="email" class="form-control" id="emailFundacion" name="email" required />
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label for="telefonoFundacion" class="form-label">Número de contacto (Personal)</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white" style="border-radius: 10px 0 0 10px; border-color: #dee2e6;"><i class="bi bi-phone text-muted"></i></span>
+                    <input type="tel" class="form-control" id="telefonoFundacion" name="contacto" 
+                          pattern="[0-9]{10}" maxlength="10" 
+                          title="Debe ingresar exactamente 10 dígitos" required />
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label for="nombreFundacion" class="form-label">Nombre (Representante)</label>
+                <input type="text" class="form-control" id="nombreFundacion" name="nombre" required />
+              </div>
+              <div class="col-md-6">
+                <label for="apellidoFundacion" class="form-label">Apellido (Representante)</label>
+                <input type="text" class="form-control" id="apellidoFundacion" name="apellido" required />
+              </div>
+              <div class="col-md-6">
+                <label for="fechaNacimientoFundacion" class="form-label">Fecha de nacimiento (Representante)</label>
+                <input type="date" class="form-control" id="fechaNacimientoFundacion" name="fechaNacimiento" required />
+              </div>
+              <div class="col-md-6">
+                <label for="contrasenaFundacion" class="form-label">Contraseña</label>
+                <div class="input-group">
+                  <input type="password" class="form-control" id="contrasenaFundacion" name="contrasena" required />
+                  <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('contrasenaFundacion')">
+                    <i class="bi bi-eye" id="iconFundacion"></i>
+                  </button>
+                </div>
               </div>
             </div>
-            <div class="mb-3"><label for="nit" class="form-label">NIT</label>
-              <input type="text" class="form-control" id="nit" name="nit" required />
-            </div>
-            <div class="mb-3"><label for="nombreFund" class="form-label">Nombre de la Fundación</label>
-              <input type="text" class="form-control" id="nombreFund" name="nombreFundacion" required />
-            </div>
-            <div class="mb-3"><label for="direccionFund" class="form-label">Dirección</label>
-              <input type="text" class="form-control" id="direccionFund" name="direccion" required />
-            </div>
-            <div class="mb-3"><label for="correoFund" class="form-label">Correo de la Fundación</label>
-              <input type="email" class="form-control" id="correoFund" name="correoFundacion" required />
-            </div>
-            <div class="mb-3">
-              <label for="telefonoFund" class="form-label">Teléfono de la Fundación</label>
-              <input type="tel" class="form-control" id="telefonoFund" name="telefonoFundacion" 
-                     pattern="[0-9]{10}" maxlength="10" 
-                     title="Debe ingresar exactamente 10 dígitos" required />
-              <small class="text-muted">Ingrese 10 dígitos</small>
+
+            <h6 class="text-secondary fw-bold mt-4 mb-3">Datos de la Fundación</h6>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="nit" class="form-label">NIT</label>
+                <input type="text" class="form-control" id="nit" name="nit" required />
+              </div>
+              <div class="col-md-6">
+                <label for="nombreFund" class="form-label">Nombre de la Fundación</label>
+                <input type="text" class="form-control" id="nombreFund" name="nombreFundacion" required />
+              </div>
+              <div class="col-12">
+                <label for="direccionFund" class="form-label">Dirección</label>
+                <input type="text" class="form-control" id="direccionFund" name="direccion" required />
+              </div>
+              <div class="col-md-6">
+                <label for="correoFund" class="form-label">Correo de la Fundación</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white" style="border-radius: 10px 0 0 10px; border-color: #dee2e6;"><i class="bi bi-envelope-at text-muted"></i></span>
+                    <input type="email" class="form-control" id="correoFund" name="correoFundacion" required />
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label for="telefonoFund" class="form-label">Teléfono de la Fundación</label>
+                <input type="tel" class="form-control" id="telefonoFund" name="telefonoFundacion" 
+                      pattern="[0-9]{10}" maxlength="10" 
+                      title="Debe ingresar exactamente 10 dígitos" required />
+              </div>
             </div>
           </div>
+          <hr class="my-4" />
 
-          <div class="form-check mb-3">
+          <div class="form-check mb-4">
             <input class="form-check-input" type="checkbox" id="terminos" required />
-            <label class="form-check-label" for="terminos">Acepto los términos y condiciones</label>
+            <label class="form-check-label" for="terminos" style="font-weight: 500;">
+              Acepto los <a href="#" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">términos y condiciones</a>
+            </label>
           </div>
 
           <div class="d-grid">
-            <button type="submit" class="btn btn-primary">Registrarse</button>
+            <button type="submit" class="btn btn-primary shadow">Registrarse</button>
           </div>
         </form>
       </div>
     </div>
   </div>
+
+  <footer class="text-center py-4 mt-auto text-white">
+    <div class="container">
+      <p class="mb-3 opacity-75">© 2025 Adopt with Love. Todos los derechos reservados.</p>
+      <div class="footer-social">
+        <a href="https://wa.me/1234567890" class="mx-3" title="WhatsApp"><i class="fab fa-whatsapp fa-lg"></i></a>
+        <a href="https://facebook.com/tuPagina" class="mx-3" title="Facebook"><i class="fab fa-facebook-f fa-lg"></i></a>
+        <a href="https://twitter.com/tuPerfil" class="mx-3" title="Twitter"><i class="fab fa-twitter fa-lg"></i></a>
+        <a href="https://tiktok.com/@tuUsuario" class="mx-3" title="TikTok"><i class="fab fa-tiktok fa-lg"></i></a>
+      </div>
+    </div>
+  </footer>
 
   <script>
     const tipoUsuarioSelect = document.getElementById("tipoUsuario");
@@ -195,6 +382,7 @@
       fechaFundacion.min = maxDateString;
     }
 
+    // Función para mostrar/ocultar campos y controlar el atributo 'required'
     function actualizarVisibilidadCampos() {
       const tipo = tipoUsuarioSelect.value;
 
@@ -202,7 +390,7 @@
       camposTienda.style.display = tipo === "tienda" ? "block" : "none";
       camposFundacion.style.display = tipo === "fundacion" ? "block" : "none";
 
-      // Habilitar inputs visibles, deshabilitar los ocultos
+      // Habilitar inputs visibles, deshabilitar los ocultos (para que no se envíen datos innecesarios)
       const inputsTienda = camposTienda.querySelectorAll("input");
       const inputsFundacion = camposFundacion.querySelectorAll("input");
 
@@ -217,6 +405,7 @@
       });
     }
 
+    // Event Listeners (Lógica original intacta)
     tipoUsuarioSelect.addEventListener("change", actualizarVisibilidadCampos);
     window.addEventListener("DOMContentLoaded", () => {
       actualizarVisibilidadCampos();
@@ -224,7 +413,6 @@
     });
   </script>
 
-  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

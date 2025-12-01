@@ -13,6 +13,20 @@
   <link rel="stylesheet" href="/root/css/dashboard-custom.css" />
 </head>
 <body class="d-flex flex-column min-vh-100">
+    <!-- Toast de Reclamo Ignorado -->
+    <div id="reclamoToast" class="toast align-items-center text-white bg-secondary border-0 position-fixed top-0 end-0 m-4" role="status" aria-live="polite" aria-atomic="true" style="z-index: 2001; min-width: 260px; display: none;">
+      <div class="d-flex">
+        <div class="toast-body fw-bold" id="reclamoToastMsg">Reclamo ignorado</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" onclick="hideReclamoToast()" aria-label="Cerrar"></button>
+      </div>
+    </div>
+  <!-- Toast de PDF descargado -->
+  <div id="pdfToast" class="toast align-items-center text-white bg-success border-0 position-fixed top-0 end-0 m-4" role="status" aria-live="polite" aria-atomic="true" style="z-index: 2000; min-width: 260px; display: none;">
+    <div class="d-flex">
+      <div class="toast-body fw-bold" id="pdfToastMsg">PDF descargado</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" onclick="hidePdfToast()" aria-label="Cerrar"></button>
+    </div>
+  </div>
 
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -208,5 +222,73 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
   <script src="/js/dashboard.js"></script>
+
+<script>
+// Toast flotante para Reclamo ignorado
+function showReclamoToast() {
+  const toastDiv = document.getElementById('reclamoToast');
+  toastDiv.style.display = 'block';
+  toastDiv.classList.add('show');
+  setTimeout(() => {
+    hideReclamoToast();
+  }, 1800);
+}
+function hideReclamoToast() {
+  const toastDiv = document.getElementById('reclamoToast');
+  toastDiv.classList.remove('show');
+  setTimeout(() => {
+    toastDiv.style.display = 'none';
+  }, 300);
+}
+
+// Delegar evento para botón "Ignorar" en la tabla de reclamos
+document.addEventListener('DOMContentLoaded', function() {
+  const tablaReclamos = document.getElementById('tablaReclamos');
+  if (tablaReclamos) {
+    tablaReclamos.addEventListener('click', function(e) {
+      if (e.target && e.target.classList.contains('btn-ignorar-reclamo')) {
+        setTimeout(() => showReclamoToast(), 300);
+      }
+    });
+  }
+});
+// Toast flotante para PDF descargado
+function showPdfToast(tipo) {
+  const toastDiv = document.getElementById('pdfToast');
+  const toastMsg = document.getElementById('pdfToastMsg');
+  let mensaje = '';
+  if (tipo === 'productos') mensaje = 'PDF de productos descargado';
+  else if (tipo === 'animales') mensaje = 'PDF de animales descargado';
+  else if (tipo === 'vendedores') mensaje = 'PDF de vendedores bloqueados descargado';
+  else mensaje = 'PDF descargado';
+  toastMsg.textContent = mensaje;
+  toastDiv.style.display = 'block';
+  toastDiv.classList.add('show');
+  setTimeout(() => {
+    hidePdfToast();
+  }, 1800);
+}
+function hidePdfToast() {
+  const toastDiv = document.getElementById('pdfToast');
+  toastDiv.classList.remove('show');
+  setTimeout(() => {
+    toastDiv.style.display = 'none';
+  }, 300);
+}
+document.addEventListener('DOMContentLoaded', function() {
+  const btnProductos = document.getElementById('descargarProductos');
+  if (btnProductos) btnProductos.addEventListener('click', function() {
+    setTimeout(() => showPdfToast('productos'), 500);
+  });
+  const btnAnimales = document.getElementById('descargarAnimales');
+  if (btnAnimales) btnAnimales.addEventListener('click', function() {
+    setTimeout(() => showPdfToast('animales'), 500);
+  });
+  const btnVendedores = document.getElementById('descargarVendedores');
+  if (btnVendedores) btnVendedores.addEventListener('click', function() {
+    setTimeout(() => showPdfToast('vendedores'), 500);
+  });
+});
+</script>
 </body>
 </html>

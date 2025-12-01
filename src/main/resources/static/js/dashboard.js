@@ -316,7 +316,7 @@ window.addEventListener('DOMContentLoaded', () => {
           <tr>
             <td>${r.descripcion}</td>
             <td>
-              <button class="btn btn-outline-secondary btn-sm" onclick="ignorarReclamo(${r.id})">Ignorar</button>
+              <button class="btn btn-outline-secondary btn-sm btn-ignorar-reclamo" onclick="ignorarReclamo(${r.id})">Ignorar</button>
               <button class="btn btn-outline-danger btn-sm" onclick="bloquearVendedor(${vendedorId})">Bloquear</button>
             </td>
           </tr>
@@ -340,9 +340,17 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     });
     if (res.ok) {
-      location.reload(); // 🔄 recarga toda la página
+      // Mostrar toast antes de recargar
+      if (typeof showReclamoToast === 'function') {
+        showReclamoToast();
+        setTimeout(() => location.reload(), 1800);
+      } else {
+        location.reload();
+      }
     } else {
-      alert("No se pudo eliminar el reclamo");
+      // Mostrar toast de error
+      if (typeof showPdfToast === 'function') showPdfToast('errorReclamo');
+      else alert("No se pudo eliminar el reclamo");
     }
   } catch (error) {
     console.error("Error al ignorar reclamo:", error);

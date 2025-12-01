@@ -1,124 +1,299 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Adopt with Love</title>
 
-  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
-
-  <!-- Favicon -->
-  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/616/616408.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  
+  <link rel="stylesheet" href="/root/css/dashboard-custom.css" />
 
   <style>
+    /* --- VARIABLES DE DISEÑO MODERNO --- */
+    :root {
+      --primary-color: #2a9d8f;
+      --secondary-color: #264653;
+      --accent-color: #e9c46a;
+      --text-light: #f1faee;
+      --gradient-overlay: linear-gradient(to bottom, rgba(42, 157, 143, 0.4), rgba(38, 70, 83, 0.9));
+      --shadow-soft: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f4f4f9;
+      color: var(--secondary-color);
+      overflow-x: hidden;
+    }
+
+    /* --- NAVBAR MODERNA (Glassmorphism) --- */
+    .navbar {
+      background: linear-gradient(180deg, #012a3e 0%, #4DB6AC 100%) !important; /* Semi-transparente */
+      backdrop-filter: blur(10px); /* Efecto vidrio */
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+    }
+
+    .navbar-brand span {
+      font-weight: 800;
+      letter-spacing: 1px;
+      font-size: 1.5rem;
+    }
+
+    .logo-marca {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+      transition: width 0.3s, height 0.3s;
+    }
+
+    .nav-link {
+      font-weight: 600;
+      margin: 0 10px;
+      position: relative;
+      color: rgba(255,255,255,0.9) !important;
+    }
+
+    /* Animación de subrayado en menú */
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: 5px;
+      left: 0;
+      background-color: var(--accent-color);
+      transition: width 0.3s ease;
+    }
+    .nav-link:hover::after {
+      width: 100%;
+    }
+
+    /* --- CARRUSEL TRANSFORMADO EN HERO SECTION --- */
+    .carousel-item {
+      height: 95vh; /* Más grande para mayor impacto */
+      position: relative;
+    }
+
     .carousel-item img {
-    height: 550px; /* O la altura que necesites */
-    object-fit: cover;
-    width: 100%;
-  }
+      height: 100%;
+      width: 100%;
+      object-fit: cover;
+      filter: brightness(1);
+      border-radius: 0 0 40px 40px;
+      box-shadow: 0 12px 32px rgba(42,157,143,0.13);
+    }
 
-  .carousel {
-    position: relative;
-    z-index: 1;
-  }
+    /* Overlay gradiente sobre las imágenes del carrusel */
+    .carousel-item::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--gradient-overlay);
+      pointer-events: none;
+    }
 
-  .navbar {
-    position: relative;
-    z-index: 1050;
-  }
-</style>
+    .carousel-caption {
+      bottom: 0;
+      top: 0;
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    /* Texto Animado */
+    .carousel-caption h2 {
+      font-size: 3.5rem;
+      font-weight: 800;
+      text-shadow: 2px 4px 15px rgba(0,0,0,0.5);
+      background: none !important; /* Quitamos la caja gris fea */
+      animation: fadeInUp 1.2s ease-out;
+    }
+
+    /* --- BOTONES / ENLACES (Estilo Pill) --- */
+    /* Transformamos tus enlaces simples en botones atractivos */
+    .container.py-5 form {
+      background: transparent;
+      box-shadow: none;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .form-check {
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Ocultamos el input check real visualmente si no es funcional, 
+       o lo estilizamos. Asumo que son links a modales principalmente. */
+    .form-check-input {
+      display: none; 
+    }
+
+    .enlace-modal {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background-color: white;
+      color: var(--primary-color) !important;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 15px 35px;
+      border-radius: 50px; /* Forma de píldora */
+      text-decoration: none;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+      border: 2px solid var(--primary-color);
+      margin-top: 50px;
+      margin-bottom: -50px;
+    }
+
+    .enlace-modal:hover {
+      background-color: var(--primary-color);
+      color: white !important;
+      transform: translateY(-5px); /* Se levanta al pasar el mouse */
+      box-shadow: 0 10px 25px rgba(42, 157, 143, 0.4);
+    }
+
+    /* Iconos añadidos via CSS pseudo-elementos (opcional) o HTML */
+    .enlace-modal::before {
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      margin-right: 5px;
+    }
+    
+    /* Icono específico para cada botón (truco CSS) */
+    a[data-bs-target="#modalTerminos"]::before { content: "\f570"; } /* Icono papel */
+    a[data-bs-target="#modalLeyes"]::before { content: "\f24e"; } /* Icono balanza */
+
+    /* --- MODALES --- */
+    .modal-content {
+      border: none;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+    .modal-header {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+    }
+    .btn-close {
+      filter: invert(1);
+    }
+
+    /* --- FOOTER --- */
+    footer {
+      background: var(--secondary-color) !important;
+      border-top: none;
+      padding: 40px 0;
+    }
+    .footer-social a {
+      font-size: 1.5rem;
+      transition: transform 0.3s;
+      display: inline-block;
+    }
+    .footer-social a:hover {
+      transform: scale(1.2) rotate(5deg);
+      color: var(--accent-color) !important;
+    }
+
+    /* Animación Keyframes */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .carousel-caption h2 { font-size: 2rem; }
+      .carousel-item { height: 38vh; }
+      .container.py-5 form { flex-direction: column; align-items: center; }
+      .logo-marca { width: 55px; height: 55px; }
+    }
+  </style>
 </head>
 <body class="d-flex flex-column min-vh-100">
 
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <a class="navbar-brand" href="./index.html" style="font-family: 'Poppins', sans-serif; font-weight: 400; font-size: 1.5rem;">Adopt with Love</a>
-  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-    <ul class="navbar-nav">
-      <li class="nav-item">
-        <a class="nav-link px-3 py-2" href="/fundaciones" style="font-weight: 400;">Fundaciones</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link px-3 py-2" href="/tiendas" style="font-weight: 400;">Tiendas</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link px-3 py-2" href="/login" style="font-weight: 400;">Inicio de sesión</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link px-3 py-2" href="/registro" style="font-weight: 400;">Registro</a>
-      </li>
-    </ul>
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top"> <div class="container-fluid">
+    <div class="navbar-brand d-flex align-items-center gap-2 no-link">
+      <img src="img/logo.png" alt="Logo" class="logo-marca"> 
+      <span>Adopt with Love</span>
+    </div>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item"><a class="nav-link" href="/fundaciones">Fundaciones</a></li>
+        <li class="nav-item"><a class="nav-link" href="/tiendas">Tiendas</a></li>
+        <li class="nav-item"><a class="nav-link" href="/login">Inicio de sesión</a></li>
+        <li class="nav-item"><a class="nav-link" style="background: var(--accent-color); color: var(--secondary-color) !important; border-radius: 20px; padding: 8px 20px; margin-left: 10px;" href="/registro">Registro</a></li>
+      </ul>
+    </div>
   </div>
 </nav>
   
-  <div id="carouselExampleCaptions" class="carousel slide" data-bs-ride="carousel">
-    <!-- Indicadores del carrusel -->
-    <div class="carousel-indicators">
-      <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-      <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="1" aria-label="Slide 2"></button>
-      <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="2" aria-label="Slide 3"></button>
+<div id="carouselExampleCaptions" class="carousel slide carousel-fade" data-bs-ride="carousel">
+  <div class="carousel-indicators">
+    <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="0" class="active"></button>
+    <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="1"></button>
+    <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="2"></button>
+  </div>
+
+  <div class="carousel-inner">
+    <div class="carousel-item active">
+      <img src="https://images.unsplash.com/photo-1450778869180-41d0601e046e?q=80&w=1920&auto=format&fit=crop" class="d-block w-100" alt="Carrusel 1">
+      <div class="carousel-caption">
+        <h2>Un hogar para cada patita.<br>¡Haz la diferencia hoy!</h2>
+      </div>
     </div>
-  
-    <!-- Carrusel -->
-    <div class="carousel-inner">
-      <div class="carousel-item active">
-        <img src="/img/imgCarrusel1.png" class="d-block w-100" alt="Carrusel 1">
-        <div class="carousel-caption d-none d-md-block">
-          <h2 class="fw-bold bg-dark bg-opacity-50 p-2 rounded">Un hogar para cada patita. ¡Haz la diferencia hoy!</h2>
-        </div>
+    <div class="carousel-item">
+      <img src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=1920&auto=format&fit=crop" class="d-block w-100" alt="Carrusel 2">
+      <div class="carousel-caption">
+        <h2>Adopta amor,<br>cambia una vida.</h2>
       </div>
-      <div class="carousel-item">
-        <img src="/img/imgCarrusel2.png" class="d-block w-100" alt="Carrusel 2">
-        <div class="carousel-caption d-none d-md-block">
-          <h2 class="fw-bold bg-dark bg-opacity-50 p-2 rounded">Adopta amor, cambia una vida.</h2>
-        </div>
-      </div>
-      <div class="carousel-item">
-        <img src="/img/imgCarrusel3.png" class="d-block w-100" alt="Carrusel 3">
-        <div class="carousel-caption d-none d-md-block">
-          <h2 class="fw-bold bg-dark bg-opacity-50 p-2 rounded">Ellos esperan por ti. ¡No los hagas esperar!</h2>
-        </div>
+    </div>
+    <div class="carousel-item">
+      <img src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=1920&auto=format&fit=crop" class="d-block w-100" alt="Carrusel 3">
+      <div class="carousel-caption">
+        <h2>Ellos esperan por ti.<br>¡No los hagas esperar!</h2>
       </div>
     </div>
   </div>
+
+  <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon"></span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
+    <span class="carousel-control-next-icon"></span>
+  </button>
+</div>   
   
-    <!-- Controles de navegación -->
-    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
-      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-      <span class="visually-hidden">Anterior</span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
-      <span class="carousel-control-next-icon" aria-hidden="true"></span>
-      <span class="visually-hidden">Siguiente</span>
-    </button>
-  </div>   
-  
-<!-- Formulario -->
-<div class="container py-5">
+<div class="container py-5" style="margin-top: -80px; position: relative; z-index: 20;">
   <form>
-    <!-- Otros campos aquí si deseas -->
-
-    <div class="form-check mb-2">
+    <div class="form-check">
       <label class="form-check-label" for="checkTerminos">
-        <a href="#" data-bs-toggle="modal" data-bs-target="#modalTerminos">Términos y Condiciones</a>
+        <a href="#" class="enlace-modal" data-bs-toggle="modal" data-bs-target="#modalTerminos">Términos y Condiciones</a>
       </label>
     </div>
 
-    <div class="form-check mb-4">
+    <div class="form-check">
       <label class="form-check-label" for="checkLeyes">
-        <a href="#" data-bs-toggle="modal" data-bs-target="#modalLeyes">Leyes y Regulaciones</a>
+        <a href="#" class="enlace-modal" data-bs-toggle="modal" data-bs-target="#modalLeyes">Leyes y Regulaciones</a>
       </label>
     </div>
+  </form>
 </div>
 
-<!-- Modal Términos y Condiciones -->
 <div class="modal fade" id="modalTerminos" tabindex="-1" aria-labelledby="modalTerminosLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
       <div class="modal-content">
@@ -127,62 +302,8 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body text-start">
-          <p><strong>Fecha de última actualización:</strong> [Fecha]</p>
-          <p>Bienvenido a Adopt with Love. Al acceder y utilizar este sitio web, aceptas cumplir con los siguientes términos y condiciones. Si no estás de acuerdo con estos términos, por favor, no uses este sitio web.</p>
-  
-          <h6>1. Generalidades</h6>
-          <p>1.1 Adopt with Love es una plataforma dedicada a la adopción de mascotas, en especial perros y gatos, donde las fundaciones registradas pueden listar animales en adopción, y los usuarios pueden buscar y adoptar mascotas de manera responsable.</p>
-          <p>1.2 Este sitio está dirigido a personas mayores de 18 años. Si eres menor de edad, necesitarás la autorización de un adulto para acceder a los servicios del sitio.</p>
-  
-          <h6>2. Registro de Fundaciones</h6>
-          <p>2.1 Las fundaciones interesadas en registrar animales para adopción deben completar un proceso de registro en la plataforma y verificar su identidad y estatus legal.</p>
-          <p>2.2 Las fundaciones deben garantizar que las mascotas publicadas en el sitio hayan sido rescatadas de situaciones de maltrato o abandono y que estén en condiciones saludables para ser adoptadas.</p>
-          <p>2.3 Adopt with Love no se hace responsable de la veracidad de la información proporcionada por las fundaciones.</p>
-  
-          <h6>3. Adopción de Mascotas</h6>
-          <p>3.1 Los usuarios interesados en adoptar una mascota deben completar un formulario de solicitud que incluye preguntas sobre su capacidad para cuidar al animal, sus condiciones de vida y otros aspectos relevantes para garantizar el bienestar de la mascota.</p>
-          <p>3.2 La adopción será confirmada una vez que la fundación apruebe la solicitud del usuario y se coordinen los detalles para la entrega de la mascota.</p>
-          <p>3.3 Adopt with Love actúa únicamente como intermediario entre las fundaciones y los adoptantes, no asumiendo responsabilidades legales ni materiales respecto a la adopción.</p>
-  
-          <h6>4. Obligaciones del Adoptante</h6>
-          <p>4.1 El adoptante se compromete a proporcionar un hogar adecuado para la mascota, brindándole atención veterinaria, alimento, y el cariño necesario para su bienestar.</p>
-          <p>4.2 El adoptante acepta que, en caso de no poder cuidar de la mascota, la devolverá a la fundación que la adoptó a través de este sitio.</p>
-  
-          <h6>5. Propiedad Intelectual</h6>
-          <p>5.1 Todo el contenido de este sitio web, incluyendo imágenes, textos, logotipos y marcas, son propiedad de Adopt with Love o de sus respectivos propietarios y están protegidos por las leyes de propiedad intelectual.</p>
-          <p>5.2 No se permite la reproducción, distribución o modificación del contenido sin el consentimiento previo y por escrito de Adopt with Love.</p>
-  
-          <h6>6. Política de Privacidad</h6>
-          <p>6.1 Recopilamos información personal solo cuando es necesario para procesar la adopción o para brindarte el servicio solicitado.</p>
-          <p>6.2 No compartiremos tu información personal con terceros sin tu consentimiento, salvo en situaciones en las que sea requerido por la ley.</p>
-  
-          <h6>7. Responsabilidad</h6>
-          <p>7.1 Adopt with Love se exime de toda responsabilidad sobre cualquier daño, perjuicio o inconveniente derivado del comportamiento de las mascotas adoptadas o de cualquier acuerdo entre las fundaciones y los adoptantes.</p>
-          <p>7.2 Las fundaciones y los adoptantes deben garantizar que todas las interacciones sean de buena fe y en beneficio de la mascota.</p>
-  
-          <h6>8. Modificaciones</h6>
-          <p>8.1 Adopt with Love se reserva el derecho de modificar estos términos y condiciones en cualquier momento. Las modificaciones serán publicadas en el sitio web, y el uso continuado del sitio implicará la aceptación de los cambios.</p>
-  
-          <h6>9. Ley Aplicable</h6>
-          <p>9.1 Estos Términos y Condiciones se regirán e interpretarán de acuerdo con las leyes de la República de Colombia. En caso de disputa, las partes se someten a la jurisdicción de los tribunales competentes de Colombia.</p>
-  
-          <h6>10. Contacto</h6>
-          <p>Si tienes alguna pregunta sobre estos Términos y Condiciones, puedes contactarnos a través de nuestro formulario de contacto o por correo electrónico a <strong>correo@adoptwithlove.com</strong>.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Modal Leyes y Regulaciones -->
-  <div class="modal fade" id="modalLeyes" tabindex="-1" aria-labelledby="modalLeyesLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="modalLeyesLabel">Leyes y Regulaciones</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <p>El uso de esta plataforma está sujeto a las leyes de protección animal y de privacidad vigentes en la República de Colombia.</p>
+          <p><strong>Fecha de última actualización:</strong></p>
+         El uso de esta plataforma está sujeto a las leyes de protección animal y de privacidad vigentes en la República de Colombia.</p>
           <ul>
             <li>Respetamos y promovemos la Ley 1774 de 2016 sobre el bienestar animal.</li>
             <li>Nos acogemos a la Ley de Habeas Data y protección de datos personales.</li>
@@ -192,37 +313,74 @@
         </div>
       </div>
     </div>
-  </div>  
-
-<!-- Agregar Font Awesome para iconos -->
-<head>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  </head>
+</div>
   
-  <footer class="text-center py-4 mt-auto bg-dark text-white">
-    <div class="container">
-      <p class="mb-0">© 2025 Adopt with Love. Todos los derechos reservados.</p>
-      
-      <!-- Enlaces a redes sociales -->
-      <div>
-        <a href="https://wa.me/1234567890" class="text-white mx-3" style="font-size: 1.5rem;">
-          <i class="fab fa-whatsapp"></i>
-        </a>
-        <a href="https://facebook.com/tuPagina" class="text-white mx-3" style="font-size: 1.5rem;">
-          <i class="fab fa-facebook-f"></i>
-        </a>
-        <a href="https://twitter.com/tuPerfil" class="text-white mx-3" style="font-size: 1.5rem;">
-          <i class="fab fa-twitter"></i>
-        </a>
-        <a href="https://tiktok.com/@tuUsuario" class="text-white mx-3" style="font-size: 1.5rem;">
-          <i class="fab fa-tiktok"></i>
-        </a>
+<div class="modal fade" id="modalLeyes" tabindex="-1" aria-labelledby="modalLeyesLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalLeyesLabel">Leyes y Regulaciones</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+           <p>Bienvenido a Adopt with Love. Al acceder y utilizar este sitio web, aceptas cumplir con los siguientes términos y condiciones. Si no estás de acuerdo con estos términos, por favor, no uses este sitio web.</p>
+ 
+          <h6>1. Generalidades</h6>
+          <p>1.1 Adopt with Love es una plataforma dedicada a la adopción de mascotas, en especial perros y gatos, donde las fundaciones registradas pueden listar animales en adopción, y los usuarios pueden buscar y adoptar mascotas de manera responsable.</p>
+          <p>1.2 Este sitio está dirigido a personas mayores de 18 años. Si eres menor de edad, necesitarás la autorización de un adulto para acceder a los servicios del sitio.</p>
+ 
+          <h6>2. Registro de Fundaciones</h6>
+          <p>2.1 Las fundaciones interesadas en registrar animales para adopción deben completar un proceso de registro en la plataforma y verificar su identidad y estatus legal.</p>
+          <p>2.2 Las fundaciones deben garantizar que las mascotas publicadas en el sitio hayan sido rescatadas de situaciones de maltrato o abandono y que estén en condiciones saludables para ser adoptadas.</p>
+          <p>2.3 Adopt with Love no se hace responsable de la veracidad de la información proporcionada por las fundaciones.</p>
+ 
+          <h6>3. Adopción de Mascotas</h6>
+          <p>3.1 Los usuarios interesados en adoptar una mascota deben completar un formulario de solicitud que incluye preguntas sobre su capacidad para cuidar al animal, sus condiciones de vida y otros aspectos relevantes para garantizar el bienestar de la mascota.</p>
+          <p>3.2 La adopción será confirmada una vez que la fundación apruebe la solicitud del usuario y se coordinen los detalles para la entrega de la mascota.</p>
+          <p>3.3 Adopt with Love actúa únicamente como intermediario entre las fundaciones y los adoptantes, no asumiendo responsabilidades legales ni materiales respecto a la adopción.</p>
+ 
+          <h6>4. Obligaciones del Adoptante</h6>
+          <p>4.1 El adoptante se compromete a proporcionar un hogar adecuado para la mascota, brindándole atención veterinaria, alimento, y el cariño necesario para su bienestar.</p>
+          <p>4.2 El adoptante acepta que, en caso de no poder cuidar de la mascota, la devolverá a la fundación que la adoptó a través de este sitio.</p>
+ 
+          <h6>5. Propiedad Intelectual</h6>
+          <p>5.1 Todo el contenido de este sitio web, incluyendo imágenes, textos, logotipos y marcas, son propiedad de Adopt with Love o de sus respectivos propietarios y están protegidos por las leyes de propiedad intelectual.</p>
+          <p>5.2 No se permite la reproducción, distribución o modificación del contenido sin el consentimiento previo y por escrito de Adopt with Love.</p>
+ 
+          <h6>6. Política de Privacidad</h6>
+          <p>6.1 Recopilamos información personal solo cuando es necesario para procesar la adopción o para brindarte el servicio solicitado.</p>
+          <p>6.2 No compartiremos tu información personal con terceros sin tu consentimiento, salvo en situaciones en las que sea requerido por la ley.</p>
+ 
+          <h6>7. Responsabilidad</h6>
+          <p>7.1 Adopt with Love se exime de toda responsabilidad sobre cualquier daño, perjuicio o inconveniente derivado del comportamiento de las mascotas adoptadas o de cualquier acuerdo entre las fundaciones y los adoptantes.</p>
+          <p>7.2 Las fundaciones y los adoptantes deben garantizar que todas las interacciones sean de buena fe y en beneficio de la mascota.</p>
+ 
+          <h6>8. Modificaciones</h6>
+          <p>8.1 Adopt with Love se reserva el derecho de modificar estos términos y condiciones en cualquier momento. Las modificaciones serán publicadas en el sitio web, y el uso continuado del sitio implicará la aceptación de los cambios.</p>
+ 
+          <h6>9. Ley Aplicable</h6>
+          <p>9.1 Estos Términos y Condiciones se regirán e interpretarán de acuerdo con las leyes de la República de Colombia. En caso de disputa, las partes se someten a la jurisdicción de los tribunales competentes de Colombia.</p>
+ 
+          <h6>10. Contacto</h6>
+          <p>Si tienes alguna pregunta sobre estos Términos y Condiciones, puedes contactarnos a través de nuestro formulario de contacto o por correo electrónico a <strong>correo@adoptwithlove.com</strong>.</p>
+        </div>
       </div>
     </div>
-  </footer>
-  <!-- sweetalert2-->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<!-- Bootstrap JS -->
+</div>  
+
+<footer class="text-center py-4 mt-auto text-white">
+    <div class="container">
+      <p class="mb-3">© 2025 Adopt with Love. Todos los derechos reservados.</p>
+      <div class="footer-social">
+        <a href="#" class="text-white mx-2"><i class="fab fa-whatsapp"></i></a>
+        <a href="#" class="text-white mx-2"><i class="fab fa-facebook-f"></i></a>
+        <a href="#" class="text-white mx-2"><i class="fab fa-twitter"></i></a>
+        <a href="#" class="text-white mx-2"><i class="fab fa-tiktok"></i></a>
+      </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

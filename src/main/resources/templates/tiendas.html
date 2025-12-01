@@ -2,6 +2,579 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
+    <style>
+
+              /* --- Navbar estilos de animalesFundacion --- */
+              .navbar {
+                position: fixed !important;
+                top: 0;
+                left: 0;
+                right: 0;
+                width: 100% !important;
+                z-index: 9999 !important;
+                background: linear-gradient(180deg, #1f0000 0%, #b60303 100%) !important;
+                backdrop-filter: blur(10px);
+                box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+                transition: all 0.3s ease;
+              }
+              .navbar-brand {
+                font-family: 'Poppins', sans-serif;
+                font-weight: 700 !important;
+                font-size: 1.7rem;
+                letter-spacing: 1px;
+                color: #fff !important;
+                display: flex;
+                align-items: center;
+                gap: 2px;
+                cursor: default;
+                transition: none;
+              }
+              .navbar-brand span {
+                font-weight: 800;
+                letter-spacing: 1px;
+                font-size: 1.5rem;
+              }
+              .logo-marca {
+                width: 80px;
+                height: 80px;
+                object-fit: contain;
+                filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+                transition: width 0.3s, height 0.3s;
+                display: block;
+                margin-left: 10px;
+                margin-right: 22px;
+              }
+              .navbar-nav .nav-link {
+                font-weight: 700;
+                margin: 0 10px;
+                position: relative;
+                color: rgba(255,255,255,0.9) !important;
+                transition: all 0.3s;
+                border-radius: 8px;
+              }
+              .navbar-nav .nav-link::after {
+                content: '';
+                position: absolute;
+                width: 0;
+                height: 2px;
+                bottom: 5px;
+                left: 0;
+                background-color: #e9c46a;
+                transition: width 0.3s ease;
+              }
+              .navbar-nav .nav-link:hover::after {
+                width: 100%;
+              }
+              .navbar-nav .nav-link:hover, .navbar-nav .nav-link:focus {
+                background-color: rgba(255,255,255,0.1);
+                color: #fff !important;
+                transform: translateY(-2px);
+              }
+              .navbar-brand.no-link:hover, .navbar-brand.no-link:focus {
+                background: none !important;
+                color: #fff !important;
+                cursor: default;
+              }
+              @media (max-width: 768px) {
+                .navbar-brand span { font-size: 1.1rem; }
+                .logo-marca { width: 55px; height: 55px; }
+              }
+
+              /* Cards de productos */
+              #productContainer {
+                display: grid;
+                grid-template-columns: repeat(1, 1fr);
+                gap: 1.2rem;
+                justify-items: center;
+              }
+              @media (min-width: 576px) {
+                #productContainer {
+                  grid-template-columns: repeat(2, 1fr);
+                }
+              }
+              @media (min-width: 992px) {
+                #productContainer {
+                  grid-template-columns: repeat(4, 1fr);
+                }
+              }
+              .product-card {
+                background: rgba(255,255,255,0.92);
+                border-radius: 16px;
+                box-shadow: 0 4px 18px rgba(220,53,69,0.13);
+                /* overflow: hidden; */
+                transition: transform 0.22s, box-shadow 0.22s, border-color 0.18s;
+                border: 2px solid #f8d7da;
+                width: 100%;
+                max-width: 180px;
+                min-width: 140px;
+                display: flex;
+                flex-direction: column;
+                margin: 0 0 1.2rem 0;
+                position: relative;
+                -webkit-backdrop-filter: blur(2.5px);
+                backdrop-filter: blur(2.5px);
+                animation: fadeInCard 0.7s cubic-bezier(.39,.58,.57,1.01);
+              }
+              @keyframes fadeInCard {
+                from { opacity: 0; transform: translateY(30px) scale(0.97); }
+                to { opacity: 1; transform: translateY(0) scale(1); }
+              }
+              .product-card:hover {
+                transform: translateY(-10px) scale(1.035);
+                box-shadow: 0 16px 48px rgba(220,53,69,0.22), 0 2px 12px rgba(76,0,0,0.10);
+                border-color: #dc3545;
+              }
+              .product-img {
+                width: 100%;
+                aspect-ratio: 1/1;
+                object-fit: cover;
+                background: #f8d7da;
+                border-bottom: 2px solid #f1b0b7;
+                transition: filter 0.2s, box-shadow 0.2s;
+                box-shadow: 0 2px 8px rgba(220,53,69,0.08);
+                display: block;
+                overflow: hidden;
+                border-top-left-radius: 16px;
+                border-top-right-radius: 16px;
+              }
+              .product-card:hover .product-img {
+                filter: brightness(0.96) saturate(1.13);
+                box-shadow: 0 6px 24px rgba(220,53,69,0.13);
+              }
+              .product-body {
+                padding: 1.1rem 1rem 0.9rem 1rem;
+                flex: 1 1 auto;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                position: relative;
+              }
+              .product-title {
+                color: #dc3545;
+                font-weight: 800;
+                font-size: 1.05rem;
+                margin-bottom: 0.4rem;
+                text-align: center;
+                letter-spacing: 0.5px;
+                text-shadow: 0 1px 2px #fff3f3, 0 2px 8px #f8d7da;
+              }
+              .product-badge {
+                position: absolute;
+                top: 10px;
+                left: 10px;
+                background: linear-gradient(90deg, #dc3545 0%, #c82333 100%);
+                color: #fff;
+                font-size: 0.80rem;
+                font-weight: 700;
+                padding: 0.25em 0.9em;
+                border-radius: 12px 12px 12px 0;
+                box-shadow: 0 2px 8px rgba(220,53,69,0.10);
+                letter-spacing: 0.5px;
+                z-index: 2;
+                pointer-events: none;
+              }
+              .product-info {
+                color: #232526;
+                font-size: 0.97rem;
+                margin-bottom: 0.2rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+              }
+              .product-price {
+                color: #c82333;
+                font-weight: 800;
+                font-size: 1.01rem;
+                margin-bottom: 0.2rem;
+                text-align: right;
+                letter-spacing: 0.5px;
+              }
+              .btn-adopt {
+                background: linear-gradient(90deg, #dc3545 0%, #c82333 100%);
+                color: #fff;
+                border: none;
+                border-radius: 14px;
+                padding: 8px 0;
+                font-weight: 700;
+                font-size: 0.98rem;
+                margin-top: 0.7rem;
+                width: 100%;
+                box-shadow: 0 2px 8px rgba(220,53,69,0.13);
+                transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+                letter-spacing: 0.5px;
+                position: relative;
+                overflow: visible;
+              }
+              .btn-adopt:active, .btn-adopt:focus {
+                background: linear-gradient(90deg, #c82333 0%, #dc3545 100%);
+                color: #fff;
+                box-shadow: 0 4px 16px rgba(220,53,69,0.18);
+                transform: scale(0.98);
+              }
+              .btn-adopt:hover {
+                background: linear-gradient(90deg, #dc3545 0%, #c82333 100%);
+                color: #fff;
+                filter: brightness(0.97);
+                cursor: pointer;
+                transform: scale(1.03);
+              }
+              /* Responsive: 2 productos por fila en desktop, 1 en móvil */
+              @media (min-width: 768px) {
+                #productContainer {
+                  flex-wrap: wrap;
+                  gap: 2.5rem;
+                }
+                .product-card {
+                  flex: 0 0 calc(50% - 2.5rem);
+                  max-width: 420px;
+                }
+              }
+              @media (max-width: 767px) {
+                .product-card {
+                  max-width: 100%;
+                }
+              }
+
+              /* Modal del carrito */
+              .modal-content {
+                border-radius: 18px;
+                border: 2.5px solid #dc3545;
+                box-shadow: 0 8px 32px rgba(220,53,69,0.13);
+                background: #fff;
+                padding: 0.5rem 0.5rem 0 0.5rem;
+              }
+              .modal-header {
+                background: linear-gradient(90deg, #dc3545 0%, #c82333 100%);
+                color: #fff;
+                border-top-left-radius: 16px;
+                border-top-right-radius: 16px;
+                border-bottom: 1.5px solid #f1b0b7;
+                box-shadow: 0 2px 8px rgba(220,53,69,0.08);
+              }
+              .modal-title {
+                font-weight: 800;
+                font-size: 1.35rem;
+                letter-spacing: 1px;
+                text-shadow: 0 1px 2px #fff3f3, 0 2px 8px #f8d7da;
+              }
+              .modal-body {
+                background: #fff0f1;
+                color: #232526;
+                font-size: 1.08rem;
+                border-bottom-left-radius: 16px;
+                border-bottom-right-radius: 16px;
+                padding: 1.2rem 0.7rem 1.2rem 0.7rem;
+                min-height: 180px;
+              }
+              .modal-footer {
+                background: #f8d7da;
+                border-bottom-left-radius: 16px;
+                border-bottom-right-radius: 16px;
+                border-top: 1.5px solid #f1b0b7;
+                box-shadow: 0 -2px 8px rgba(220,53,69,0.05);
+                padding: 1rem 1.2rem;
+              }
+              .cart-empty-icon {
+                font-size: 3rem;
+                color: #f1b0b7;
+              }
+              .cart-product-title {
+                color: #dc3545;
+                font-weight: 700;
+                font-size: 1.08rem;
+                margin-bottom: 0.2rem;
+              }
+              .cart-product-price {
+                color: #c82333;
+                font-weight: 700;
+                font-size: 1.01rem;
+              }
+              .cart-list-group {
+                padding: 0;
+                margin: 0;
+                list-style: none;
+              }
+              .cart-list-group-item {
+                background: #fff;
+                border-radius: 12px;
+                border: 1.5px solid #f8d7da;
+                margin-bottom: 1rem;
+                box-shadow: 0 2px 8px rgba(220,53,69,0.06);
+                padding: 0.7rem 1rem 0.7rem 0.7rem;
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                position: relative;
+                transition: box-shadow 0.2s, border-color 0.2s;
+              }
+              .cart-list-group-item:last-child {
+                margin-bottom: 0;
+              }
+              .cart-list-img {
+                width: 56px;
+                height: 56px;
+                object-fit: cover;
+                border-radius: 10px;
+                border: 1.5px solid #f1b0b7;
+                background: #f8d7da;
+                margin-right: 0.7rem;
+              }
+              .cart-list-info {
+                flex: 1 1 auto;
+                min-width: 0;
+              }
+              .cart-list-actions {
+                display: flex;
+                flex-direction: column;
+                gap: 0.4rem;
+                align-items: flex-end;
+                min-width: 120px;
+              }
+              .cart-remove-btn, .cart-list-group-item .btn-outline-danger {
+                background: none;
+                border: none;
+                color: #dc3545;
+                font-size: 1.1rem;
+                margin-left: 8px;
+                transition: color 0.2s;
+                padding: 0.2rem 0.7rem;
+                border-radius: 8px;
+              }
+              .cart-remove-btn:hover, .cart-list-group-item .btn-outline-danger:hover {
+                color: #fff;
+                background: #dc3545;
+                text-decoration: none;
+              }
+              .cart-badge {
+                background: #dc3545;
+                color: #fff;
+                font-weight: 700;
+                border-radius: 8px;
+                padding: 0.2em 0.7em;
+                font-size: 0.98rem;
+                margin-left: 0.5rem;
+              }
+              .cart-list-group-item .btn-success {
+                background: linear-gradient(90deg, #dc3545 0%, #c82333 100%);
+                border: none;
+                color: #fff;
+                font-weight: 600;
+                border-radius: 8px;
+                padding: 0.3rem 0.9rem;
+                font-size: 0.97rem;
+                margin-bottom: 0.2rem;
+                transition: background 0.2s;
+              }
+              .cart-list-group-item .btn-success:hover {
+                background: linear-gradient(90deg, #c82333 0%, #dc3545 100%);
+                color: #fff;
+              }
+              .cart-list-group-item .btn-warning {
+                background: #ffc107;
+                color: #fff;
+                font-weight: 600;
+                border: none;
+                border-radius: 8px;
+                padding: 0.3rem 0.9rem;
+                font-size: 0.97rem;
+                margin-bottom: 0.2rem;
+                transition: background 0.2s;
+              }
+              .cart-list-group-item .btn-warning:hover {
+                background: #e0a800;
+                color: #fff;
+              }
+              .modal-header {
+                background: linear-gradient(90deg, #dc3545 0%, #c82333 100%);
+                color: #fff;
+                border-top-left-radius: 16px;
+                border-top-right-radius: 16px;
+                border-bottom: 1px solid #f1b0b7;
+              }
+              .modal-title {
+                font-weight: 700;
+                font-size: 1.3rem;
+                letter-spacing: 1px;
+              }
+              .modal-body {
+                background: #fff0f1;
+                color: #232526;
+                font-size: 1.05rem;
+                border-bottom-left-radius: 16px;
+                border-bottom-right-radius: 16px;
+              }
+              .modal-footer {
+                background: #f8d7da;
+                border-bottom-left-radius: 16px;
+                border-bottom-right-radius: 16px;
+              }
+              .cart-empty-icon {
+                font-size: 3rem;
+                color: #f1b0b7;
+              }
+              .cart-product-title {
+                color: #dc3545;
+                font-weight: 600;
+                font-size: 1.1rem;
+              }
+              .cart-product-price {
+                color: #c82333;
+                font-weight: 700;
+              }
+              .cart-remove-btn {
+                background: none;
+                border: none;
+                color: #dc3545;
+                font-size: 1.2rem;
+                margin-left: 8px;
+                transition: color 0.2s;
+              }
+              .cart-remove-btn:hover {
+                color: #c82333;
+                text-decoration: underline;
+                cursor: pointer;
+              }
+
+    body, .navbar, .navbar * {
+      font-family: 'Poppins', sans-serif !important;
+    }
+    body {
+      padding-top: 110px !important;
+    }
+
+    /* Cards de productos */
+    /* Eliminado flex duplicado, solo grid activo arriba */
+
+    /* Modal del carrito */
+    .modal-content {
+      border-radius: 18px;
+      border: 2px solid #dc3545;
+      box-shadow: 0 4px 24px rgba(220,53,69,0.10);
+      z-index: 50;
+    }
+    .modal-backdrop.show {
+      z-index: 49 !important;
+    }
+    .modal-dialog {
+      z-index: 51 !important;
+    }
+    .navbar {
+      z-index: 30 !important;
+    }
+    .modal-header {
+      background: linear-gradient(90deg, #dc3545 0%, #c82333 100%);
+      color: #fff;
+      border-top-left-radius: 16px;
+      border-top-right-radius: 16px;
+      border-bottom: 1px solid #f1b0b7;
+    }
+    .modal-title {
+      font-weight: 700;
+      font-size: 1.3rem;
+      letter-spacing: 1px;
+    }
+    .modal-body {
+      background: #fff0f1;
+      color: #232526;
+      font-size: 1.05rem;
+      border-bottom-left-radius: 16px;
+      border-bottom-right-radius: 16px;
+    }
+    .modal-footer {
+      background: #f8d7da;
+      border-bottom-left-radius: 16px;
+      border-bottom-right-radius: 16px;
+    }
+    .cart-empty-icon {
+      font-size: 3rem;
+      color: #f1b0b7;
+    }
+    .cart-product-title {
+      color: #dc3545;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+    .cart-product-price {
+      color: #c82333;
+      font-weight: 700;
+    }
+    .cart-remove-btn {
+      background: none;
+      border: none;
+      color: #dc3545;
+      font-size: 1.2rem;
+      margin-left: 8px;
+      transition: color 0.2s;
+    }
+    .cart-remove-btn:hover {
+      color: #c82333;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .container-fluid.tiendas-bg {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+      min-height: calc(100vh - 120px);
+      padding-bottom: 80px;
+    }
+    .search-bar {
+      max-width: 600px;
+      border-radius: 25px;
+      overflow: hidden;
+      background: white;
+    }
+    .input-group-text.search-icon {
+      background: white;
+      border: 0;
+      padding-left: 20px;
+    }
+    #searchInput {
+      padding: 12px;
+      font-size: 1rem;
+      outline: none;
+      box-shadow: none;
+    }
+    .btn-cart {
+      background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 10px 25px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    .btn-cart:hover, .btn-cart:focus {
+      background: linear-gradient(135deg, #c82333 0%, #dc3545 100%);
+      color: #fff;
+    }
+    .footer-text {
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+    </style>
+    <style>
+      .cart-fly-anim {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%) scale(1);
+        pointer-events: none;
+        animation: cart-fly-move 0.9s cubic-bezier(.6,-0.28,.74,.05);
+        font-size: 1.5em;
+        color: #fff;
+        z-index: 10;
+        text-shadow: 0 2px 8px #c82333;
+      }
+      .btn-adopt.cart-animating {
+        position: relative;
+        overflow: visible;
+      }
+      @keyframes cart-fly-move {
+        0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5) rotate(-20deg); }
+        30% { opacity: 1; transform: translate(-50%, -90%) scale(1.2) rotate(0deg); }
+        60% { opacity: 1; transform: translate(-50%, -120%) scale(1.1) rotate(10deg); }
+        100% { opacity: 0; transform: translate(120%, -180%) scale(0.7) rotate(30deg); }
+      }
+    </style>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Tiendas - Adopt with Love</title>
 
@@ -24,42 +597,43 @@
 
   <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <span class="navbar-brand mb-0 h1 ms-3" style="font-family: 'Poppins', sans-serif; font-size: 1.5rem; font-weight: 600; cursor: default;">
-    <i class="fas fa-shopping-bag me-2"></i>Productos para Mascotas
-  </span>
+  <div class="navbar-brand no-link">
+    <img src="/img/logo.png" alt="Logo Adopt with Love" class="logo-marca">
+    <span>Adopt with Love</span>
+  </div>
   <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
   <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
     <ul class="navbar-nav">
       <li class="nav-item">
-        <a class="nav-link px-3 py-2" href="/" style="font-weight: 400;">Inicio</a>
+        <a class="nav-link px-3 py-2" href="/">Inicio</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link px-3 py-2" href="/fundaciones" style="font-weight: 400;">Fundaciones</a>
+        <a class="nav-link px-3 py-2" href="/fundaciones">Fundaciones</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link px-3 py-2" href="/tiendas" style="font-weight: 400;">Tiendas</a>
+        <a class="nav-link px-3 py-2" href="/tiendas">Tiendas</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link px-3 py-2" href="/login" style="font-weight: 400;">Inicio de sesión</a>
+        <a class="nav-link px-3 py-2" href="/login">Inicio de sesión</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link px-3 py-2" href="/registro" style="font-weight: 400;">Registro</a>
+        <a class="nav-link px-3 py-2" style="background: #e9c46a; color: #264653 !important; border-radius: 20px; padding: 8px 20px; margin-left: 10px; font-weight: 700;" href="/registro">Registro</a>
       </li>
     </ul>
   </div>
 </nav>
 
-<div class="container-fluid" style="background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%); min-height: calc(100vh - 120px); padding-bottom: 80px;">
+<div class="container-fluid tiendas-bg">
 
 <!-- Barra de búsqueda -->
 <div class="d-flex justify-content-center mb-4 mt-4">
-  <div class="input-group search-bar shadow-sm" style="max-width: 600px; border-radius: 25px; overflow: hidden; background: white;">
-    <span class="input-group-text bg-white border-0" style="padding-left: 20px;">
+  <div class="input-group search-bar shadow-sm">
+    <span class="input-group-text search-icon">
       🔍
     </span>
-    <input type="text" class="form-control border-0" id="searchInput" placeholder="Buscar productos..." style="padding: 12px; font-size: 1rem; outline: none; box-shadow: none;">
+    <input type="text" class="form-control border-0" id="searchInput" placeholder="Buscar productos...">
   </div>
 </div>
 
@@ -76,7 +650,7 @@
       </select>
     </div>
     <div class="col-md-5 col-lg-4 text-end">
-      <button class="btn shadow-sm" data-bs-toggle="modal" data-bs-target="#cartModal" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: white; border: none; border-radius: 12px; padding: 10px 25px; font-weight: 600; transition: all 0.3s;">
+      <button class="btn btn-cart shadow-sm" data-bs-toggle="modal" data-bs-target="#cartModal">
         🛒 Ver Carrito (<span id="cartCount">0</span>)
       </button>
     </div>
@@ -87,6 +661,18 @@
 
   <div class="row gx-3" id="productContainer">
 
+  <!-- Los productos se insertan aquí con JS, ejemplo de estructura de card:
+  <div class="product-card">
+    <img src="/img/ejemplo.jpg" class="product-img" alt="Nombre producto">
+    <div class="product-body">
+      <div class="product-title">Nombre producto</div>
+      <div class="product-info">Tipo: Juguete</div>
+      <div class="product-info">Cantidad: 10</div>
+      <div class="product-price">$45000</div>
+      <button class="btn-adopt">Agregar al carrito</button>
+    </div>
+  </div>
+  -->
   </div>
 
 
@@ -105,7 +691,7 @@
       </div>
       <div class="modal-body" id="cartItems">
         <p class="text-muted text-center py-4">
-          <i class="fas fa-shopping-basket" style="font-size: 3rem; color: #dee2e6;"></i><br>
+          <i class="fas fa-shopping-basket cart-empty-icon"></i><br>
           Tu carrito está vacío
         </p>
       </div>
@@ -119,14 +705,32 @@
   </div>
 </div>
 
-<footer class="text-center text-white mt-auto" style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); box-shadow: 0 -2px 10px rgba(0,0,0,0.1); padding: 15px 0;">
-  <p class="mb-0" style="font-weight: 500; font-size: 0.9rem;">© 2025 Adopt with Love 🐾 Todos los derechos reservados.</p>
+<footer class="text-center text-white mt-auto tiendas-footer">
+  <p class="mb-0 footer-text">© 2025 Adopt with Love 🐾 Todos los derechos reservados.</p>
 </footer>
+
+
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   
   <script src="/js/tiendas.js"></script>
+  <script>
+    // Mostrar toast de carrito
+    window.showCartToast = function() {
+      const toast = document.getElementById('cartToast');
+      toast.style.display = 'block';
+      toast.classList.add('animate__fadeInDown');
+      setTimeout(() => {
+        toast.classList.remove('animate__fadeInDown');
+        toast.classList.add('animate__fadeOutUp');
+        setTimeout(() => {
+          toast.style.display = 'none';
+          toast.classList.remove('animate__fadeOutUp');
+        }, 600);
+      }, 1200);
+    }
+  </script>
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
