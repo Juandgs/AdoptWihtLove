@@ -29,8 +29,7 @@ public class Animal {
     @Column(name = "tipo_animal", nullable = false)
     private String tipo_animal;
 
-    @Lob
-    @Column(name = "imagen", columnDefinition = "LONGTEXT")
+    @Column(name = "imagen")
     private String imagen;
 
      @ManyToOne
