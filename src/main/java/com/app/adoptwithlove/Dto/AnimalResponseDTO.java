@@ -13,6 +13,7 @@ public class AnimalResponseDTO {
     private String raza;
     private String tipo_animal;
     private String imagen;
+    private String estadoNombre;
 
     public AnimalResponseDTO(Animal a) {
         this.id = a.getId();
@@ -21,5 +22,6 @@ public class AnimalResponseDTO {
         this.raza = a.getRaza();
         this.tipo_animal = a.getTipo_animal();
         this.imagen = a.getImagen();
+        this.estadoNombre = a.getEstado() != null ? a.getEstado().getNombreEstado() : null;
     }
 }

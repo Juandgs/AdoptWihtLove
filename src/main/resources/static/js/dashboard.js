@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   const tablaAnimales = document.querySelector("#tablaAnimales");
   const tablaVendedoresBloqueados = document.getElementById("tablaVendedoresBloqueados");
   const filtroTipoProducto = document.getElementById("filtroTipoProducto");
+  const filtroEstadoAnimal = document.getElementById("filtroEstadoAnimal");
 
   let productos = [];
   let animales = [];
@@ -71,20 +72,102 @@ document.addEventListener("DOMContentLoaded", async function () {
   };
 
   const renderAnimales = () => {
-    if (!Array.isArray(animales) || animales.length === 0) {
-      tablaAnimales.innerHTML = `<tr><td colspan="5" class="text-muted">No hay animales disponibles</td></tr>`;
+    const estado = filtroEstadoAnimal.value;
+    const filtrados = estado ? animales.filter(a => a.nombreEstado === estado) : animales;
+    if (!Array.isArray(filtrados) || filtrados.length === 0) {
+      tablaAnimales.innerHTML = `<tr><td colspan="6" class="text-muted">No hay animales disponibles</td></tr>`;
       return;
     }
-    tablaAnimales.innerHTML = animales.map(a => `
+    // Generar filas con botón que usa data-attributes (sin inline onclick)
+    tablaAnimales.innerHTML = filtrados.map(a => `
       <tr>
         <td>${a.nombre}</td>
         <td>${a.edad}</td>
         <td>${a.raza}</td>
-        <td>${a.tipoAnimal}</td>
+        <td>${a.tipo_animal || a.tipoAnimal}</td>
         <td>${a.nombreEstado ?? 'Sin estado'}</td>
+        <td>
+          <button class="btn btn-outline-info btn-sm ver-historial-btn" data-animal-id="${a.id}" data-animal-nombre="${(a.nombre||'').replace(/\"/g,'&quot;')}">Ver Historial</button>
+        </td>
       </tr>
     `).join('');
+    console.debug('[dashboard] renderAnimales: filas renderizadas=', filtrados.length);
   };
+
+  // Delegación de eventos para botones 'Ver Historial' en la tabla (admin)
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest && e.target.closest('.ver-historial-btn');
+    if (!btn) return;
+    const animalId = btn.dataset.animalId;
+    const animalNombre = btn.dataset.animalNombre || '';
+    try {
+      console.debug('[dashboard] ver-historial clicked for', animalId, animalNombre);
+      // Llamamos a la función existente para mostrar historial (admin)
+      if (typeof window.verHistorial === 'function') {
+        window.verHistorial(animalId, animalNombre);
+      } else if (typeof verHistorialPublic === 'function') {
+        // fallback a la versión pública si la admin no existe
+        verHistorialPublic(animalId, animalNombre);
+      }
+    } catch (err) {
+      console.error('Error al abrir historial para animal', animalId, err);
+    }
+  });
+
+  // Mostrar historial horizontal tipo línea de tiempo
+  window.verHistorial = async (animalId, animalNombre) => {
+    try {
+      const wrapper = document.getElementById('historialSection');
+      const container = document.getElementById('historialContainer');
+      wrapper.classList.remove('d-none');
+      container.innerHTML = `<div style="min-width:220px; display:flex; align-items:center; gap:12px;">Cargando historial de ${animalNombre}...</div>`;
+
+      const res = await fetch(`/adopcion/historial/${animalId}`, { credentials: 'include' });
+      if (!res.ok) {
+        container.innerHTML = `<div class="text-muted">No se pudo cargar el historial (status ${res.status})</div>`;
+        return;
+      }
+      const data = await res.json();
+      if (!Array.isArray(data) || data.length === 0) {
+        container.innerHTML = `<div class="text-muted">No hay solicitudes de adopción para este animal.</div>`;
+        return;
+      }
+
+      // Renderizar items: data viene ya ordenada (más reciente primero)
+      container.innerHTML = data.map(d => {
+        const fecha = d.fecha ? new Date(d.fecha).toLocaleString() : 'Sin fecha';
+        const estado = d.estado || 'Sin estado';
+        const nombre = (d.nombre || '') + ' ' + (d.apellido || '');
+        return `
+          <div class="timeline-item">
+            <div class="fecha">${fecha}</div>
+            <div class="estado">${estado}</div>
+            <div class="adoptante"><strong>${nombre.trim() || 'Solicitante anónimo'}</strong></div>
+            <div class="detalle" style="font-size:0.9rem; color:#444; margin-top:6px;">
+              ${d.email ? d.email + '<br/>' : ''}${d.telefono ? d.telefono + '<br/>' : ''}${d.direccion ? d.direccion : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Auto-scrolling to the left (most recent at start)
+      const wrapperEl = document.getElementById('historialContainerWrapper');
+      if (wrapperEl) wrapperEl.scrollLeft = 0;
+    } catch (error) {
+      console.error('Error al cargar historial:', error);
+      const container = document.getElementById('historialContainer');
+      if (container) container.innerHTML = `<div class="text-muted">Error al cargar historial</div>`;
+    }
+  };
+
+  // Cerrar historial
+  document.addEventListener('click', (e) => {
+    const close = e.target && (e.target.id === 'closeHistorialBtn' || e.target.closest && e.target.closest('#closeHistorialBtn'));
+    if (close) {
+      const wrapper = document.getElementById('historialSection');
+      if (wrapper) wrapper.classList.add('d-none');
+    }
+  });
 
 
   // Paleta basada en el degradado del menú: verde agua, verde oscuro, gris oscuro, azul oscuro
@@ -316,7 +399,7 @@ window.addEventListener('DOMContentLoaded', () => {
           <tr>
             <td>${r.descripcion}</td>
             <td>
-              <button class="btn btn-outline-secondary btn-sm" onclick="ignorarReclamo(${r.id})">Ignorar</button>
+              <button class="btn btn-outline-secondary btn-sm btn-ignorar-reclamo" onclick="ignorarReclamo(${r.id})">Ignorar</button>
               <button class="btn btn-outline-danger btn-sm" onclick="bloquearVendedor(${vendedorId})">Bloquear</button>
             </td>
           </tr>
@@ -340,9 +423,17 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     });
     if (res.ok) {
-      location.reload(); // 🔄 recarga toda la página
+      // Mostrar toast antes de recargar
+      if (typeof showReclamoToast === 'function') {
+        showReclamoToast();
+        setTimeout(() => location.reload(), 1800);
+      } else {
+        location.reload();
+      }
     } else {
-      alert("No se pudo eliminar el reclamo");
+      // Mostrar toast de error
+      if (typeof showPdfToast === 'function') showPdfToast('errorReclamo');
+      else alert("No se pudo eliminar el reclamo");
     }
   } catch (error) {
     console.error("Error al ignorar reclamo:", error);
@@ -392,6 +483,11 @@ window.addEventListener('DOMContentLoaded', () => {
   filtroTipoProducto.addEventListener("change", () => {
     renderProductos();
     renderGraficoProductos();
+  });
+
+  filtroEstadoAnimal.addEventListener("change", () => {
+    renderAnimales();
+    renderGraficoAnimales();
   });
 
   mostrarSeccion("seccion2");

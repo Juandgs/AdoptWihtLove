@@ -28,9 +28,12 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(
-                "/", "/login", "/registro", "/fundaciones", "/tiendas",
+                "/", "/login", "/registro",
+                "/fundaciones", "/fundaciones/**", "/fundacion/**",
+                "/tiendas/**", "/productos/**", "/api/fundaciones/**",
                 "/css/**", "/js/**", "/img/**",
-                "/animales", "/postLogin", "/dashboard"
+                "/animales/**", "/postLogin",
+                "/adopcion/**"
             ).permitAll()
 
             // ✅ Permitir libre acceso a estas rutas sin rol

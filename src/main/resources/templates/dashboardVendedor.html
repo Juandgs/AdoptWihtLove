@@ -8,18 +8,28 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+  <link rel="stylesheet" href="/root/css/dashboard-custom.css">
+  <style>
+    :root { --brand-start: #012a3e; --brand-end: #4DB6AC; }
+    .navbar { background: linear-gradient(180deg, var(--brand-start) 0%, var(--brand-end) 100%); box-shadow: 0 4px 18px rgba(0,0,0,0.06); min-height:48px; }
+    .navbar-brand { color: #fff !important; font-weight:700; display:flex; align-items:center; gap:.5rem; }
+    .logo-marca { width: 38px; height: 38px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
+    .cerrar-sesion-btn { background: #e53935; color: #fff !important; border-radius: 20px; padding: 8px 18px; font-weight:700; border:none; }
+    .cerrar-sesion-btn:hover{ background:#c62828; color:#fff !important; }
+  </style>
 </head>
 <body class="d-flex flex-column min-vh-100">
 
   <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <span class="navbar-brand mb-0 h1 ms-3" style="font-family: 'Poppins', sans-serif; font-size: 1.5rem; font-weight: 600; cursor: default;">
-      <i class="fas fa-store me-2"></i>Panel del Vendedor
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <span class="navbar-brand mb-0 h1 ms-3" style="font-family: 'Poppins', sans-serif; font-size: 1.5rem; cursor: default;">
+      <img src="/img/logo.png" alt="Logo Adopt with Love" class="logo-marca">
+      <span style="font-weight:600;">Panel del Vendedor</span>
     </span>
     <div class="collapse navbar-collapse justify-content-end">
       <ul class="navbar-nav">
         <li class="nav-item">
-          <a class="nav-link btn btn-danger ms-2" href="/">
+          <a class="nav-link cerrar-sesion-btn ms-2" href="/">
             <i class="fas fa-sign-out-alt me-1"></i> Cerrar Sesión
           </a>
         </li>
@@ -30,14 +40,21 @@
   <!-- Layout -->
   <div class="d-flex flex-grow-1">
     <!-- Sidebar -->
-    <aside class="bg-dark text-white p-3" style="width: 250px;">
-      <h5 class="text-center">Menú</h5>
+    <aside id="menuLateral" class="dashboard-sidebar bg-dark text-white p-3">
+      <div class="sidebar-header text-center mb-4">
+        <i class="fas fa-store fa-2x mb-2" style="color: #4DB6AC;"></i>
+        <h4 class="fw-bold" style="letter-spacing: 1px;">Panel Vendedor</h4>
+      </div>
       <ul class="nav flex-column">
-        <li class="nav-item">
-          <a class="nav-link text-white" href="#" data-target="productos">Mis Productos</a>
+        <li class="nav-item mb-2">
+          <a class="nav-link sidebar-link d-flex align-items-center gap-2" href="#" data-target="productos">
+            <i class="fas fa-box"></i> <span>Mis Productos</span>
+          </a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link text-white" href="#" data-target="catalogo">Catálogo</a>
+        <li class="nav-item mb-2">
+          <a class="nav-link sidebar-link d-flex align-items-center gap-2" href="#" data-target="catalogo">
+            <i class="fas fa-th-list"></i> <span>Catálogo</span>
+          </a>
         </li>
       </ul>
     </aside>

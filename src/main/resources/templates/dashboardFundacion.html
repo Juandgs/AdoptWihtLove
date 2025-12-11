@@ -8,17 +8,64 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/616/616408.png" type="image/png" />
+  <link rel="stylesheet" href="/root/css/dashboard-custom.css">
+  <style>
+    :root { --brand-start: #012a3e; --brand-end: #4DB6AC; --accent: #e9c46a; }
+    .navbar {
+      background: linear-gradient(180deg, var(--brand-start) 0%, var(--brand-end) 100%);
+      box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+      min-height: 56px;
+      transition: all .25s ease;
+    }
+    .navbar-brand { color: #fff !important; font-weight:700; letter-spacing:1px; }
+    .navbar .btn-danger { min-width:150px; font-weight:700; }
+
+    /* Logo similar al dashboard principal */
+    .logo-marca {
+      width: 38px;
+      height: 38px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+      transition: width 0.25s, height 0.25s;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: .5rem;
+    }
+    /* Botón Cerrar Sesión (consistente con dashboard.html) */
+    .cerrar-sesion-btn {
+      background: #e53935;
+      color: #fff !important;
+      border-radius: 20px;
+      padding: 8px 18px;
+      margin-left: 10px;
+      font-weight: 700;
+      border: none;
+      display: inline-block;
+    }
+    .cerrar-sesion-btn:hover, .cerrar-sesion-btn:focus {
+      background: #c62828;
+      color: #fff !important;
+      text-decoration: none;
+    }
+
+    /* Mantener estilos de tarjetas pequeños y encabezados */
+    .card-custom { min-width: 300px; max-width: 420px; border-radius:8px; }
+    #detalleAdopcion .card { border-radius: 8px; }
+    #detalleAdopcion .card-header { font-weight: 600; }
+  </style>
 </head>
 <body class="d-flex flex-column min-vh-100">
 
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <span class="navbar-brand mb-0 h1 ms-3" style="font-family: 'Poppins', sans-serif; font-size: 1.5rem; font-weight: 600; cursor: default;">
-      <i class="fas fa-paw me-2"></i>Panel de la Fundación
+    <span class="navbar-brand mb-0 h1 ms-3 d-flex align-items-center" style="font-family: 'Poppins', sans-serif; font-size: 1.5rem; font-weight: 600; cursor: default;">
+      <img src="/img/logo.png" alt="Logo Adopt with Love" class="logo-marca">
+      <span>Panel de la Fundación</span>
     </span>
     <div class="collapse navbar-collapse justify-content-end">
       <ul class="navbar-nav">
         <li class="nav-item">
-          <a class="nav-link btn btn-danger ms-2" href="/">
+          <a class="nav-link cerrar-sesion-btn" href="/">
             <i class="fas fa-sign-out-alt me-1"></i> Cerrar Sesión
           </a>
         </li>
@@ -27,11 +74,21 @@
   </nav>
 
   <div class="d-flex flex-grow-1">
-    <aside class="bg-dark text-white p-3" style="width: 250px;">
-      <h5 class="text-center">Menú</h5>
+  <aside id="menuLateral" class="dashboard-sidebar bg-dark text-white p-3">
+      <div class="sidebar-header text-center mb-4">
+        <i class="fas fa-paw fa-2x mb-2" style="color: #4DB6AC;"></i>
+        <h4 class="fw-bold" style="letter-spacing: 1px;">Panel Fundación</h4>
+      </div>
       <ul class="nav flex-column">
-        <li class="nav-item">
-          <a class="nav-link text-white" href="#" data-target="animales">Animales</a>
+        <li class="nav-item mb-2">
+          <a class="nav-link sidebar-link d-flex align-items-center gap-2" href="#" data-target="animales">
+            <i class="fas fa-dog"></i> <span>Animales</span>
+          </a>
+        </li>
+        <li class="nav-item mb-2">
+          <a class="nav-link sidebar-link d-flex align-items-center gap-2" href="#" data-target="adopciones">
+            <i class="fas fa-clipboard-list"></i> <span>Adopciones</span>
+          </a>
         </li>
       </ul>
     </aside>
@@ -74,9 +131,52 @@
         </div>
       </section>
 
+      <!-- Sección: Detalle de adopción (mostrar en la misma página) -->
+      <section id="detalleAdopcion" class="d-none">
+        <div class="container py-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="text-center text-dark">Detalle de Adopción</h2>
+            <div>
+              <button id="btnVolverAdopciones" class="btn btn-secondary">Volver</button>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-center gap-4 flex-wrap">
+            <div class="card shadow card-custom">
+              <div class="card-header bg-primary text-white">Adoptante</div>
+              <div class="card-body">
+                <h5 id="adoptanteNombre" class="card-title">-</h5>
+                <p class="mb-1"><strong>Email:</strong> <span id="adoptanteEmail">-</span></p>
+                <p class="mb-1"><strong>Teléfono:</strong> <span id="adoptanteTelefono">-</span></p>
+                <p class="mb-1"><strong>Dirección:</strong> <span id="adoptanteDireccion">-</span></p>
+                <p class="mb-1"><strong>Fecha solicitud:</strong> <span id="adopcionFecha">-</span></p>
+              </div>
+            </div>
+
+            <div class="card shadow card-custom">
+              <div class="card-header bg-success text-white">Animal</div>
+              <div class="card-body">
+                <div class="text-center mb-3">
+                  <img id="animalFoto" src="/img/animalDefault.jpg" alt="Foto animal" class="img-fluid" style="max-height:200px; width:auto; display:block; object-fit:cover; margin: 0 auto;">
+                </div>
+                <h5 id="animalNombre" class="card-title">-</h5>
+                <p class="mb-1"><strong>Especie:</strong> <span id="animalEspecie">-</span></p>
+                <p class="mb-1"><strong>Raza:</strong> <span id="animalRaza">-</span></p>
+                <p class="mb-1"><strong>Edad:</strong> <span id="animalEdad">-</span></p>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-center gap-3 mt-4">
+            <button id="btnFinalizarAdopcion" class="btn btn-danger">Finalizar</button>
+            <button id="btnAprobarAdopcion" class="btn btn-success">Aprobar</button>
+          </div>
+        </div>
+      </section>
+
       <!-- Sección: Registro individual -->
       <section id="nuevoAnimal" class="d-none">
-        <h2>Registrar Nuevo Animal</h2>
+        <h2 id="tituloFormulario">Registrar Nuevo Animal</h2>
         <form id="formCrearAnimal" enctype="multipart/form-data">
           <div class="mb-3">
             <label for="nombreAnimal" class="form-label">Nombre</label>
@@ -99,6 +199,16 @@
               <option value="Otro">Otro</option>
             </select>
           </div>
+          <!-- Campo de estado SOLO en edición -->
+          <div class="mb-3 d-none" id="divEstadoAnimal">
+            <label for="estadoAnimal" class="form-label">Estado del Animal</label>
+            <select class="form-select" id="estadoAnimal" name="estadoNombre">
+              <option value="">Seleccione un estado</option>
+              <option value="ACTIVO">Activo</option>
+              <option value="PENDIENTE">Pendiente</option>
+              <option value="ADOPTADO">Adoptado</option>
+            </select>
+          </div>
           <div class="mb-3">
             <label for="imagenAnimal" class="form-label">Imagen del Animal</label>
             <input type="file" class="form-control" id="imagenAnimal" name="imagen" accept="image/*" />
@@ -109,6 +219,35 @@
           </div>
           <button type="submit" class="btn btn-primary">Guardar Animal</button>
         </form>
+      </section>
+
+      <!-- Sección: Adopciones -->
+      <section id="adopciones" class="d-none">
+        <h2>Adopciones</h2>
+        <div class="filtros-productos mb-3" style="display:flex; flex-direction:column; align-items:flex-start; gap:0.4rem; padding:18px;">
+            <label for="filtroEstadoAdopcion" class="form-label mb-0" style="font-weight:600;">Filtrar por estado:</label>
+            <div style="display:flex; align-items:center; gap:0.7rem;">
+              <select id="filtroEstadoAdopcion" class="form-select" style="width:auto;">
+                <option value="">Todos</option>
+                <option value="PENDIENTE">Pendiente</option>
+                <option value="ADOPTADO">Adoptado</option>
+              </select>
+            </div>
+          </div>
+        <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4" id="adopcionesContainer">
+          <!-- Render dinámico de adopciones -->
+          <div th:each="adopcion : ${adopciones}" class="col">
+            <div class="card h-100 shadow">
+              <div class="card-body">
+                <h5 class="card-title" th:text="${adopcion.animal.nombre}">Nombre Animal</h5>
+                <p class="card-text mb-1"><strong>Solicitante:</strong> <span th:text="${adopcion.nombre}">Nombre Solicitante</span></p>
+                <p class="card-text mb-1"><strong>Estado:</strong> <span th:text="${adopcion.estado.nombreEstado}">Estado</span></p>
+                <p class="card-text mb-1"><strong>Fecha:</strong> <span th:text="${adopcion.fecha}">Fecha</span></p>
+                <button type="button" th:attr="data-id=${adopcion.animal.id}" class="btn btn-info mt-2 w-100 ver-adopcion-btn">Ver adopción</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- Modal: Subir CSV -->
@@ -185,6 +324,22 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="/js/dashboardFundacion.js"></script>
+  <!-- Modal Historial (Fundación) -->
+  <div class="modal fade" id="modalHistorialFundacion" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Historial de solicitudes</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <div id="historialFundacionWrapper" style="overflow-x:auto;">
+            <div id="historialFundacionContainer" style="display:flex; gap:18px; padding:12px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   
   <script>
     // Ocultar mensaje de login exitoso después de 10 segundos y limpiar URL

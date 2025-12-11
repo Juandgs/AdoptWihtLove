@@ -111,9 +111,9 @@ public class ReclamosController {
         // 4) intentar notificar al vendedor (si tiene persona y email)
         Persona vendedor = producto.getPersona();
         if (vendedor != null && vendedor.getEmail() != null && !vendedor.getEmail().isBlank()) {
-            String subject = "Ha recibido una PQR sobre uno de sus productos";
+            String subject = "Ha recibido un reclamo sobre uno de sus productos";
             String message = "Estimado vendedor,\n\n" +
-                    "Ha recibido un nuevo reclamo (PQR) relacionado con uno de sus productos publicados en la plataforma.\n\n"
+                    "Ha recibido un nuevo reclamo relacionado con uno de sus productos publicados en la plataforma.\n\n"
                     +
                     "Detalles del reclamo:\n" +
                     "- Correo del usuario: " + reclamos.getCorreo() + "\n" +

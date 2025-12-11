@@ -34,7 +34,6 @@ body {
   background: #f8f9fa;
 }
 
-/* Barra superior */
 .navbar {
   background: linear-gradient(90deg, #232526 0%, #4DB6AC 100%) !important;
   box-shadow: 0 2px 12px rgba(77,182,172,0.08);
@@ -66,7 +65,6 @@ body {
   filter: drop-shadow(0 2px 8px rgba(77,182,172,0.12));
 }
 
-/* Sidebar */
 #menuLateral {
   background: linear-gradient(180deg, #232526 80%, #4DB6AC 100%);
   min-height: 100vh;
@@ -270,6 +268,102 @@ body > .d-flex.flex-grow-1 {
   overflow-y: auto;
 }
 
+/* Botones en secciones: estilo consistente y moderno */
+.filtros-productos .btn,
+.section-actions .btn,
+.card .btn,
+.table .btn,
+.btn, .btn-outline-primary, .btn-outline-success, .btn-outline-danger {
+  border-radius: 10px;
+  padding: 0.45rem 0.9rem;
+  font-weight: 600;
+  box-shadow: 0 6px 22px rgba(3, 59, 77, 0.04);
+  transition: transform .14s ease, box-shadow .14s ease, background .14s ease, opacity .14s ease;
+  border: 0;
+}
+
+/* Primary (usado por acciones principales) */
+.btn-primary {
+  background: linear-gradient(90deg,#1976D2 0%, #4DB6AC 100%);
+  color: #fff;
+  box-shadow: 0 8px 30px rgba(25,118,210,0.08);
+}
+.btn-primary:hover, .btn-primary:focus {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 40px rgba(25,118,210,0.12);
+  opacity: 0.98;
+}
+
+/* Success (verde del dashboard) */
+.btn-success {
+  background: linear-gradient(90deg,#2db79f 0%, #4DB6AC 100%);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 8px 26px rgba(77,182,172,0.06);
+}
+.btn-success:hover, .btn-success:focus {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 40px rgba(77,182,172,0.10);
+}
+
+/* Danger (acciones de eliminar/cerrar) */
+.btn-danger {
+  background: linear-gradient(90deg,#ff6b6b 0%, #e53935 100%);
+  color: #fff;
+}
+.btn-danger:hover, .btn-danger:focus {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 40px rgba(229,57,53,0.12);
+}
+
+/* Outlines */
+.btn-outline-success {
+  border-radius: 10px;
+  border-width: 1.6px;
+  border-color: #4DB6AC;
+  color: #4DB6AC;
+  background: transparent;
+}
+.btn-outline-success:hover { background: #4DB6AC; color: #fff; }
+.btn-outline-primary { border-radius: 10px; border-color: #4DB6AC; color: #4DB6AC; background: transparent; }
+.btn-outline-primary:hover { background: #4DB6AC; color: #fff; transform: translateY(-2px); }
+
+/* Info & secondary */
+.btn-info { background: linear-gradient(90deg,#00acc1 0%, #008fa6 100%); color: #fff; }
+.btn-info:hover { transform: translateY(-2px); }
+.btn-secondary { background: #6c757d; color: #fff; }
+.btn-secondary:hover { transform: translateY(-2px); }
+
+/* Botones de acción en tabla (pequeños) */
+.table .btn { padding: 0.35rem 0.6rem; font-size: 0.92rem; }
+
+/* Grupo de acciones: botones pequeños y separados */
+.action-group { display:flex; gap:0.5rem; align-items:center; justify-content:center; }
+.action-group .btn {
+  padding: 0.28rem 0.55rem;
+  font-size: 0.86rem;
+  border-radius: 8px;
+  min-width: 44px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.action-group .btn i { margin: 0; }
+
+/* Botón eliminar/cerrar reducido */
+.action-group .btn-danger {
+  padding: 0.28rem 0.6rem;
+  min-width: 44px;
+  height: 32px;
+}
+
+/* Pequeña separación adicional para botones dentro de celdas */
+.table td .btn + .btn { margin-left: 0.45rem; }
+
+/* Si se necesita versión aún más compacta */
+.btn-action { padding: 0.22rem 0.45rem; font-size: 0.78rem; min-width: 38px; height: 30px; }
+
 /* Botón cerrar sesión */
 .navbar .btn-danger {
   border-radius: 8px;
@@ -323,7 +417,7 @@ body > .d-flex.flex-grow-1 {
 #seccion2 .card-header {
   display: flex;
   align-items: center;
-  background: linear-gradient(90deg, #4DB6AC 60%, #232526 100%);
+  background: linear-gradient(90deg, #4DB6AC 60%, #012a3e 100%);
   color: #fff;
   border-radius: 18px 18px 0 0;
   font-weight: 600;
