@@ -551,6 +551,81 @@
       font-size: 0.9rem;
     }
     </style>
+
+    <style>
+     /* Estilo suave para paginación: acorde a la paleta del proyecto */
+     :root {
+       --accent: #4DB6AC;
+       --primary: #1976D2;
+       --muted: #6c757d;
+       --card-bg: #ffffff;
+     }
+
+     .pagination {
+       display: flex;
+       gap: 0.35rem;
+       padding-left: 0;
+       margin: 0.5rem 0;
+       align-items: center;
+       list-style: none;
+     }
+
+     .pagination .page-item .page-link {
+       color: #212529;
+       background: var(--card-bg);
+       border: 1px solid rgba(0, 0, 0, 0.06);
+       padding: 0.45rem 0.7rem;
+       border-radius: 0.6rem;
+       min-width: 40px;
+       text-align: center;
+       transition: transform .12s ease, box-shadow .12s ease, background .12s;
+       box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+     }
+
+     .pagination .page-item .page-link:hover {
+       transform: translateY(-3px);
+       box-shadow: 0 8px 20px rgba(25, 118, 210, 0.08);
+       border-color: rgba(25, 118, 210, 0.15);
+     }
+
+     .pagination .page-item.active .page-link,
+     .pagination .page-item.active > .page-link {
+       background: linear-gradient(90deg, var(--accent), var(--primary));
+       color: #fff;
+       border-color: transparent;
+       box-shadow: 0 8px 24px rgba(77, 182, 172, 0.18);
+     }
+
+     .pagination .page-item.disabled .page-link,
+     .pagination .page-item.disabled > .page-link {
+       opacity: 0.6;
+       pointer-events: none;
+       background: #f7f7f7;
+       color: var(--muted);
+       transform: none;
+       box-shadow: none;
+     }
+
+     /* Prev/Next icons spacing */
+     .pagination .page-item .page-link .fa,
+     .pagination .page-item .page-link .bi {
+       margin-right: 6px;
+     }
+
+     /* Responsive: ajustar tamaños en móviles */
+     @media (max-width: 576px) {
+       .pagination {
+         gap: 0.25rem;
+         flex-wrap: wrap;
+       }
+       .pagination .page-item .page-link {
+         padding: 0.35rem 0.5rem;
+         min-width: 36px;
+       }
+     }
+    </style>
+
+
     <style>
       .cart-fly-anim {
         position: absolute;
@@ -675,6 +750,10 @@
   -->
   </div>
 
+  <!-- Paginación productos (4x5) -->
+  <nav aria-label="Paginación productos" class="d-flex justify-content-center mt-4 mb-5">
+    <ul class="pagination" id="paginacionProductos"></ul>
+  </nav>
 
   </div>
 </div>
@@ -715,6 +794,127 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   
   <script src="/js/tiendas.js"></script>
+
+  <script>
+    // Script de paginación cliente para tienda: 4 columnas x 5 filas = 20 items por página
+(function () {
+  const ITEMS_PER_PAGE = 20;
+  const containerId = 'productContainer';
+  const pagerId = 'paginacionProductos';
+
+  function createElem(tag, cls, html) {
+    const el = document.createElement(tag);
+    if (cls) el.className = cls;
+    if (html !== undefined) el.innerHTML = html;
+    return el;
+  }
+
+  function renderPage(cards, page) {
+    const start = (page - 1) * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    cards.forEach((c, i) => {
+      c.style.display = (i >= start && i < end) ? '' : 'none';
+    });
+  }
+
+  function buildPager(totalItems, currentPage, onChange) {
+    const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
+    const pager = document.getElementById(pagerId);
+    if (!pager) return;
+    pager.innerHTML = '';
+
+    // Prev
+    const prevLi = createElem('li', `page-item ${currentPage === 1 ? 'disabled' : ''}`);
+    prevLi.innerHTML = `<a class="page-link" href="#" aria-label="Anterior"><span aria-hidden="true">&laquo;</span></a>`;
+    prevLi.addEventListener('click', (e) => { 
+      e.preventDefault(); 
+      e.stopPropagation();
+      if (currentPage > 1) onChange(currentPage - 1); 
+    });
+    pager.appendChild(prevLi);
+
+    // Pages (limit rendering to reasonable window if many pages)
+    const maxButtons = 7;
+    let startPage = 1;
+    let endPage = totalPages;
+    if (totalPages > maxButtons) {
+      const half = Math.floor(maxButtons / 2);
+      startPage = Math.max(1, currentPage - half);
+      endPage = startPage + maxButtons - 1;
+      if (endPage > totalPages) { endPage = totalPages; startPage = endPage - maxButtons + 1; }
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      const li = createElem('li', `page-item ${i === currentPage ? 'active' : ''}`);
+      const a = createElem('a', 'page-link', `${i}`);
+      a.href = '#';
+      a.addEventListener('click', (e) => { 
+        e.preventDefault(); 
+        e.stopPropagation();
+        onChange(i); 
+      });
+      li.appendChild(a);
+      pager.appendChild(li);
+    }
+
+    // Next
+    const nextLi = createElem('li', `page-item ${currentPage === totalPages ? 'disabled' : ''}`);
+    nextLi.innerHTML = `<a class="page-link" href="#" aria-label="Siguiente"><span aria-hidden="true">&raquo;</span></a>`;
+    nextLi.addEventListener('click', (e) => { 
+      e.preventDefault(); 
+      e.stopPropagation();
+      if (currentPage < totalPages) onChange(currentPage + 1); 
+    });
+    pager.appendChild(nextLi);
+  }
+
+  function initPagination() {
+    const container = document.getElementById(containerId);
+    const pager = document.getElementById(pagerId);
+    if (!container || !pager) return;
+
+    let cards = Array.from(container.children);
+    if (cards.length === 0) {
+      pager.innerHTML = '';
+      return;
+    }
+
+    let currentPage = 1;
+
+    function update() {
+      cards = Array.from(container.children);
+      renderPage(cards, currentPage);
+      buildPager(cards.length, currentPage, (p) => {
+        currentPage = p;
+        update();
+        const top = container.getBoundingClientRect().top + window.scrollY - 100;
+        window.scrollTo({ top, behavior: 'smooth' });
+      });
+    }
+
+    update();
+
+    window.refreshTiendaPagination = function () { currentPage = 1; update(); };
+
+    const mo = new MutationObserver(() => {
+      clearTimeout(window.__tienda_pag_debounce);
+      window.__tienda_pag_debounce = setTimeout(() => {
+        const newCards = Array.from(container.children);
+        const totalPages = Math.max(1, Math.ceil(newCards.length / ITEMS_PER_PAGE));
+        if (currentPage > totalPages) currentPage = totalPages;
+        update();
+      }, 150);
+    });
+    mo.observe(container, { childList: true, subtree: false });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(initPagination, 200);
+  });
+
+})();
+  </script>
+
   <script>
     // Mostrar toast de carrito
     window.showCartToast = function() {

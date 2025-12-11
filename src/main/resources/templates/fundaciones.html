@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -24,7 +25,11 @@
       --accent-color: #e9c46a;
       --text-light: #f1faee;
       --gradient-overlay: linear-gradient(to bottom, rgba(42, 157, 143, 0.4), rgba(38, 70, 83, 0.9));
-      --shadow-soft: 0 10px 30px rgba(0,0,0,0.1);
+      --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.1);
+      --accent: #4DB6AC;
+      --primary: #1976D2;
+      --muted: #6c757d;
+      --card-bg: #ffffff;
     }
 
     body {
@@ -38,7 +43,7 @@
     .navbar {
       background: linear-gradient(180deg, #012a3e 0%, #4DB6AC 100%) !important;
       backdrop-filter: blur(10px);
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
       transition: all 0.3s ease;
     }
 
@@ -52,7 +57,7 @@
       width: 80px;
       height: 80px;
       object-fit: contain;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
       transition: width 0.3s, height 0.3s;
     }
 
@@ -60,7 +65,7 @@
       font-weight: 600;
       margin: 0 10px;
       position: relative;
-      color: rgba(255,255,255,0.9) !important;
+      color: rgba(255, 255, 255, 0.9) !important;
     }
 
     .nav-link::after {
@@ -73,39 +78,113 @@
       background-color: var(--accent-color);
       transition: width 0.3s ease;
     }
+
     .nav-link:hover::after {
       width: 100%;
     }
 
     @media (max-width: 768px) {
-      .navbar-brand span { font-size: 1.1rem; }
-      .logo-marca { width: 55px; height: 55px; }
+      .navbar-brand span {
+        font-size: 1.1rem;
+      }
+
+      .logo-marca {
+        width: 55px;
+        height: 55px;
+      }
     }
-    /* ...otros estilos existentes... */
+
+    /* Estilo suave para paginación: acorde a la paleta del proyecto */
+    .pagination {
+      display: flex;
+      gap: 0.35rem;
+      padding-left: 0;
+      margin: 0.5rem 0;
+      align-items: center;
+      list-style: none;
+    }
+
+    .pagination .page-item .page-link {
+      color: #212529;
+      background: var(--card-bg);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      padding: 0.45rem 0.7rem;
+      border-radius: 0.6rem;
+      min-width: 40px;
+      text-align: center;
+      transition: transform .12s ease, box-shadow .12s ease, background .12s;
+      box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+    }
+
+    .pagination .page-item .page-link:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(25, 118, 210, 0.08);
+      border-color: rgba(25, 118, 210, 0.15);
+    }
+
+    .pagination .page-item.active .page-link,
+    .pagination .page-item.active> .page-link {
+      background: linear-gradient(90deg, var(--accent), var(--primary));
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 8px 24px rgba(77, 182, 172, 0.18);
+    }
+
+    .pagination .page-item.disabled .page-link,
+    .pagination .page-item.disabled> .page-link {
+      opacity: 0.6;
+      pointer-events: none;
+      background: #f7f7f7;
+      color: var(--muted);
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* Prev/Next icons spacing */
+    .pagination .page-item .page-link .fa,
+    .pagination .page-item .page-link .bi {
+      margin-right: 6px;
+    }
+
+    /* Responsive: ajustar tamaños en móviles */
+    @media (max-width: 576px) {
+      .pagination {
+        gap: 0.25rem;
+        flex-wrap: wrap;
+      }
+
+      .pagination .page-item .page-link {
+        padding: 0.35rem 0.5rem;
+        min-width: 36px;
+      }
+    }
   </style>
 </head>
+
 <body class="d-flex flex-column min-vh-100">
 
-<nav class="navbar navbar-expand-lg navbar-dark fixed-top">
-  <div class="container-fluid">
-    <div class="navbar-brand d-flex align-items-center gap-2 no-link">
-      <img src="img/logo.png" alt="Logo" class="logo-marca">
-      <span>Adopt with Love</span>
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container-fluid">
+      <div class="navbar-brand d-flex align-items-center gap-2 no-link">
+        <img src="img/logo.png" alt="Logo" class="logo-marca">
+        <span>Adopt with Love</span>
+      </div>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="/">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link" href="/fundaciones">Fundaciones</a></li>
+          <li class="nav-item"><a class="nav-link" href="/tiendas">Tiendas</a></li>
+          <li class="nav-item"><a class="nav-link" href="/login">Inicio de sesión</a></li>
+          <li class="nav-item"><a class="nav-link"
+              style="background: var(--accent-color); color: var(--secondary-color) !important; border-radius: 20px; padding: 8px 20px; margin-left: 10px;"
+              href="/registro">Registro</a></li>
+        </ul>
+      </div>
     </div>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-      <ul class="navbar-nav">
-        <li class="nav-item"><a class="nav-link" href="/">Inicio</a></li>
-        <li class="nav-item"><a class="nav-link" href="/fundaciones">Fundaciones</a></li>
-        <li class="nav-item"><a class="nav-link" href="/tiendas">Tiendas</a></li>
-        <li class="nav-item"><a class="nav-link" href="/login">Inicio de sesión</a></li>
-        <li class="nav-item"><a class="nav-link" style="background: var(--accent-color); color: var(--secondary-color) !important; border-radius: 20px; padding: 8px 20px; margin-left: 10px;" href="/registro">Registro</a></li>
-      </ul>
-    </div>
-  </div>
-</nav>
+  </nav>
 </body>
 
 <!-- Contenido: Fundaciones -->
@@ -118,79 +197,110 @@
   </div>
 </div>
 
-<footer class="text-center py-4 mt-auto bg-dark text-white">
-    <div class="container">
-      <p class="mb-0">© 2025 Adopt with Love. Todos los derechos reservados.</p>
-    </div>
-  </footer>
+<!-- Paginación -->
+<nav aria-label="Paginación" class="d-flex justify-content-center mt-4 mb-5">
+  <ul class="pagination" id="paginacionFundaciones"></ul>
+</nav>
 
-  
+<footer class="text-center py-4 mt-auto bg-dark text-white">
+  <div class="container">
+    <p class="mb-0">© 2025 Adopt with Love. Todos los derechos reservados.</p>
+  </div>
+</footer>
+
+
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-  fetch("/api/fundaciones")
-    .then(response => response.json())
-    .then(data => {
-      const container = document.getElementById("fundacionesContainer");
-      container.innerHTML = "";
+  let fundacionesTodas = [];
+  let paginaActualFund = 1;
+  const ITEMS_POR_PAGINA = 9;
 
-      if (!data || data.length === 0) {
+  function generarPaginacionFund(totalItems) {
+    const totalPaginas = Math.ceil(totalItems / ITEMS_POR_PAGINA);
+    const paginacion = document.getElementById("paginacionFundaciones");
+    paginacion.innerHTML = "";
+
+    const prevLi = document.createElement("li");
+    prevLi.className = `page-item ${paginaActualFund === 1 ? 'disabled' : ''}`;
+    prevLi.innerHTML = `<a class="page-link" href="#" onclick="cambiarPaginaFund(${paginaActualFund - 1}); return false;">Anterior</a>`;
+    paginacion.appendChild(prevLi);
+
+    for (let i = 1; i <= totalPaginas; i++) {
+      const li = document.createElement("li");
+      li.className = `page-item ${i === paginaActualFund ? 'active' : ''}`;
+      li.innerHTML = `<a class="page-link" href="#" onclick="cambiarPaginaFund(${i}); return false;">${i}</a>`;
+      paginacion.appendChild(li);
+    }
+
+    const nextLi = document.createElement("li");
+    nextLi.className = `page-item ${paginaActualFund === totalPaginas ? 'disabled' : ''}`;
+    nextLi.innerHTML = `<a class="page-link" href="#" onclick="cambiarPaginaFund(${paginaActualFund + 1}); return false;">Siguiente</a>`;
+    paginacion.appendChild(nextLi);
+  }
+
+  function cambiarPaginaFund(pagina) {
+    const totalPaginas = Math.ceil(fundacionesTodas.length / ITEMS_POR_PAGINA);
+    if (pagina < 1 || pagina > totalPaginas) return;
+    paginaActualFund = pagina;
+    mostrarFundacionesPaginadas();
+    generarPaginacionFund(fundacionesTodas.length);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function mostrarFundacionesPaginadas() {
+    const inicio = (paginaActualFund - 1) * ITEMS_POR_PAGINA;
+    const fin = inicio + ITEMS_POR_PAGINA;
+    const fundacionesPagina = fundacionesTodas.slice(inicio, fin);
+    const container = document.getElementById("fundacionesContainer");
+    container.innerHTML = "";
+    fundacionesPagina.forEach(f => {
+      const card = document.createElement("div");
+      card.className = "col-md-4 mb-4";
+      card.innerHTML = `
+      <div class="card shadow-sm">
+        <img src="./img/fundacionAnimales1.jpg" class="card-img-top" alt="${f.nombre_fundacion}">
+        <div class="card-body">
+          <h5 class="card-title">${f.nombre_fundacion}</h5>
+          <div class="info-line"><i class="fas fa-map-marker-alt me-2"></i><span>${f.direccion}</span></div>
+          <div class="info-line"><i class="fas fa-phone me-2"></i><span>${f.telefono}</span></div>
+          <button class="btn btn-success w-100 mt-3" onclick="verAnimales(${f.id})">
+            <i class="fas fa-eye me-2"></i>Ver animales
+          </button>
+        </div>
+      </div>
+    `;
+      container.appendChild(card);
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    fetch("/api/fundaciones")
+      .then(response => response.json())
+      .then(data => {
+        fundacionesTodas = data || [];
+        mostrarFundacionesPaginadas();
+        generarPaginacionFund(fundacionesTodas.length);
+      })
+      .catch(error => {
+        console.error("Error al cargar fundaciones:", error);
+        const container = document.getElementById("fundacionesContainer");
         container.innerHTML = `
-          <div class="col-12 empty-state">
-            <i class="fas fa-building"></i>
-            <h3>No hay fundaciones registradas</h3>
-            <p>Aún no tenemos fundaciones disponibles en el sistema.</p>
-          </div>
-        `;
-        return;
-      }
-
-      data.forEach(f => {
-        const card = document.createElement("div");
-        card.className = "col-md-4 mb-4";
-        card.innerHTML = `
-          <div class="card shadow-sm">
-            <img src="./img/fundacionAnimales1.jpg" class="card-img-top" alt="${f.nombre_fundacion}">
-            <div class="card-body">
-              <h5 class="card-title">
-                ${f.nombre_fundacion}
-              </h5>
-              <div class="info-line">
-                <i class="fas fa-map-marker-alt me-2"></i>
-                <span>${f.direccion}</span>
-              </div>
-              <div class="info-line">
-                <i class="fas fa-phone me-2"></i>
-                <span>${f.telefono}</span>
-              </div>
-              <button class="btn btn-success w-100 mt-3" onclick="verAnimales(${f.id})">
-                <i class="fas fa-eye me-2"></i>Ver animales
-              </button>
-            </div>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    })
-    .catch(error => {
-      console.error("Error al cargar fundaciones:", error);
-      const container = document.getElementById("fundacionesContainer");
-      container.innerHTML = `
         <div class="col-12 empty-state">
           <i class="fas fa-exclamation-triangle text-warning"></i>
           <h3>Error al cargar las fundaciones</h3>
           <p>Por favor, intenta recargar la página.</p>
         </div>
       `;
-    });
-});
+      });
+  });
 
-function verAnimales(fundacionId) {
-  window.location.href = `/fundacion/${fundacionId}/animales`;
-}
+  function verAnimales(fundacionId) {
+    window.location.href = `/fundacion/${fundacionId}/animales`;
+  }
 </script>
 
 </body>
+
 </html>
