@@ -19,6 +19,9 @@ public class AdopcionService implements Idao<Adopcion, Long> {
     @Autowired
     private AdopcionRepository Adopcion;
 
+        public Adopcion getUltimaAdopcionPorAnimal(Long animalId) {
+            return Adopcion.findFirstByAnimalIdOrderByFechaDesc(animalId);
+        }
     @Autowired
     private EstadoRepository estadoRepository;
 
@@ -61,6 +64,11 @@ public class AdopcionService implements Idao<Adopcion, Long> {
 
         adopcion.setEstado(bloqueado);
         Adopcion.save(adopcion);
+    }
+    
+    // Obtener historial de adopciones por animal (más reciente primero)
+    public java.util.List<Adopcion> getHistorialPorAnimal(Long animalId) {
+        return Adopcion.findByAnimalIdOrderByFechaDesc(animalId);
     }
     
 }

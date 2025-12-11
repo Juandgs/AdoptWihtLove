@@ -54,6 +54,31 @@ document.addEventListener("DOMContentLoaded", () => {
   const imagenAnimalInput = document.getElementById('imagenAnimal');
   const previewAnimal = document.getElementById('previewAnimal');
 
+  // Helper global redundante para manejar clicks desde el atributo onclick (debug)
+  window._handleVerAdopcion = async function(id) {
+    console.log('[DEBUG-inline] _handleVerAdopcion called with id=', id);
+    if (!id) {
+      mostrarMensaje('ID de adopción inválido (inline).', 'warning');
+      return;
+    }
+    mostrarMensaje('Cargando detalle (inline)...', 'info');
+    try {
+      const res = await fetch(`/adopcion/detalle-json/${id}`, { credentials: 'include' });
+      if (!res.ok) {
+        const txt = await res.text().catch(() => '');
+        throw new Error('Error: ' + res.status + ' ' + txt);
+      }
+      const data = await res.json();
+      console.log('[DEBUG-inline] detalle recibido:', data);
+      populateDetalle(data);
+      mostrarSeccion('detalleAdopcion');
+      mostrarMensaje('Detalle cargado (inline).', 'success');
+    } catch (err) {
+      console.error('[DEBUG-inline] error al cargar detalle:', err);
+      mostrarMensaje('Error al cargar detalle (inline).', 'danger');
+    }
+  };
+
   imagenAnimalInput?.addEventListener('change', function () {
     const file = imagenAnimalInput.files[0];
     if (file) {
@@ -233,8 +258,9 @@ document.addEventListener("DOMContentLoaded", () => {
             <td>${escapeHtml(animal.tipo_animal)}</td>
             <td><img src="${imgSrc}" alt="${escapeHtml(animal.nombre)}" style="width: 60px; height: 60px; object-fit: cover;"></td>
             <td>
-              <button onclick="editarAnimal(${animal.id})" class="btn btn-primary btn-sm me-1">Editar</button>
-              <button onclick="eliminarAnimal(${animal.id})" class="btn btn-danger btn-sm">Eliminar</button>
+                <button class="btn btn-info btn-sm me-1 ver-historial-btn" data-animal-id="${animal.id}">Historial</button>
+                <button onclick="editarAnimal(${animal.id})" class="btn btn-primary btn-sm me-1">Editar</button>
+                <button onclick="eliminarAnimal(${animal.id})" class="btn btn-danger btn-sm">Eliminar</button>
             </td>
           `;
           tableBody.appendChild(row);
@@ -311,14 +337,211 @@ document.addEventListener("DOMContentLoaded", () => {
             <p class="card-text"><strong>Estado:</strong> ${escapeHtml(a.estadoNombre || '')}</p>
             ${a.descripcion ? `<p class="card-text"><strong>Descripción:</strong> ${escapeHtml(a.descripcion)}</p>` : ''}
           </div>
-          <div class="card-footer text-center">
-            <button class="btn btn-primary ver-adopcion-btn" data-id="${a.id}">Ver adopción</button>
+            <div class="card-footer text-center">
+            <button class="btn btn-primary ver-adopcion-btn" data-id="${a.id}" onclick="window._handleVerAdopcion(${a.id})">Ver adopción</button>
           </div>
         </div>`;
 
       cont.appendChild(col);
     });
   }
+
+  // Delegación robusta: escuchar en el documento para capturar cualquier botón dinámico
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest && e.target.closest('.ver-adopcion-btn');
+    if (!btn) return;
+
+    const id = btn.getAttribute('data-id');
+    console.log('[DEBUG] Ver adopción clicked, id=', id, 'element=', btn);
+    if (!id) {
+      console.warn('[DEBUG] botón ver-adopcion sin data-id');
+      mostrarMensaje('ID de adopción no encontrado en el botón.', 'warning');
+      return;
+    }
+
+    // Mostrar un indicador mientras carga
+    mostrarMensaje('Cargando detalle...', 'info');
+
+    // Siempre pedir al servidor el detalle (garantiza que venga la última adopción)
+    fetch(`/adopcion/detalle-json/${id}`, { credentials: 'include' })
+      .then(async res => {
+        if (!res.ok) {
+          const txt = await res.text().catch(() => '');
+          throw new Error('Error al obtener detalle: ' + res.status + ' ' + txt);
+        }
+        const data = await res.json();
+        console.log('[DEBUG] detalle recibido:', data);
+        populateDetalle(data);
+        mostrarSeccion('detalleAdopcion');
+        mostrarMensaje('Detalle cargado.', 'success');
+      })
+      .catch(err => {
+        console.error('Error al cargar detalle:', err);
+        mostrarMensaje('No se pudo cargar el detalle. Revisa la consola y Network.', 'danger');
+      });
+  });
+
+  // Delegación para botones 'Historial' en la tabla de animales (fundación)
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest && e.target.closest('.ver-historial-btn');
+    if (!btn) return;
+    const animalId = btn.dataset.animalId;
+    if (!animalId) {
+      mostrarMensaje('ID de animal no encontrado para historial.', 'warning');
+      return;
+    }
+    mostrarHistorialFundacion(animalId);
+  });
+
+  // Mostrar historial en modal específico para la fundación
+  async function mostrarHistorialFundacion(animalId) {
+    try {
+      const modalEl = new bootstrap.Modal(document.getElementById('modalHistorialFundacion'));
+      const container = document.getElementById('historialFundacionContainer');
+      const wrapper = document.getElementById('historialFundacionWrapper');
+      container.innerHTML = `<div style="min-width:220px;">Cargando historial...</div>`;
+      modalEl.show();
+
+      const res = await fetch(`/adopcion/historial/${animalId}`, { credentials: 'include' });
+      if (!res.ok) {
+        container.innerHTML = `<div class="text-muted">Error al cargar historial (status ${res.status})</div>`;
+        return;
+      }
+      const data = await res.json();
+      if (!Array.isArray(data) || data.length === 0) {
+        container.innerHTML = `<div class="text-muted">No hay solicitudes de adopción para este animal.</div>`;
+        return;
+      }
+
+      container.innerHTML = data.map(d => {
+        const fecha = d.fecha ? new Date(d.fecha).toLocaleString() : 'Sin fecha';
+        const estado = d.estado || 'Sin estado';
+        const nombre = (d.nombre || '') + ' ' + (d.apellido || '');
+        return `
+          <div style="min-width:260px; background:#fff; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.08); padding:12px;">
+            <div style="font-size:0.85rem; color:#6c757d; margin-bottom:8px;">${fecha}</div>
+            <div style="font-weight:700; margin-bottom:6px;">${estado}</div>
+            <div><strong>${nombre.trim() || 'Solicitante anónimo'}</strong></div>
+            <div style="font-size:0.9rem; color:#444; margin-top:6px;">${d.email ? d.email + '<br/>' : ''}${d.telefono ? d.telefono + '<br/>' : ''}${d.direccion ? d.direccion : ''}</div>
+          </div>
+        `;
+      }).join('');
+
+      if (wrapper) wrapper.scrollLeft = 0;
+    } catch (err) {
+      console.error('Error mostrarHistorialFundacion', err);
+      document.getElementById('historialFundacionContainer').innerHTML = `<div class="text-muted">Error al cargar historial</div>`;
+    }
+  }
+
+  // Rellenar la sección de detalle con los datos recibidos
+  function populateDetalle(data) {
+    const adopcion = data.adopcion;
+    const animal = data.animal;
+
+    // Foto del animal (si existe), fallback a imagen por defecto
+    const animalFoto = document.getElementById('animalFoto');
+    if (animalFoto) {
+      const imgSrc = animal && (animal.imagen || animal.foto || animal.image) ? (animal.imagen || animal.foto || animal.image) : '/img/animalDefault.jpg';
+      animalFoto.src = imgSrc;
+      animalFoto.alt = animal ? (animal.nombre || 'Foto animal') : 'Foto animal';
+      animalFoto.style.display = 'block';
+    }
+
+    // Adoptante
+    document.getElementById('adoptanteNombre').textContent = adopcion ? (adopcion.nombre + ' ' + (adopcion.apellido || '')) : '-';
+    document.getElementById('adoptanteEmail').textContent = adopcion ? (adopcion.email || '-') : '-';
+    document.getElementById('adoptanteTelefono').textContent = adopcion ? (adopcion.telefono || '-') : '-';
+    document.getElementById('adoptanteDireccion').textContent = adopcion ? (adopcion.direccion || '-') : '-';
+    document.getElementById('adopcionFecha').textContent = adopcion ? (adopcion.fecha || '-') : '-';
+
+    // Animal
+    document.getElementById('animalNombre').textContent = animal ? (animal.nombre || '-') : '-';
+    document.getElementById('animalEspecie').textContent = animal ? (animal.tipo_animal || '-') : '-';
+    document.getElementById('animalRaza').textContent = animal ? (animal.raza || '-') : '-';
+    document.getElementById('animalEdad').textContent = animal ? (animal.edad || '-') : '-';
+
+    // Guardar ids en botones para acciones
+    const btnFinalizar = document.getElementById('btnFinalizarAdopcion');
+    const btnAprobar = document.getElementById('btnAprobarAdopcion');
+    btnFinalizar.dataset.adopcionId = adopcion ? adopcion.id : '';
+    btnAprobar.dataset.adopcionId = adopcion ? adopcion.id : '';
+    btnFinalizar.dataset.animalId = animal ? animal.id : '';
+    btnAprobar.dataset.animalId = animal ? animal.id : '';
+
+    // Mostrar/ocultar botones según estado de la adopción (más permissivo y con logs)
+    try {
+      console.log('[DEBUG populateDetalle] adopcion:', adopcion, 'animal:', animal);
+      const adopcionEstadoRaw = adopcion && typeof adopcion.estado !== 'undefined' && adopcion.estado !== null ? String(adopcion.estado) : '';
+      const animalEstadoRaw = animal && typeof animal.estado !== 'undefined' && animal.estado !== null ? String(animal.estado) : '';
+      console.log('[DEBUG populateDetalle] adopcion.estado raw:', adopcionEstadoRaw, 'animal.estado raw:', animalEstadoRaw);
+      const adopcionEstado = adopcionEstadoRaw.trim().toUpperCase();
+      const animalEstado = animalEstadoRaw.trim().toUpperCase();
+
+      if (!btnFinalizar || !btnAprobar) {
+        console.warn('Botones de acción no encontrados en el DOM');
+      } else if (!adopcion || adopcionEstado === '') {
+        // No hay adopción -> ocultar ambos
+        btnAprobar.classList.add('d-none');
+        btnFinalizar.classList.add('d-none');
+      } else if (adopcionEstado.includes('PENDIENTE') || /PENDIENTE/i.test(adopcionEstadoRaw) || animalEstado.includes('PENDIENTE') || /PENDIENTE/i.test(animalEstadoRaw)) {
+        // Si la adopción o el animal están en PENDIENTE: mostrar ambos botones (Aprobar + Finalizar)
+        console.log('[DEBUG populateDetalle] Estado detectado como PENDIENTE en adopcion o animal -> mostrar ambos botones');
+        btnAprobar.classList.remove('d-none');
+        btnFinalizar.classList.remove('d-none');
+      } else if (adopcionEstado.includes('ACTIVO') || adopcionEstado.includes('ADOPTADO')) {
+        // Si la adopción ya está activa/adoptada, solo mostrar Finalizar
+        btnAprobar.classList.add('d-none');
+        btnFinalizar.classList.remove('d-none');
+      } else {
+        // Por defecto mostrar ambos
+        btnAprobar.classList.remove('d-none');
+        btnFinalizar.classList.remove('d-none');
+      }
+    } catch (e) {
+      console.error('Error al decidir visibilidad de botones:', e);
+    }
+  }
+
+  // Botón volver a lista de adopciones
+  document.getElementById('btnVolverAdopciones')?.addEventListener('click', function () {
+    mostrarSeccion('adopciones');
+  });
+
+  // Acciones: finalizar y aprobar
+  document.getElementById('btnFinalizarAdopcion')?.addEventListener('click', function () {
+    const id = this.dataset.adopcionId;
+    if (!id) { mostrarMensaje('No hay solicitud para finalizar.', 'warning'); return; }
+    fetch(`/adopcion/finalizar/${id}`, { method: 'POST', credentials: 'include' })
+      .then(async res => {
+        const txt = await res.text();
+        if (res.ok) {
+          mostrarMensaje(txt || 'Adopción finalizada', 'success');
+          cargarAdopciones();
+          mostrarSeccion('adopciones');
+        } else {
+          mostrarMensaje(txt || 'Error al finalizar', 'danger');
+        }
+      })
+      .catch(err => { console.error(err); mostrarMensaje('Error al conectar', 'danger'); });
+  });
+
+  document.getElementById('btnAprobarAdopcion')?.addEventListener('click', function () {
+    const id = this.dataset.adopcionId;
+    if (!id) { mostrarMensaje('No hay solicitud para aprobar.', 'warning'); return; }
+    fetch(`/adopcion/aprobar/${id}`, { method: 'POST', credentials: 'include' })
+      .then(async res => {
+        const txt = await res.text();
+        if (res.ok) {
+          mostrarMensaje(txt || 'Adopción aprobada', 'success');
+          cargarAdopciones();
+          mostrarSeccion('adopciones');
+        } else {
+          mostrarMensaje(txt || 'Error al aprobar', 'danger');
+        }
+      })
+      .catch(err => { console.error(err); mostrarMensaje('Error al conectar', 'danger'); });
+  });
 
   // Evento cambio filtro adopciones
   document.getElementById('filtroEstadoAdopcion')?.addEventListener('change', () => {

@@ -34,6 +34,9 @@ public class EstadoSeeder implements CommandLineRunner {
             Estado adoptado = new Estado();
             adoptado.setNombreEstado("ADOPTADO");
 
+            Estado finalizado = new Estado();
+            finalizado.setNombreEstado("FINALIZADO");
+
             Estado noDisponible = new Estado();
             noDisponible.setNombreEstado("NO DISPONIBLE");
 
@@ -43,6 +46,7 @@ public class EstadoSeeder implements CommandLineRunner {
             estadoRepository.save(pendiente);
             estadoRepository.save(adoptado);
             estadoRepository.save(noDisponible);
+            estadoRepository.save(finalizado);
 
             System.out.println("✅ Seeder: Estados creados correctamente.");
         } else {
