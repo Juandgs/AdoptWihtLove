@@ -89,48 +89,59 @@ public class ReclamosController {
         return "reclamo"; // Renderiza reclamo.html
     }
 
-    // Guardar reclamo y enviar correo
+    // Guardar reclamo y enviar correo (manejo de errores más robusto)
     @PostMapping("/reclamoSend")
-    public String create(@ModelAttribute Reclamos reclamos, RedirectAttributes redirectAttrs) {
-        // 1) obtener id del producto enviado por binding
-        if (reclamos.getProducto() == null || reclamos.getProducto().getId() == null) {
-            redirectAttrs.addFlashAttribute("error", "No se especificó el producto para el reclamo.");
-            return "redirect:/tiendas";
+    public String create(@ModelAttribute Reclamos reclamos, Model model) {
+        try {
+            // 1) obtener id del producto enviado por binding
+            if (reclamos.getProducto() == null || reclamos.getProducto().getId() == null) {
+                model.addAttribute("error", "No se especificó el producto para el reclamo.");
+                return "reclamo"; // volver al formulario
+            }
+
+            Long productoId = reclamos.getProducto().getId();
+
+            // 2) cargar el producto completo desde BD (incluye persona si existe)
+            Productos producto = productosRepository.findById(productoId).orElse(null);
+            if (producto == null) {
+                model.addAttribute("error", "Producto no encontrado.");
+                return "reclamo";
+            }
+
+            // 3) setear el producto real en el reclamo antes de guardar
+            reclamos.setProducto(producto);
+            reclamosService.create(reclamos);
+
+            // 4) intentar notificar al vendedor (si tiene persona y email)
+            Persona vendedor = producto.getPersona();
+            if (vendedor != null && vendedor.getEmail() != null && !vendedor.getEmail().isBlank()) {
+                try {
+                    String subject = "Ha recibido un reclamo sobre uno de sus productos";
+                    String message = "Estimado vendedor,\n\n" +
+                            "Ha recibido un nuevo reclamo relacionado con uno de sus productos publicados en la plataforma.\n\n" +
+                            "Detalles del reclamo:\n" +
+                            "- Correo del usuario: " + reclamos.getCorreo() + "\n" +
+                            "- Descripción del reclamo: " + reclamos.getDescripcion() + "\n\n" +
+                            "Le recomendamos revisar este caso y tomar las acciones correspondientes a la mayor brevedad posible.\n\n" +
+                            "Atentamente,\n" +
+                            "Equipo Adopt with Love";
+
+                    emailService.sendEmail(new String[] { vendedor.getEmail() }, subject, message);
+                    model.addAttribute("success", "Reclamo guardado y vendedor notificado.");
+                } catch (Exception e) {
+                    // No impedir que la vista de éxito se muestre si falla el envío de correo
+                    model.addAttribute("warning", "Reclamo guardado pero no se pudo notificar al vendedor.");
+                }
+            } else {
+                model.addAttribute("warning", "Reclamo guardado pero el producto no tiene un vendedor con correo.");
+            }
+
+            return "reclamoSuccess";
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("error", "Error al procesar el reclamo: " + e.getMessage());
+            return "reclamo";
         }
-
-        Long productoId = reclamos.getProducto().getId();
-
-        // 2) cargar el producto completo desde BD (incluye persona si existe)
-        Productos producto = productosRepository.findById(productoId)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
-
-        // 3) setear el producto real en el reclamo antes de guardar
-        reclamos.setProducto(producto);
-        reclamosService.create(reclamos);
-
-        // 4) intentar notificar al vendedor (si tiene persona y email)
-        Persona vendedor = producto.getPersona();
-        if (vendedor != null && vendedor.getEmail() != null && !vendedor.getEmail().isBlank()) {
-            String subject = "Ha recibido un reclamo sobre uno de sus productos";
-            String message = "Estimado vendedor,\n\n" +
-                    "Ha recibido un nuevo reclamo relacionado con uno de sus productos publicados en la plataforma.\n\n"
-                    +
-                    "Detalles del reclamo:\n" +
-                    "- Correo del usuario: " + reclamos.getCorreo() + "\n" +
-                    "- Descripción del reclamo: " + reclamos.getDescripcion() + "\n\n" +
-                    "Le recomendamos revisar este caso y tomar las acciones correspondientes a la mayor brevedad posible.\n\n"
-                    +
-                    "Atentamente,\n" +
-                    "Equipo Adopt with Love";
-
-            emailService.sendEmail(new String[] { vendedor.getEmail() }, subject, message);
-            redirectAttrs.addFlashAttribute("success", "Reclamo guardado y vendedor notificado.");
-        } else {
-            redirectAttrs.addFlashAttribute("warning",
-                    "Reclamo guardado pero el producto no tiene un vendedor con correo.");
-        }
-
-        return "reclamoSuccess";
     }
 
 }

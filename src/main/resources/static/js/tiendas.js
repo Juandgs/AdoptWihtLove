@@ -106,46 +106,71 @@ searchInput.addEventListener('input', () => {
 
 // --------------------- CARGA DE PRODUCTOS ---------------------
 document.addEventListener("DOMContentLoaded", function () {
-  const API_BASE = (window.API_BASE && String(window.API_BASE).replace(/\/+$/, '')) || '';
-  const productosUrl = API_BASE ? `${API_BASE}/productos` : '/productos';
-  console.log('Cargando productos desde:', productosUrl);
+  const DEFAULT_API = 'https://adoptwihtlove.onrender.com';
+  const API_BASE = ((window.API_BASE && String(window.API_BASE).replace(/\/+$/, '')) || DEFAULT_API);
+  const originBase = window.location && window.location.origin ? window.location.origin : '';
+  const productosUrl = API_BASE ? `${API_BASE}/productos` : (originBase ? `${originBase}/productos` : '/productos');
+  console.log('tiendas.js - window.API_BASE =', window.API_BASE, ' -> solicitando:', productosUrl);
 
-  fetch(productosUrl)
-    .then(response => response.json())
-    .then(data => {
-      console.log("Productos obtenidos del backend:", data);
+  (async function loadProducts() {
+    const tryUrls = [productosUrl];
+    const originFiltered = originBase ? `${originBase}/productos/filtrados?estados=ACTIVO` : '/productos/filtrados?estados=ACTIVO';
+    const filteredUrl = API_BASE ? `${API_BASE}/productos/filtrados?estados=ACTIVO` : originFiltered;
 
-      const container = document.getElementById("productContainer");
-      container.innerHTML = "";
+    try {
+      // Intento 1: GET /productos (sin credenciales)
+      let res = await fetch(productosUrl);
+      const contentType = res.headers.get('content-type') || '';
 
-      data.forEach(producto => {
-        // Estructura visual avanzada para la card con badge sobre la imagen
-        const card = document.createElement("div");
-        card.className = "producto";
-        card.setAttribute("data-category", producto.tipoProducto.toLowerCase());
+      if (res.ok && contentType.includes('application/json')) {
+        const data = await res.json();
+        renderProducts(data);
+        return;
+      }
 
-        card.innerHTML = `
-          <div class="product-card" data-id="${producto.id}">
-            <div style="position:relative;">
-              <img src="${producto.imagen || './img/default.jpg'}" class="product-img" alt="${producto.nombre}">
-              <span class="product-badge">${producto.tipoProducto}</span>
-            </div>
-            <div class="product-body">
-              <div class="product-title">${producto.nombre}</div>
-              <div class="product-info">${producto.descripcion}</div>
-              <div class="product-price">$${producto.precio.toLocaleString()}</div>
-              <button class="btn-adopt add-to-cart">Agregar al carrito</button>
-              <a href="/reclamos/reclamo/${producto.id}" class="btn btn-sm btn-warning mt-2 w-100">Reclamo</a>
-            </div>
+      // Si la respuesta no fue JSON o fue 401/403, probar endpoint filtrado con credenciales (igual que dashboard)
+      console.warn('Respuesta inesperada desde', productosUrl, res.status, contentType);
+      console.log('Intentando endpoint filtrado con credenciales:', filteredUrl);
+
+      res = await fetch(filteredUrl, { credentials: 'include' });
+      const ct2 = res.headers.get('content-type') || '';
+      if (res.ok && ct2.includes('application/json')) {
+        const data = await res.json();
+        renderProducts(data);
+        return;
+      }
+
+      console.error('Ambos endpoints fallaron:', productosUrl, filteredUrl, 'status:', res.status);
+    } catch (err) {
+      console.error('Error al cargar productos:', err);
+    }
+  })();
+
+  function renderProducts(data) {
+    console.log('Productos obtenidos del backend:', data);
+    const container = document.getElementById('productContainer');
+    container.innerHTML = '';
+    (data || []).forEach(producto => {
+      const card = document.createElement('div');
+      card.className = 'producto';
+      card.setAttribute('data-category', (producto.tipoProducto || '').toLowerCase());
+      card.innerHTML = `
+        <div class="product-card" data-id="${producto.id}">
+          <div style="position:relative;">
+            <img src="${producto.imagen || './img/default.jpg'}" class="product-img" alt="${producto.nombre}">
+            <span class="product-badge">${producto.tipoProducto}</span>
           </div>
-        `;
-        container.appendChild(card);
-      });
-
-      // Reasignar eventos a botones recién creados
-      asignarEventosAgregarAlCarrito();
-    })
-    .catch(error => {
-      console.error("Error al cargar productos:", error);
+          <div class="product-body">
+            <div class="product-title">${producto.nombre}</div>
+            <div class="product-info">${producto.descripcion}</div>
+            <div class="product-price">$${producto.precio?.toLocaleString?.() || producto.precio}</div>
+            <button class="btn-adopt add-to-cart">Agregar al carrito</button>
+            <a href="/reclamos/reclamo/${producto.id}" class="btn btn-sm btn-warning mt-2 w-100">Reclamo</a>
+          </div>
+        </div>
+      `;
+      container.appendChild(card);
     });
+    asignarEventosAgregarAlCarrito();
+  }
 });

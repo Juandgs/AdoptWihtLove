@@ -48,9 +48,9 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             .ignoringRequestMatchers(
                 "/habilitar/**",
                 "/bloquear/**",
-                "/reclamos/**",
                 "/adopcion/**",
                 "/reclamo/**",
+                "/reclamos/**",
                 "/animal/**",
                 "/api/**",
                 "/productos/**",
