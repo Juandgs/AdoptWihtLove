@@ -106,7 +106,11 @@ searchInput.addEventListener('input', () => {
 
 // --------------------- CARGA DE PRODUCTOS ---------------------
 document.addEventListener("DOMContentLoaded", function () {
-  fetch("http://localhost:8085/productos")
+  const API_BASE = (window.API_BASE && String(window.API_BASE).replace(/\/+$/, '')) || '';
+  const productosUrl = API_BASE ? `${API_BASE}/productos` : '/productos';
+  console.log('Cargando productos desde:', productosUrl);
+
+  fetch(productosUrl)
     .then(response => response.json())
     .then(data => {
       console.log("Productos obtenidos del backend:", data);
