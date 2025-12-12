@@ -31,7 +31,7 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 "/", "/login", "/registro",
                 "/fundaciones", "/fundaciones/**", "/fundacion/**",
                 "/tiendas/**", "/productos/**", "/api/fundaciones/**",
-                "/css/**", "/js/**", "/img/**",
+                "/css/**", "/js/**", "/img/**", "/root/**",
                 "/animales/**", "/postLogin",
                 "/adopcion/**",
                 // Rutas para API pública y recursos subidos en runtime
