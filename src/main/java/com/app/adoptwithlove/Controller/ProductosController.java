@@ -229,10 +229,13 @@ public ResponseEntity<String> updateProducto(
 
         if (imagen != null && !imagen.isEmpty()) {
             try {
-                String nombreArchivo = imagen.getOriginalFilename();
-                Path rutaImagen = Paths.get("src/main/resources/static/img", nombreArchivo);
+                String original = Paths.get(imagen.getOriginalFilename()).getFileName().toString();
+                String nombreArchivo = System.currentTimeMillis() + "_" + (original == null ? "imagen" : original);
+                Path uploadsDir = Paths.get("uploads", "img");
+                Files.createDirectories(uploadsDir);
+                Path rutaImagen = uploadsDir.resolve(nombreArchivo);
                 Files.copy(imagen.getInputStream(), rutaImagen, StandardCopyOption.REPLACE_EXISTING);
-                producto.setImagen("/img/" + nombreArchivo);
+                producto.setImagen("/uploads/img/" + nombreArchivo);
             } catch (Exception e) {
                 return ResponseEntity.status(500).body("Error al guardar la imagen: " + e.getMessage());
             }

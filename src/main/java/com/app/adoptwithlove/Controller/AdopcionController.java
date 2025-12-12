@@ -206,15 +206,25 @@ public class AdopcionController {
         // Actualizar animal a ADOPTADO
         Animal animal = adopcion.getAnimal();
         if (animal != null) {
+            System.out.println("[DEBUG] antes aprobar -> animalId=" + animal.getId() + " estadoActual=" + (animal.getEstado() != null ? animal.getEstado().getNombreEstado() : "null"));
             animal.setEstado(estadoAdoptado);
             animalService.update(animal.getId(), animal);
+            Animal actualizado = animalService.getById(animal.getId());
+            System.out.println("[DEBUG] despues aprobar -> animalId=" + actualizado.getId() + " estadoNuevo=" + (actualizado.getEstado() != null ? actualizado.getEstado().getNombreEstado() : "null"));
         }
 
         // Actualizar adopcion a ACTIVO (aprobada pero aún en proceso)
         adopcion.setEstado(estadoActivo);
         adopcionService.update(adopcion.getId(), adopcion);
 
-        return ResponseEntity.ok("Adopción aprobada y animal marcado como ADOPTADO");
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("message", "Adopción aprobada y animal marcado como ADOPTADO");
+        if (animal != null) {
+            Animal a2 = animalService.getById(animal.getId());
+            resp.put("animalId", a2.getId());
+            resp.put("animalEstado", a2.getEstado() != null ? a2.getEstado().getNombreEstado() : null);
+        }
+        return ResponseEntity.ok(resp);
     }
 
     // Finalizar una adopción: marcar la adopción como FINALIZADO y animal como ADOPTADO
@@ -233,15 +243,25 @@ public class AdopcionController {
         // Actualizar animal a ACTIVO (volver a estar disponible)
         Animal animal = adopcion.getAnimal();
         if (animal != null) {
+            System.out.println("[DEBUG] antes finalizar -> animalId=" + animal.getId() + " estadoActual=" + (animal.getEstado() != null ? animal.getEstado().getNombreEstado() : "null"));
             animal.setEstado(estadoActivo);
             animalService.update(animal.getId(), animal);
+            Animal actualizado = animalService.getById(animal.getId());
+            System.out.println("[DEBUG] despues finalizar -> animalId=" + actualizado.getId() + " estadoNuevo=" + (actualizado.getEstado() != null ? actualizado.getEstado().getNombreEstado() : "null"));
         }
 
         // Actualizar adopcion a FINALIZADO
         adopcion.setEstado(estadoFinalizado);
         adopcionService.update(adopcion.getId(), adopcion);
 
-        return ResponseEntity.ok("Adopción finalizada y animal marcado como ACTIVO");
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("message", "Adopción finalizada y animal marcado como ACTIVO");
+        if (animal != null) {
+            Animal a2 = animalService.getById(animal.getId());
+            resp.put("animalId", a2.getId());
+            resp.put("animalEstado", a2.getEstado() != null ? a2.getEstado().getNombreEstado() : null);
+        }
+        return ResponseEntity.ok(resp);
     }
 
     // Historial de adopciones para un animal (JSON)
