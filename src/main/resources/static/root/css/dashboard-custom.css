@@ -398,6 +398,65 @@ body > .d-flex.flex-grow-1 {
 .modal-body {
   overflow-y: auto;
   max-height: 60vh;
+}
+
+/* Ajustes responsive para la navbar: mantener logo, título y botón en una sola línea */
+.navbar .navbar-brand {
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.logo-marca {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+}
+.cerrar-sesion-btn {
+  padding: 0.4rem 1rem;
+  font-weight: 700;
+  border-radius: 18px;
+}
+
+@media (max-width: 991px) {
+  .dashboard-title { font-size: 1.05rem; }
+  .logo-marca { width: 34px; height: 34px; }
+  .cerrar-sesion-btn { padding: 0.32rem 0.8rem; font-size: 0.95rem; }
+}
+
+@media (max-width: 575px) {
+  .dashboard-title { font-size: 0.98rem; }
+  .logo-marca { width: 30px; height: 30px; }
+  .cerrar-sesion-btn { padding: 0.28rem 0.65rem; font-size: 0.9rem; }
+  .navbar { padding: 0.35rem 0.6rem; }
+}
+
+/* Forzar una sola línea en la navbar y permitir truncado del título */
+.navbar .container-fluid { display: flex; align-items: center; gap: 0.5rem; flex-wrap: nowrap; }
+.navbar-brand { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 0.5rem; overflow: hidden; }
+.navbar .dashboard-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.navbar > .container-fluid > .d-flex.ms-auto { flex: 0 0 auto; }
+
+/* Mostrar sólo el icono del botón de cerrar sesión en pantallas pequeñas */
+.cerrar-text { display: inline-block; }
+@media (max-width: 575px) {
+  .cerrar-text { display: none; }
+  .cerrar-sesion-btn { padding-left: .45rem; padding-right: .45rem; }
+  .cerrar-sesion-btn i { margin-right: 0; }
+}
+
+/* Header actions: mostrar botones a la izquierda en pantallas grandes
+   y mantener orden natural (título antes de botones) en el DOM para accesibilidad */
+.header-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+.header-actions h2 { order: 0; margin: 0; }
+.header-actions .buttons-top { order: 1; }
+
+@media (min-width: 992px) {
+  .header-actions { flex-direction: row; align-items: center; }
+  /* En pantallas grandes, mostrar botones a la derecha */
+  .header-actions .buttons-top { margin-left: auto; order: 1; margin-right: 0; }
+  .header-actions h2 { order: 0; }
+}
   padding: 1.5rem;
 }
 
@@ -553,3 +612,264 @@ body > .d-flex.flex-grow-1 {
   display: flex;
   align-items: center;
 }
+
+/* Botones top: alinearlos a la izquierda por defecto y apilar en móvil */
+.buttons-top { justify-content: flex-start; }
+.header-actions h2 { font-size: 1.4rem; }
+@media (max-width: 767px) {
+  .header-actions { flex-direction: column; align-items: flex-start; gap: 0.4rem; }
+  .header-actions h2 { margin-left: 0; }
+  .buttons-top { width: 100%; flex-direction: row; }
+}
+
+/* ===== Reglas responsive para sidebar hamburguesa (mobile) ===== */
+.sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:1050; }
+.sidebar-overlay.visible { display:block; }
+
+@media (max-width: 991px) {
+  /* Ocultar el sidebar por defecto en pantallas pequeñas */
+  #menuLateral {
+    transform: translateX(-100%);
+    transition: transform .22s ease;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 260px;
+    z-index: 1060;
+    padding-top: 3.5rem;
+    background: linear-gradient(180deg, #232526 80%, #4DB6AC 100%);
+    overflow-y: auto;
+  }
+
+  /* Cuando se abre, se muestra desplazado al 0 */
+  body.menu-open #menuLateral {
+    transform: translateX(0);
+  }
+
+  /* Asegurar que el contenido principal ocupe todo el ancho cuando sidebar está oculto */
+  body > .d-flex.flex-grow-1 {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Mostrar overlay cuando el menú está abierto */
+  body.menu-open .sidebar-overlay { display:block; }
+
+  /* Mostrar el botón hamburguesa */
+  .sidebar-toggle-btn { display: inline-block; }
+}
+
+@media (min-width: 992px) {
+  /* En desktop el overlay no se muestra y el sidebar funciona normal */
+  .sidebar-overlay { display: none !important; }
+}
+
+/* Forzar vista compacta en móvil: mostrar sólo Nombre(1), Edad(2) e Imagen(5) */
+@media (max-width: 767px) {
+  .table-responsive table thead th:nth-child(3),
+  .table-responsive table tbody td:nth-child(3),
+  .table-responsive table thead th:nth-child(4),
+  .table-responsive table tbody td:nth-child(4),
+  .table-responsive table thead th:nth-child(6),
+  .table-responsive table tbody td:nth-child(6) {
+    display: none !important;
+  }
+
+  /* Alinear nombre a la izquierda para más legibilidad */
+  .table-responsive table thead th:nth-child(1),
+  .table-responsive table tbody td:nth-child(1) {
+    text-align: left !important;
+    padding-left: 0.6rem !important;
+  }
+
+  /* Ajuste de imagen para que no cause overflow */
+  .table-responsive table tbody td:nth-child(5) img {
+    max-height: 56px !important;
+    width: auto !important;
+    display: block !important;
+    margin: 0.15rem auto !important;
+  }
+
+  /* Forzar layout fijo y ancho 100% */
+  .table-responsive table {
+    table-layout: fixed !important;
+    width: 100% !important;
+  }
+}
+
+/* ===== Responsive: títulos y encabezados de formularios ===== */
+/* Aplica a: formulario de registro (`#tituloFormulario`), modales (`.modal-title`) y cabeceras de tarjetas */
+#tituloFormulario {
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1.15;
+  margin-bottom: 0.75rem;
+  word-break: break-word;
+  white-space: normal;
+}
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  word-break: break-word;
+}
+.card-header {
+  font-size: 1.05rem;
+}
+
+/* Ajustes en pantallas medianas */
+@media (max-width: 991px) {
+  #tituloFormulario { font-size: 1.2rem; }
+  .modal-title { font-size: 1.12rem; }
+  .card-header { font-size: 1rem; }
+}
+
+/* Ajustes en móviles: reducir y permitir換 línes para títulos largos */
+@media (max-width: 767px) {
+  #tituloFormulario {
+    font-size: 1.0rem;
+    margin-bottom: 0.5rem;
+    text-align: left;
+  }
+  .modal-title { font-size: 0.98rem; }
+  .card-header { font-size: 0.95rem; }
+
+  /* Formularios: labels y controles más compactos */
+  .form-label { font-size: 0.95rem; }
+  .form-control { font-size: 0.95rem; padding: 0.45rem 0.6rem; }
+
+  /* Reducir paddings de contenedores para que todo quepa en ancho móvil */
+  .container, .card-body, .modal-body { padding-left: 0.6rem !important; padding-right: 0.6rem !important; }
+}
+
+/* Si el título necesita una clase específica para estilos extra, usar .form-header */
+.form-header { display:block; font-weight:700; }
+
+/* ===== Estilos para Historial (modalHistorialFundacion) ===== */
+#modalHistorialFundacion .modal-dialog { max-width: 1100px; }
+#modalHistorialFundacion .modal-content { border-radius: 14px; overflow: hidden; }
+#modalHistorialFundacion .modal-header {
+  background: linear-gradient(90deg,#4DB6AC 0%, #012a3e 100%);
+  color: #fff;
+  border-bottom: none;
+  align-items: center;
+}
+#modalHistorialFundacion .modal-title { font-size: 1.25rem; font-weight:700; }
+#modalHistorialFundacion .btn-close { filter: brightness(0.95); }
+
+/* Wrapper con scroll horizontal si es necesario y padding interior */
+#historialFundacionWrapper {
+  max-height: 65vh;
+  overflow-y: auto;
+  padding: 1rem 1rem 1.2rem 1rem;
+}
+
+/* Contenedor flexible de tarjetas */
+#historialFundacionContainer {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+/* Cada item del historial: tarjeta compacta y consistente */
+.historial-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(3,59,77,0.06);
+  padding: 12px;
+  width: calc(33.333% - 12px);
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.historial-card img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.historial-card .historial-title { font-weight:700; font-size:1rem; color: #232526; }
+.historial-card .historial-meta { font-size:0.92rem; color:#555; }
+.historial-card .historial-actions { margin-top: auto; display:flex; gap:8px; }
+
+/* Ajustes responsive: en pantallas pequeñas las tarjetas ocupan 100% */
+@media (max-width: 991px) {
+  #modalHistorialFundacion .modal-dialog { max-width: 92vw; }
+  .historial-card { width: calc(50% - 12px); }
+}
+@media (max-width: 575px) {
+  .historial-card { width: 100%; }
+  #historialFundacionWrapper { padding: 0.6rem; }
+  #modalHistorialFundacion .modal-header { padding: 0.6rem 0.8rem; }
+  #modalHistorialFundacion .modal-title { font-size: 1rem; }
+}
+
+/* Botones dentro de historial: estilo consistente */
+.historial-card .btn { padding: 0.45rem 0.8rem; border-radius: 8px; font-weight:600; }
+
+/* ===== Estilos para la tabla de Animales ===== */
+/* Aplica solo a la sección #animales para no afectar otras tablas globales */
+#animales .table-responsive {
+  background: linear-gradient(180deg, #ffffff 0%, #f9fffe 100%);
+  border-radius: 12px;
+  padding: 0.5rem;
+  box-shadow: 0 6px 20px rgba(3,59,77,0.04);
+}
+
+#animales .table {
+  border-collapse: separate;
+  border-spacing: 0;
+  background: transparent;
+}
+
+#animales .table thead th {
+  background: linear-gradient(90deg,#e0f2f1 0%, #ffffff 100%);
+  color: #012a3e;
+  font-weight: 700;
+  border-bottom: 0;
+  padding: 0.85rem;
+  vertical-align: middle;
+}
+
+#animales .table thead th:first-child { border-top-left-radius: 10px; }
+#animales .table thead th:last-child { border-top-right-radius: 10px; }
+
+#animales .table td {
+  padding: 0.65rem;
+  vertical-align: middle;
+  color: #333;
+  font-size: 0.98rem;
+}
+
+#animales .table tbody tr { transition: background .18s ease, transform .12s ease; }
+#animales .table tbody tr:hover { background: #f1fffb; transform: translateY(-2px); }
+
+/* Imagen en la tabla: tamaño consistente */
+#animales .table td img {
+  max-height: 72px;
+  width: auto;
+  display: block;
+  margin: 0.15rem auto;
+  border-radius: 8px;
+}
+
+/* Acciones: botones compactos y con iconos */
+#animales .action-group { gap: 0.45rem; }
+#animales .action-group .btn { padding: 0.28rem 0.5rem; font-size: 0.86rem; min-width: 40px; height: 34px; }
+
+/* Si hay muchas columnas, permitir line-clamp en celdas de texto para evitar overflow */
+#animales .table td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Responsive: reducir paddings y mostrar compactado en móviles */
+@media (max-width: 767px) {
+  #animales .table thead th, #animales .table td { padding: 0.45rem; font-size: 0.92rem; }
+  #animales .table td img { max-height: 56px; }
+  #animales .table td { white-space: normal; }
+}
+
+
+
+

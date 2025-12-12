@@ -310,7 +310,7 @@ public class AnimalController {
             @RequestParam("edad") int edad,
             @RequestParam("raza") String raza,
             @RequestParam("tipo_animal") String tipoAnimal,
-            @RequestParam("imagen") MultipartFile imagen,
+            @RequestParam(value = "imagen", required = false) MultipartFile imagen,
             @AuthenticationPrincipal UserDetails userDetails) {
         try {
             String email = userDetails.getUsername();
@@ -319,10 +319,17 @@ public class AnimalController {
             Fundacion fundacion = fundacionRepository.findByPersona_Id(persona.getId())
                     .orElseThrow(() -> new RuntimeException("Fundación no encontrada"));
 
-            String nombreArchivo = System.currentTimeMillis() + "_" + imagen.getOriginalFilename();
-            Path rutaImagen = Paths.get("src/main/resources/static/img", nombreArchivo);
+            if (imagen == null || imagen.isEmpty()) {
+                return ResponseEntity.badRequest().body("La imagen es obligatoria para crear un animal");
+            }
+
+            String original = Paths.get(imagen.getOriginalFilename()).getFileName().toString();
+            String nombreArchivo = System.currentTimeMillis() + "_" + (original == null ? "imagen" : original);
+            Path uploadsDir = Paths.get("uploads", "img");
+            Files.createDirectories(uploadsDir);
+            Path rutaImagen = uploadsDir.resolve(nombreArchivo);
             Files.copy(imagen.getInputStream(), rutaImagen, StandardCopyOption.REPLACE_EXISTING);
-            String rutaWeb = "/img/" + nombreArchivo;
+            String rutaWeb = "/uploads/img/" + nombreArchivo;
 
             Animal animal = new Animal();
             animal.setNombre(nombre);
@@ -339,7 +346,7 @@ public class AnimalController {
 
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error al registrar el animal: " + e.getMessage());
         }
     }

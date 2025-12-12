@@ -46,20 +46,22 @@ public List<Productos> getAllProductosActivos() {
                                                  @RequestParam("cantidad") String cantidad,
                                                  @RequestParam("tipoProducto") String tipoProducto,
                                                  @RequestParam("descripcion") String descripcion,
-                                                 @RequestParam("imagen") MultipartFile imagen,
+                                                 @RequestParam(value = "imagen", required = false) MultipartFile imagen,
                                                  @AuthenticationPrincipal UserDetails userDetails) {
         try {
             Persona vendedor = personaRepository.findByEmail(userDetails.getUsername())
                     .orElseThrow(() -> new RuntimeException("Vendedor no encontrado"));
 
-            String nombreArchivo = imagen.getOriginalFilename();
-            Path rutaImagen = Paths.get("src/main/resources/static/img", nombreArchivo);
-
-            if (!Files.exists(rutaImagen)) {
+            String rutaWeb = null;
+            if (imagen != null && !imagen.isEmpty()) {
+                String original = Paths.get(imagen.getOriginalFilename()).getFileName().toString();
+                String nombreArchivo = System.currentTimeMillis() + "_" + (original == null ? "imagen" : original);
+                Path uploadsDir = Paths.get("uploads", "img");
+                Files.createDirectories(uploadsDir);
+                Path rutaImagen = uploadsDir.resolve(nombreArchivo);
                 Files.copy(imagen.getInputStream(), rutaImagen, StandardCopyOption.REPLACE_EXISTING);
+                rutaWeb = "/uploads/img/" + nombreArchivo;
             }
-
-            String rutaWeb = "/img/" + nombreArchivo;
 
             Productos producto = new Productos();
             producto.setNombre(nombre);
@@ -67,7 +69,7 @@ public List<Productos> getAllProductosActivos() {
             producto.setCantidad(cantidad);
             producto.setTipoProducto(tipoProducto);
             producto.setDescripcion(descripcion);
-            producto.setImagen(rutaWeb);
+            if (rutaWeb != null) producto.setImagen(rutaWeb);
             producto.setPersona(vendedor);
 
             // ✅ Usamos el servicio para que asigne el estado ACTIVO automáticamente
